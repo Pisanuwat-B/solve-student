@@ -18,6 +18,7 @@ import 'package:solve_student/feature/calendar/widgets/format_date.dart';
 import 'package:solve_student/feature/calendar/widgets/sizebox.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import '../../../firebase/database.dart';
 import '../../live_classroom/page/live_classroom_student.dart';
 import '../../live_classroom/utils/api.dart';
 import '../../live_classroom/utils/toast.dart';
@@ -36,7 +37,10 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
   late AuthProvider authProvider;
   late AnimationController _controller;
   late StreamSubscription<DocumentSnapshot>? listener;
+  DatabaseService dbService = DatabaseService();
   String? _image;
+  String tutorName = 'ติวเตอร์';
+  String tutorImage = '';
   String meetingCode = '';
 
   // VideoSDK
@@ -67,9 +71,19 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
       DeviceOrientation.landscapeLeft,
     ]);
     super.initState();
+    initDB();
+    startMeetingCodeListener();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final token = await fetchToken(context);
       setState(() => _token = token);
+    });
+  }
+
+  void initDB() async {
+    var user = await dbService.getUserById(widget.course.tutorId);
+    setState(() {
+      tutorName = user['name'];
+      tutorImage = user['image'];
     });
   }
 
@@ -89,7 +103,7 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
 
   void startMeetingCodeListener() {
     listener = FirebaseFirestore.instance
-        .collection('courses')
+        .collection('course_live')
         .doc(widget.course.courseId)
         .snapshots()
         .listen((snapshot) {
@@ -216,10 +230,12 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
                     : Countdown(courseStart: widget.course.start!),
                 S.h(10),
                 isActive ? _buttonJoinRoom() : _buttonNotYet(),
+                S.h(20),
               ] else ...[
                 SizedBox(height: 70, child: _microphone()),
+                S.h(10),
+                if (!isActive) Countdown(courseStart: widget.course.start!),
               ],
-              S.h(20),
             ],
           ),
         ),
@@ -316,7 +332,7 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
           ),
         ),
         const SizedBox(width: 10),
-        _image != null
+        tutorImage == ''
             ? ClipRRect(
                 borderRadius: BorderRadius.circular(Sizer(context).h * .1),
                 child: Image.asset('assets/images/profile2.png',
@@ -333,14 +349,14 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
                       ? Sizer(context).h / 14
                       : Sizer(context).h * .100,
                   fit: BoxFit.cover,
-                  imageUrl: authProvider.user?.image ?? "",
+                  imageUrl: tutorImage,
                   errorWidget: (context, url, error) =>
                       const CircleAvatar(child: Icon(CupertinoIcons.person)),
                 ),
               ),
         const SizedBox(width: 10),
         Text(
-          authProvider.user?.name ?? '',
+          tutorName,
           style: CustomStyles.med12GreenPrimary.copyWith(
             fontSize: _util.addMinusFontSize(16),
           ),
@@ -371,7 +387,7 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
               children: [
                 S.w(10),
                 Text(
-                  "เริ่มสอน",
+                  "เริ่มเรียน",
                   style: CustomStyles.bold14White.copyWith(
                     fontSize: _util.addMinusFontSize(18),
                   ),
@@ -441,7 +457,7 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
         children: [
           _timeJoin(),
           _tutorTitle(),
-          _buttonJoinRoom(),
+          isActive ? _buttonJoinRoom() : _buttonNotYet(),
         ],
       ),
     );

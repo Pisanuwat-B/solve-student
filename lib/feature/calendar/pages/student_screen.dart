@@ -276,7 +276,6 @@ class _StudentScreenState extends State<StudentScreen>
                                                       .showCourseStudentFilterToday[
                                                   index],
                                               onTap: () async {
-                                                print(index);
                                                 await Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
@@ -294,7 +293,19 @@ class _StudentScreenState extends State<StudentScreen>
                                               showCourseStudent: studentController
                                                       .showCourseStudentFilterToday[
                                                   index],
-                                              onTap: () {},
+                                              onTap: () async {
+                                                await Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        WaitingJoinRoom(
+                                                            course: studentController
+                                                                    .showCourseStudentFilterToday[
+                                                                index]),
+                                                  ),
+                                                );
+                                                setRefreshPreferredOrientations();
+                                              },
                                             ),
                                 ),
                               )
