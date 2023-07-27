@@ -22,6 +22,7 @@ import '../../../firebase/database.dart';
 import '../../live_classroom/page/live_classroom_student.dart';
 import '../../live_classroom/utils/api.dart';
 import '../../live_classroom/utils/toast.dart';
+import '../constants/assets_manager.dart';
 
 class WaitingJoinRoom extends StatefulWidget {
   const WaitingJoinRoom({super.key, required this.course});
