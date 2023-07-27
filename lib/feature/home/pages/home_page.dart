@@ -390,7 +390,7 @@ class _HomePageState extends State<HomePage> {
                                           CourseMarketModel.fromJson(source);
                                       return course;
                                     } catch (e) {
-                                      log("err : $e");
+                                      log("home err : $e");
                                       return CourseMarketModel();
                                     }
                                   }).toList() ??

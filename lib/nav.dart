@@ -11,6 +11,9 @@ import 'package:solve_student/feature/home/pages/home_page.dart';
 import 'package:solve_student/feature/my_course/pages/my_course_page.dart';
 import 'package:solve_student/feature/profile/pages/profile_page.dart';
 
+import 'authentication/service/auth_provider.dart';
+import 'feature/class/pages/find_class_page.dart';
+
 class Nav extends StatefulWidget {
   Nav({super.key, this.index = 0});
   int index;
@@ -24,13 +27,16 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
   bool bigCenterButton = true;
   int currentIndex = 0;
   List<Widget> pages = [
-    // CourseLiveCalendar(),
-    const HomePage(),
-    const MyCoursePage(),
-    // const ClassListPage(),
-    const CourseLivePage(),
+    // const MyCoursePage(),
+    // StudentScreen(),
+    // const CourseLivePage(),
+    // const ChatListPage(),
+    // const Center(child: Text("Notification")),
+    StudentScreen(),
+    ClassListPage(),
     const ChatListPage(),
     const Center(child: Text("Notification")),
+    const ProfilePage(),
   ];
 
   tab(int value) {
@@ -99,17 +105,13 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
-                activeIcon: Icon(Icons.explore),
-                icon: Icon(Icons.explore_outlined),
-                label: "ตารางสอน"),
+                activeIcon: Icon(Icons.calendar_month),
+                icon: Icon(Icons.calendar_month_outlined),
+                label: "ตารางเรียน"),
             BottomNavigationBarItem(
-                activeIcon: Icon(Icons.article),
-                icon: Icon(Icons.article_outlined),
-                label: "คอร์สของฉัน"),
-            BottomNavigationBarItem(
-                activeIcon: Icon(Icons.contacts),
-                icon: Icon(Icons.contacts_outlined),
-                label: "ห้องสอนสด"),
+                activeIcon: Icon(Icons.find_in_page),
+                icon: Icon(Icons.find_in_page_outlined),
+                label: "ค้นหาติวเตอร์"),
             BottomNavigationBarItem(
                 activeIcon: Icon(CupertinoIcons.chat_bubble_2),
                 icon: Icon(CupertinoIcons.chat_bubble_2),
@@ -118,6 +120,10 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
                 activeIcon: Icon(Icons.notifications),
                 icon: Icon(Icons.notifications_outlined),
                 label: "แจ้งเตือน"),
+            BottomNavigationBarItem(
+                activeIcon: Icon(Icons.account_circle),
+                icon: Icon(Icons.account_circle_outlined),
+                label: "ตั้งค่า"),
           ],
         ),
       ),

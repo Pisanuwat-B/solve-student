@@ -13,6 +13,8 @@ import 'package:solve_student/feature/calendar/widgets/format_date.dart';
 import 'package:solve_student/feature/calendar/widgets/sizebox.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../../../authentication/service/auth_provider.dart';
+
 class StudentScreen extends StatefulWidget {
   StudentScreen({super.key, this.studentId});
   String? studentId;
@@ -35,6 +37,7 @@ class _StudentScreenState extends State<StudentScreen>
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  AuthProvider? authProvider;
 
   @override
   void initState() {
@@ -44,6 +47,8 @@ class _StudentScreenState extends State<StudentScreen>
         Provider.of<CourseLiveController>(context, listen: false);
     // tabController = TabController(initialIndex: 0, length: 2, vsync: this);
     getInit();
+    authProvider = Provider.of<AuthProvider>(context, listen: false);
+    widget.studentId ??= authProvider?.user?.id;
   }
 
   getInit() async {
@@ -1049,7 +1054,7 @@ class _StudentScreenState extends State<StudentScreen>
       },
       rangeSelectionMode: _rangeSelectionMode,
       eventLoader: _getEventsForDay,
-      startingDayOfWeek: StartingDayOfWeek.monday,
+      startingDayOfWeek: StartingDayOfWeek.sunday,
       daysOfWeekHeight: 56,
       rowHeight: 128.4,
       daysOfWeekStyle: DaysOfWeekStyle(
@@ -1069,6 +1074,7 @@ class _StudentScreenState extends State<StudentScreen>
             top: BorderSide(width: 1, color: CustomColors.grayCFCFCF),
             bottom: BorderSide(
               width: 1,
+              color: CustomColors.grayCFCFCF,
             ),
             borderRadius: BorderRadius.all(Radius.circular(8.0))),
       ),
@@ -1165,14 +1171,15 @@ class _StudentScreenState extends State<StudentScreen>
                             horizontal: 5.0, vertical: 0.0),
                         margin: const EdgeInsets.symmetric(horizontal: 8.0),
                         decoration: BoxDecoration(
-                            border: Border.all(
-                              color: CustomColors.gray878787,
-                              width: 1,
-                            ),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(20.0)),
-                            shape: BoxShape.rectangle,
-                            color: CustomColors.greenPrimary),
+                          border: Border.all(
+                            color: CustomColors.gray878787,
+                            width: 1,
+                          ),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(20.0)),
+                          shape: BoxShape.rectangle,
+                          color: _getWeekColor(day.weekday),
+                        ),
                         alignment: Alignment.center,
                         child: Text(
                           event.first.title,
@@ -1185,38 +1192,39 @@ class _StudentScreenState extends State<StudentScreen>
                     ),
                   ],
                   S.h(5),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 5.0, vertical: 0.0),
-                    margin: const EdgeInsets.symmetric(horizontal: 8.0),
-                    decoration: BoxDecoration(
-                        border: Border.all(
-                          color: CustomColors.gray878787,
-                          width: 1,
-                        ),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(20.0)),
-                        shape: BoxShape.rectangle,
-                        color: CustomColors.white),
-                    alignment: Alignment.center,
-                    child: Column(
-                      children: [
-                        InkWell(
-                          onTap: () async {
-                            await showDialog(
-                                context: context,
-                                builder: (context) => _eventList(day, event));
-                          },
-                          child: Text(
-                            '+${event.length} รายการ',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: CustomStyles.med12GreenPrimary,
+                  if (event.length > 1)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5.0, vertical: 0.0),
+                      margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                      decoration: BoxDecoration(
+                          border: Border.all(
+                            color: CustomColors.gray878787,
+                            width: 1,
                           ),
-                        ),
-                      ],
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(20.0)),
+                          shape: BoxShape.rectangle,
+                          color: CustomColors.white),
+                      alignment: Alignment.center,
+                      child: Column(
+                        children: [
+                          InkWell(
+                            onTap: () async {
+                              await showDialog(
+                                  context: context,
+                                  builder: (context) => _eventList(day, event));
+                            },
+                            child: Text(
+                              '+${event.length - 1} รายการ',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: CustomStyles.med12GreenPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                   S.h(5),
                 ],
               ),
@@ -1227,6 +1235,27 @@ class _StudentScreenState extends State<StudentScreen>
         },
       ),
     );
+  }
+
+  Color _getWeekColor(int weekday) {
+    switch (weekday) {
+      case 1:
+        return Colors.black;
+      case 2:
+        return Colors.pinkAccent;
+      case 3:
+        return CustomColors.greenPrimary;
+      case 4:
+        return const Color(0xffFF9800);
+      case 5:
+        return Colors.blueAccent;
+      case 6:
+        return const Color(0xff8B5CF6);
+      case 7:
+        return const Color(0xffF44336);
+      default:
+        return Colors.black; // Should never be reached.
+    }
   }
 
   Widget tableCalendarMobile() {
