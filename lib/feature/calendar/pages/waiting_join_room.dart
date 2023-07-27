@@ -108,13 +108,15 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
         .doc(widget.course.courseId)
         .snapshots()
         .listen((snapshot) {
-      if (snapshot.data() != null &&
+      if ((snapshot.data() != null) &&
           snapshot.data()!.containsKey('currentMeetingCode')) {
         String snapMeetingCode = snapshot.data()!['currentMeetingCode'];
-        setState(() {
-          meetingCode = snapMeetingCode;
-          isActive = true;
-        });
+        if (snapMeetingCode != '') {
+          setState(() {
+            meetingCode = snapMeetingCode;
+            isActive = true;
+          });
+        }
       }
     });
   }

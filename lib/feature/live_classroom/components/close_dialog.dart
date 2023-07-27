@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../calendar/constants/custom_colors.dart';
 import '../../calendar/constants/custom_styles.dart';
+import '../../calendar/pages/student_screen.dart';
 import '../../calendar/widgets/sizebox.dart';
 import '../utils/responsive.dart';
 
@@ -49,6 +50,12 @@ Future<void> showCloseDialog(BuildContext context, Function onConfirm) {
                             ),
                             onPressed: () {
                               Navigator.of(context).pop(); // Close the dialog
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => StudentScreen(),
+                                ),
+                              );
                               onConfirm(); // Execute the confirmation function
                             },
                             child: Text('ปิดห้องเรียน',

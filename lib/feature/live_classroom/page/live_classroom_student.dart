@@ -8,7 +8,9 @@ import 'package:videosdk/videosdk.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../calendar/constants/custom_styles.dart';
+import '../../calendar/controller/create_course_live_controller.dart';
 import '../../calendar/widgets/sizebox.dart';
+import '../components/close_dialog.dart';
 import '../components/divider.dart';
 import '../components/leaderboard.dart';
 import '../../calendar/constants/assets_manager.dart';
@@ -60,12 +62,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   bool allowSending = true;
 
   // ---------- VARIABLE: Solve Pad data
-  final List<String> _pages = [
-    'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/test(gun)%2FexampleSheet1.jpg?alt=media&token=27676570-4031-4c6b-b6bc-4280fbbcd116',
-    'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/test(gun)%2FexampleSheet2.jpg?alt=media&token=8ec3a135-85a6-4cac-abdd-b8d0df094ce3',
-    'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/test(gun)%2FexampleSheet1.jpg?alt=media&token=27676570-4031-4c6b-b6bc-4280fbbcd116',
-    'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/test(gun)%2FexampleSheet2.jpg?alt=media&token=8ec3a135-85a6-4cac-abdd-b8d0df094ce3',
-  ];
+  late List<String> _pages = [];
   final List<List<SolvepadStroke?>> _penPoints = [[]];
   final List<List<SolvepadStroke?>> _laserPoints = [[]];
   final List<List<SolvepadStroke?>> _highlighterPoints = [[]];
@@ -127,7 +124,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   int _selectedIndexTools = 0;
   int _selectedIndexColors = 0;
   int _selectedIndexLines = 0;
-  int _selectedIndexMore = 0;
   late bool isSelected;
   final List _listToolsMobile = [
     {
@@ -206,6 +202,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   ];
   late Map<String, Function(String)> handlers;
 
+  var courseController = CourseLiveController();
+  late String courseName;
+
   @override
   void initState() {
     super.initState();
@@ -232,6 +231,12 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   Future<void> initPagesData() async {
+    await courseController.getCourseById(widget.courseId);
+    setState(() {
+      _pages = courseController.courseData!.document!.data!.docFiles!;
+      courseName = courseController.courseData!.courseName!;
+      micEnable = widget.micEnabled;
+    });
     for (int i = 1; i < _pages.length; i++) {
       _addPage();
     }
@@ -2513,8 +2518,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
           children: [
             InkWell(
               onTap: () {
-                print('CLOSE ??');
-                // modalCloseClass(context);
+                showCloseDialog(context, () {
+                  meeting.leave();
+                });
               },
               child: Image.asset(
                 ImageAssets.iconOut,
