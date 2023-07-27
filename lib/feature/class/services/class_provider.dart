@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:slove_student/feature/class/models/class_model.dart';
+import 'package:solve_student/feature/class/models/class_model.dart';
 import 'package:uuid/uuid.dart';
 
 class ClassProvider extends ChangeNotifier {
@@ -178,19 +178,18 @@ class ClassProvider extends ChangeNotifier {
   }
 }
 
+// URL = https://stackoverflow.com/questions/51717407/flutter-firestore-pagination
 
- // URL = https://stackoverflow.com/questions/51717407/flutter-firestore-pagination
+// I think Firestore.instance.collection('user').where('name', isEqualTo: 'Tom').orderBy('age').startAfter(_lastDocument).limit(1).getDocuments() here. The _lastDocument causes the error
 
-  // I think Firestore.instance.collection('user').where('name', isEqualTo: 'Tom').orderBy('age').startAfter(_lastDocument).limit(1).getDocuments() here. The _lastDocument causes the error
+// Firestore.instance.collection('user').where('name', isEqualTo: 'Tom').orderBy('age').startAfter(_lastDocument).limit(1).getDocuments().then((snapshot) {
+//        snapshot.documents.forEach((snap) {
+//           print(snap.data);
+//         });
+//        });
 
-  // Firestore.instance.collection('user').where('name', isEqualTo: 'Tom').orderBy('age').startAfter(_lastDocument).limit(1).getDocuments().then((snapshot) {
-  //        snapshot.documents.forEach((snap) {
-  //           print(snap.data);
-  //         });
-  //        });
-
-  // Firestore.instance.collection('user').where('name', isEqualTo: 'Tom').orderBy('age').startAfter([{'name': 'Tom'}]).limit(1).getDocuments().then((snapshot) {
-  //        snapshot.documents.forEach((snap) {
-  //           print(snap.data);
-  //         });
-  //        });
+// Firestore.instance.collection('user').where('name', isEqualTo: 'Tom').orderBy('age').startAfter([{'name': 'Tom'}]).limit(1).getDocuments().then((snapshot) {
+//        snapshot.documents.forEach((snap) {
+//           print(snap.data);
+//         });
+//        });

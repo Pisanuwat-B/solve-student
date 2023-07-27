@@ -3,13 +3,13 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:slove_student/feature/calendar/pages/student_screen.dart';
-import 'package:slove_student/feature/chat/pages/chat_list_page.dart';
-import 'package:slove_student/feature/class/pages/class_list_page.dart';
-import 'package:slove_student/feature/course_live/pages/course_live_page.dart';
-import 'package:slove_student/feature/home/pages/home_page.dart';
-import 'package:slove_student/feature/my_course/pages/my_course_page.dart';
-import 'package:slove_student/feature/profile/pages/profile_page.dart';
+import 'package:solve_student/feature/calendar/pages/student_screen.dart';
+import 'package:solve_student/feature/chat/pages/chat_list_page.dart';
+import 'package:solve_student/feature/class/pages/class_list_page.dart';
+import 'package:solve_student/feature/course_live/pages/course_live_page.dart';
+import 'package:solve_student/feature/home/pages/home_page.dart';
+import 'package:solve_student/feature/my_course/pages/my_course_page.dart';
+import 'package:solve_student/feature/profile/pages/profile_page.dart';
 
 class Nav extends StatefulWidget {
   Nav({super.key, this.index = 0});

@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:slove_student/auth.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/auth.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/constants/theme.dart';
-import 'package:slove_student/widgets/sizer.dart';
+import 'package:solve_student/constants/theme.dart';
+import 'package:solve_student/widgets/sizer.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

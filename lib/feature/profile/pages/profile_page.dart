@@ -7,13 +7,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/auth.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
-import 'package:slove_student/constants/school_subject_constants.dart';
-import 'package:slove_student/constants/theme.dart';
-import 'package:slove_student/widgets/confirm_action_widget.dart';
-import 'package:slove_student/widgets/show_my_id_widget.dart';
-import 'package:slove_student/widgets/sizer.dart';
+import 'package:solve_student/auth.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/constants/school_subject_constants.dart';
+import 'package:solve_student/constants/theme.dart';
+import 'package:solve_student/widgets/confirm_action_widget.dart';
+import 'package:solve_student/widgets/show_my_id_widget.dart';
+import 'package:solve_student/widgets/sizer.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -186,20 +186,20 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: 20),
                 settingCard(title: 'ตั้งค่าบัญชี', icon: Icons.settings),
-                Divider(thickness: 2),
+                const Divider(thickness: 2),
                 const SizedBox(height: 10),
                 settingCard(title: 'ค่าบริการสมาชิก', icon: Icons.list),
-                Divider(thickness: 2),
+                const Divider(thickness: 2),
                 const SizedBox(height: 10),
                 settingCard(
                     title: 'ตั้งค่าการแจ้งเตือน',
                     icon: Icons.notifications_active),
-                Divider(thickness: 2),
+                const Divider(thickness: 2),
                 const SizedBox(height: 30),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
                   child: Text(
-                    "เกี่ยวกับ Slove",
+                    "เกี่ยวกับ Solve",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -208,10 +208,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: 10),
                 settingCard(title: 'เงื่อนไขข้อตกลงการใช้บริการ'),
-                Divider(thickness: 2),
+                const Divider(thickness: 2),
                 const SizedBox(height: 10),
                 settingCard(title: 'นโยบายความเป็นส่วนตัว'),
-                Divider(thickness: 2),
+                const Divider(thickness: 2),
                 const SizedBox(height: 60),
                 Center(
                     child: Column(
@@ -231,7 +231,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                   Navigator.of(context)
                                       .popUntil((route) => route.isFirst);
                                   var route = MaterialPageRoute(
-                                      builder: (context) => Authenticate());
+                                      builder: (context) =>
+                                          const Authenticate());
                                   Navigator.pushReplacement(context, route);
                                 });
                               },
@@ -244,7 +245,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 10),
                     Text(
                       authprovider.user?.email ?? "",
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: greyColor,
                       ),
                     ),

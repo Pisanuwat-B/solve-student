@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:slove_student/feature/calendar/model/document_model.dart';
-import 'package:slove_student/feature/calendar/service/document_service.dart';
+import 'package:solve_student/feature/calendar/model/document_model.dart';
+import 'package:solve_student/feature/calendar/service/document_service.dart';
 
 class DocumentController extends ChangeNotifier {
   String id = '';

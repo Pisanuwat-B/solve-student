@@ -1,5 +1,5 @@
-import 'package:slove_student/feature/calendar/model/document_model.dart';
-import 'package:slove_student/feature/calendar/model/student_model.dart';
+import 'package:solve_student/feature/calendar/model/document_model.dart';
+import 'package:solve_student/feature/calendar/model/student_model.dart';
 
 class CourseModel {
   String? id;

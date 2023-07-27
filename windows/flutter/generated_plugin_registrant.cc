@@ -9,7 +9,9 @@
 #include <emoji_picker_flutter/emoji_picker_flutter_plugin_c_api.h>
 #include <file_selector_windows/file_selector_windows.h>
 #include <firebase_core/firebase_core_plugin_c_api.h>
+#include <flutter_webrtc/flutter_web_r_t_c_plugin.h>
 #include <url_launcher_windows/url_launcher_windows.h>
+#include <videosdk/videosdk_plugin_c_api.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
   EmojiPickerFlutterPluginCApiRegisterWithRegistrar(
@@ -18,6 +20,10 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("FileSelectorWindows"));
   FirebaseCorePluginCApiRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("FirebaseCorePluginCApi"));
+  FlutterWebRTCPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("FlutterWebRTCPlugin"));
   UrlLauncherWindowsRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("UrlLauncherWindows"));
+  VideosdkPluginCApiRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("VideosdkPluginCApi"));
 }

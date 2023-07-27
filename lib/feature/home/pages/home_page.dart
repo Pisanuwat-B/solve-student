@@ -8,21 +8,21 @@ import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/authentication/models/user_model.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
-import 'package:slove_student/constants/school_subject_constants.dart';
-import 'package:slove_student/constants/theme.dart';
-import 'package:slove_student/feature/calendar/constants/constants.dart';
-import 'package:slove_student/feature/calendar/model/course_model.dart';
-import 'package:slove_student/feature/class/pages/class_list_page.dart';
-import 'package:slove_student/feature/class/pages/find_class_page.dart';
-import 'package:slove_student/feature/market_place/model/course_market_model.dart';
-import 'package:slove_student/feature/market_place/pages/market_course_detail_page.dart';
-import 'package:slove_student/feature/home/service/home_provider.dart';
-import 'package:slove_student/feature/profile/pages/profile_page.dart';
-import 'package:slove_student/feature/standby_study/pages/ready_study_page.dart';
-import 'package:slove_student/feature/standby_study/pages/standby_study_page.dart';
-import 'package:slove_student/widgets/sizer.dart';
+import 'package:solve_student/authentication/models/user_model.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/constants/school_subject_constants.dart';
+import 'package:solve_student/constants/theme.dart';
+import 'package:solve_student/feature/calendar/constants/constants.dart';
+import 'package:solve_student/feature/calendar/model/course_model.dart';
+import 'package:solve_student/feature/class/pages/class_list_page.dart';
+import 'package:solve_student/feature/class/pages/find_class_page.dart';
+import 'package:solve_student/feature/market_place/model/course_market_model.dart';
+import 'package:solve_student/feature/market_place/pages/market_course_detail_page.dart';
+import 'package:solve_student/feature/home/service/home_provider.dart';
+import 'package:solve_student/feature/profile/pages/profile_page.dart';
+import 'package:solve_student/feature/standby_study/pages/ready_study_page.dart';
+import 'package:solve_student/feature/standby_study/pages/standby_study_page.dart';
+import 'package:solve_student/widgets/sizer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
-        title: Image.asset("assets/images/slove1.png"),
+        title: Image.asset("assets/images/solve1.png"),
         actions: [
           GestureDetector(
             onTap: () {

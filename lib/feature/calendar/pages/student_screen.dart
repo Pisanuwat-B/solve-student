@@ -2,15 +2,15 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/feature/calendar/constants/constants.dart';
-import 'package:slove_student/feature/calendar/controller/create_course_live_controller.dart';
-import 'package:slove_student/feature/calendar/controller/student_controller.dart';
-import 'package:slove_student/feature/calendar/helper/utility_helper.dart';
-import 'package:slove_student/feature/calendar/model/show_course.dart';
-import 'package:slove_student/feature/calendar/pages/utils.dart';
-import 'package:slove_student/feature/calendar/widgets/alert_overlay.dart';
-import 'package:slove_student/feature/calendar/widgets/format_date.dart';
-import 'package:slove_student/feature/calendar/widgets/sizebox.dart';
+import 'package:solve_student/feature/calendar/constants/constants.dart';
+import 'package:solve_student/feature/calendar/controller/create_course_live_controller.dart';
+import 'package:solve_student/feature/calendar/controller/student_controller.dart';
+import 'package:solve_student/feature/calendar/helper/utility_helper.dart';
+import 'package:solve_student/feature/calendar/model/show_course.dart';
+import 'package:solve_student/feature/calendar/pages/utils.dart';
+import 'package:solve_student/feature/calendar/widgets/alert_overlay.dart';
+import 'package:solve_student/feature/calendar/widgets/format_date.dart';
+import 'package:solve_student/feature/calendar/widgets/sizebox.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class StudentScreen extends StatefulWidget {

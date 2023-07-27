@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
-import 'package:slove_student/widgets/sizer.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/widgets/sizer.dart';
 
 class NoPermissionPage extends StatefulWidget {
   const NoPermissionPage({super.key});

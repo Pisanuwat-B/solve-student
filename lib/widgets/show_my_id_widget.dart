@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
-import 'package:slove_student/constants/theme.dart';
-import 'package:slove_student/widgets/dialogs.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/constants/theme.dart';
+import 'package:solve_student/widgets/dialogs.dart';
 
 class ShowMyIdWidget extends StatelessWidget {
   const ShowMyIdWidget({

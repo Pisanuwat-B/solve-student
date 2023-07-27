@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
-import 'package:slove_student/feature/class/models/class_model.dart';
-import 'package:slove_student/feature/class/pages/create_class_page.dart';
-import 'package:slove_student/feature/class/services/class_provider.dart';
-import 'package:slove_student/feature/class/widgets/build_card_class_body_widget.dart';
-import 'package:slove_student/widgets/sizer.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/feature/class/models/class_model.dart';
+import 'package:solve_student/feature/class/pages/create_class_page.dart';
+import 'package:solve_student/feature/class/services/class_provider.dart';
+import 'package:solve_student/feature/class/widgets/build_card_class_body_widget.dart';
+import 'package:solve_student/widgets/sizer.dart';
 
 class MyClassPage extends StatefulWidget {
   const MyClassPage({super.key});

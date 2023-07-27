@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/constants/app_constants.dart';
-import 'package:slove_student/constants/state_index.dart';
-import 'package:slove_student/constants/theme.dart';
-import 'package:slove_student/splash_page.dart';
+import 'package:solve_student/constants/app_constants.dart';
+import 'package:solve_student/constants/state_index.dart';
+import 'package:solve_student/constants/theme.dart';
+import 'package:solve_student/splash_page.dart';
 
 Future<void> main() async {
   initializeDateFormatting();

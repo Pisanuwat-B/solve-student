@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:slove_student/feature/standby_study/models/user_state_study_model.dart';
+import 'package:solve_student/feature/standby_study/models/user_state_study_model.dart';
 import 'package:uuid/uuid.dart';
 
 class StandbyStudyProvider extends ChangeNotifier {

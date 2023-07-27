@@ -2,13 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
-import 'package:slove_student/constants/theme.dart';
-import 'package:slove_student/feature/calendar/pages/student_screen.dart';
-import 'package:slove_student/feature/class/pages/class_list_page.dart';
-import 'package:slove_student/feature/class/pages/find_class_page.dart';
-import 'package:slove_student/feature/profile/pages/profile_page.dart';
-import 'package:slove_student/widgets/sizer.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/constants/theme.dart';
+import 'package:solve_student/feature/calendar/pages/student_screen.dart';
+import 'package:solve_student/feature/class/pages/class_list_page.dart';
+import 'package:solve_student/feature/class/pages/find_class_page.dart';
+import 'package:solve_student/feature/profile/pages/profile_page.dart';
+import 'package:solve_student/widgets/sizer.dart';
 
 class CourseLivePage extends StatefulWidget {
   const CourseLivePage({super.key});
@@ -77,7 +77,7 @@ class _CourseLivePageState extends State<CourseLivePage> {
                 width: 110,
                 height: 50,
                 child: Image.asset(
-                  'assets/images/slove2.png',
+                  'assets/images/solve2.png',
                   fit: BoxFit.fitWidth,
                 ),
               ),

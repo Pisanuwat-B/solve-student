@@ -2,14 +2,14 @@
 // import 'package:flutter/cupertino.dart';
 // import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
-// import 'package:slove_student/featureauthentication/models/user_model.dart';
-// import 'package:slove_student/featureauthentication/service/auth_provider.dart';
-// import 'package:slove_student/feature/chat/widgets/profile_dialog.dart';
-// import 'package:slove_student/featureutils/my_date_util.dart';
-// import 'package:slove_student/feature/chat/models/message.dart';
-// import 'package:slove_student/feature/chat/pages/chat_room_page.dart';
-// import 'package:slove_student/feature/chat/service/chat_provider.dart';
-// import 'package:slove_student/featurewidgets/sizer.dart';
+// import 'package:solve_student/featureauthentication/models/user_model.dart';
+// import 'package:solve_student/featureauthentication/service/auth_provider.dart';
+// import 'package:solve_student/feature/chat/widgets/profile_dialog.dart';
+// import 'package:solve_student/featureutils/my_date_util.dart';
+// import 'package:solve_student/feature/chat/models/message.dart';
+// import 'package:solve_student/feature/chat/pages/chat_room_page.dart';
+// import 'package:solve_student/feature/chat/service/chat_provider.dart';
+// import 'package:solve_student/featurewidgets/sizer.dart';
 
 // class ChatUserCard extends StatefulWidget {
 //   final UserModel user;

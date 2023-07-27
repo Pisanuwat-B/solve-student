@@ -25,7 +25,7 @@ class ImageAssets {
   static const String logoOmise = "$imagePath/logo_omise.png";
   static const String icTrue = "$imagePath/ic_true.png";
   static const String icWarningRed = "$imagePath/ic_warning_red.png";
-  static const String icSlove = "$imagePath/icon_slove.png";
+  static const String icSolve = "$imagePath/icon_solve.png";
   static const String icUser2 = "$imagePath/ic_user_2.png";
   static const String icPhysics = "$imagePath/physics.png";
   static const String icBiology = "$imagePath/biology.png";
@@ -55,14 +55,14 @@ class ImageAssets {
   static const String radioButtonChecked =
       "$imagePath/radio_button_checked.png";
   static const String smartDisplay = "$imagePath/smart_display.png";
-  static const String smartDispsmartDisplayUpload =
+  static const String smartDisplayUpload =
       "$imagePath/smart_display_upload.png";
-  static const String sloveText = "$imagePath/slove_text.png";
+  static const String solveText = "$imagePath/solve_text.png";
   static const String imgHowtoSettingTag =
       "$imagePath/img_howto_setting_tag.png";
   static const String icDollar = "$imagePath/ic_dollar.png";
-  static const String Frame_1611 = "$imagePath/Frame_1611.png";
-  static const String icMainten = "$imagePath/ic_mainten.png";
+  static const String frame1611 = "$imagePath/Frame_1611.png";
+  static const String icMaintain = "$imagePath/ic_maintain.png";
   static const String answer = "$imagePath/answer.png";
   static const String createCourse = "$imagePath/create_course.png";
   static const String createSheet = "$imagePath/create_sheet.png";

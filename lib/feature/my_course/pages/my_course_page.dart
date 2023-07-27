@@ -3,13 +3,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
-import 'package:slove_student/constants/theme.dart';
-import 'package:slove_student/feature/class/pages/class_list_page.dart';
-import 'package:slove_student/feature/profile/pages/profile_page.dart';
-import 'package:slove_student/widgets/dialogs.dart';
-import 'package:slove_student/widgets/show_my_id_widget.dart';
-import 'package:slove_student/widgets/sizer.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/constants/theme.dart';
+import 'package:solve_student/feature/class/pages/class_list_page.dart';
+import 'package:solve_student/feature/profile/pages/profile_page.dart';
+import 'package:solve_student/widgets/dialogs.dart';
+import 'package:solve_student/widgets/show_my_id_widget.dart';
+import 'package:solve_student/widgets/sizer.dart';
 
 class MyCoursePage extends StatefulWidget {
   const MyCoursePage({super.key});
@@ -77,7 +77,7 @@ class _MyCoursePageState extends State<MyCoursePage> {
               Container(
                   width: 110,
                   height: 50,
-                  child: Image.asset('assets/images/slove1.png')),
+                  child: Image.asset('assets/images/solve1.png')),
               Text(
                 "ติวพิเศษผ่านคอร์สออนไลน์",
                 style: TextStyle(

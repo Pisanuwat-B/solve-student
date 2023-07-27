@@ -3,16 +3,16 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/authentication/models/user_model.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
-import 'package:slove_student/constants/theme.dart';
-import 'package:slove_student/feature/chat/models/chat_model.dart';
-import 'package:slove_student/feature/chat/pages/chat_room_page.dart';
-import 'package:slove_student/feature/chat/service/chat_provider.dart';
-import 'package:slove_student/feature/class/models/class_model.dart';
-import 'package:slove_student/feature/order/model/order_class_model.dart';
-import 'package:slove_student/feature/order/service/order_mock_provider.dart';
-import 'package:slove_student/widgets/sizer.dart';
+import 'package:solve_student/authentication/models/user_model.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/constants/theme.dart';
+import 'package:solve_student/feature/chat/models/chat_model.dart';
+import 'package:solve_student/feature/chat/pages/chat_room_page.dart';
+import 'package:solve_student/feature/chat/service/chat_provider.dart';
+import 'package:solve_student/feature/class/models/class_model.dart';
+import 'package:solve_student/feature/order/model/order_class_model.dart';
+import 'package:solve_student/feature/order/service/order_mock_provider.dart';
+import 'package:solve_student/widgets/sizer.dart';
 
 class ClassDetailPage extends StatefulWidget {
   ClassDetailPage({

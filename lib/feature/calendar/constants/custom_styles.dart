@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:slove_student/feature/calendar/helper/utility_helper.dart';
+import 'package:solve_student/feature/calendar/helper/utility_helper.dart';
 
 import 'constants.dart';
 

@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:slove_student/feature/calendar/app_client/app_client.dart';
-import 'package:slove_student/feature/calendar/app_client/endpoint.dart';
-import 'package:slove_student/feature/calendar/model/course_model.dart';
-import 'package:slove_student/feature/calendar/model/level_model.dart';
-import 'package:slove_student/feature/calendar/model/subject_model.dart';
+import 'package:solve_student/feature/calendar/app_client/app_client.dart';
+import 'package:solve_student/feature/calendar/app_client/endpoint.dart';
+import 'package:solve_student/feature/calendar/model/course_model.dart';
+import 'package:solve_student/feature/calendar/model/level_model.dart';
+import 'package:solve_student/feature/calendar/model/subject_model.dart';
 
 class CourseService {
   final endpoint = Endpoint();

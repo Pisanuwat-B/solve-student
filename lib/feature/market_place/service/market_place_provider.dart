@@ -5,10 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:slove_student/authentication/models/user_model.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
-import 'package:slove_student/feature/calendar/model/course_model.dart';
-import 'package:slove_student/feature/market_place/model/course_market_model.dart';
+import 'package:solve_student/authentication/models/user_model.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/feature/calendar/model/course_model.dart';
+import 'package:solve_student/feature/market_place/model/course_market_model.dart';
 
 class MarketPlaceProvider extends ChangeNotifier {
   final GoogleSignIn googleSignIn = GoogleSignIn();

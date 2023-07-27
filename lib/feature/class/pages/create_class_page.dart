@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/authentication/models/user_model.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
-import 'package:slove_student/constants/theme.dart';
-import 'package:slove_student/feature/class/models/class_model.dart';
-import 'package:slove_student/feature/class/services/class_provider.dart';
-import 'package:slove_student/constants/school_subject_constants.dart';
-import 'package:slove_student/widgets/date_time_format_util.dart';
+import 'package:solve_student/authentication/models/user_model.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/constants/theme.dart';
+import 'package:solve_student/feature/class/models/class_model.dart';
+import 'package:solve_student/feature/class/services/class_provider.dart';
+import 'package:solve_student/constants/school_subject_constants.dart';
+import 'package:solve_student/widgets/date_time_format_util.dart';
 
 class CreateClassPage extends StatefulWidget {
   const CreateClassPage({super.key, this.classModelEdit});

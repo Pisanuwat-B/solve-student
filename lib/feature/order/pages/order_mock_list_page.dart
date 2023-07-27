@@ -2,13 +2,13 @@
 
 // import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
-// import 'package:slove_student/featureauthentication/service/auth_provider.dart';
-// import 'package:slove_student/featureconstants/color_constants.dart';
-// import 'package:slove_student/feature/chat2/service/chat_provider.dart';
-// import 'package:slove_student/feature/order_mock/model/order_mock_model.dart';
-// import 'package:slove_student/feature/order_mock/pages/order_mock_detail_page.dart';
-// import 'package:slove_student/feature/order_mock/service/order_mock_provider.dart';
-// import 'package:slove_student/featurewidgets/sizer.dart';
+// import 'package:solve_student/featureauthentication/service/auth_provider.dart';
+// import 'package:solve_student/featureconstants/color_constants.dart';
+// import 'package:solve_student/feature/chat2/service/chat_provider.dart';
+// import 'package:solve_student/feature/order_mock/model/order_mock_model.dart';
+// import 'package:solve_student/feature/order_mock/pages/order_mock_detail_page.dart';
+// import 'package:solve_student/feature/order_mock/service/order_mock_provider.dart';
+// import 'package:solve_student/featurewidgets/sizer.dart';
 
 // class OrderMockListPage extends StatefulWidget {
 //   const OrderMockListPage({super.key});

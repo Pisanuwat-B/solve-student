@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 
-import 'package:slove_student/feature/market_place/model/lesson_market_model.dart';
+import 'package:solve_student/feature/market_place/model/lesson_market_model.dart';
 
 CourseMarketModel courseMarketModelFromJson(String str) =>
     CourseMarketModel.fromJson(json.decode(str));

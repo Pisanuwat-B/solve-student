@@ -4,18 +4,18 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:slove_student/feature/calendar/model/course_model.dart';
-import 'package:slove_student/feature/calendar/model/days.dart';
-import 'package:slove_student/feature/calendar/model/document_model.dart';
-import 'package:slove_student/feature/calendar/model/level_model.dart';
-import 'package:slove_student/feature/calendar/model/menu_create_%20course_model.dart';
+import 'package:solve_student/feature/calendar/model/course_model.dart';
+import 'package:solve_student/feature/calendar/model/days.dart';
+import 'package:solve_student/feature/calendar/model/document_model.dart';
+import 'package:solve_student/feature/calendar/model/level_model.dart';
+import 'package:solve_student/feature/calendar/model/menu_create_%20course_model.dart';
 
-import 'package:slove_student/feature/calendar/model/select_option_item.dart';
-import 'package:slove_student/feature/calendar/model/student_model.dart';
-import 'package:slove_student/feature/calendar/model/subject_model.dart';
-import 'package:slove_student/feature/calendar/pages/utils.dart';
-import 'package:slove_student/feature/calendar/service/course_service.dart';
-import 'package:slove_student/feature/calendar/widgets/format_date.dart';
+import 'package:solve_student/feature/calendar/model/select_option_item.dart';
+import 'package:solve_student/feature/calendar/model/student_model.dart';
+import 'package:solve_student/feature/calendar/model/subject_model.dart';
+import 'package:solve_student/feature/calendar/pages/utils.dart';
+import 'package:solve_student/feature/calendar/service/course_service.dart';
+import 'package:solve_student/feature/calendar/widgets/format_date.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CourseController extends ChangeNotifier {

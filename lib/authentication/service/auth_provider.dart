@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:slove_student/authentication/models/user_model.dart';
+import 'package:solve_student/authentication/models/user_model.dart';
 import 'package:http/http.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -124,6 +124,9 @@ class AuthProvider extends ChangeNotifier {
           .collection('users')
           .doc(_auth.currentUser!.uid)
           .set(user!.toJson());
+      if (user?.role == null || user?.role == "") {
+        await updateRoleFirestore('student');
+      }
       notifyListeners();
       return user;
     } catch (e) {
@@ -138,7 +141,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
-      print("Login Sucessfull");
+      print("Login Successful");
       _firestore.collection('users').doc(_auth.currentUser!.uid).get().then(
           (value) => userCredential.user!.updateDisplayName(value['name']));
       return userCredential.user;

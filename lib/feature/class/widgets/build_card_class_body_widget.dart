@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:slove_student/feature/class/models/class_model.dart';
-import 'package:slove_student/widgets/date_time_format_util.dart';
+import 'package:solve_student/feature/class/models/class_model.dart';
+import 'package:solve_student/widgets/date_time_format_util.dart';
 
 class BuildCardClassBodyWidget extends StatelessWidget {
   BuildCardClassBodyWidget(this.item, this.onTap, {super.key});

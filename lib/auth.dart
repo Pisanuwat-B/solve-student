@@ -2,10 +2,10 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/authentication/pages/login_page.dart';
-import 'package:slove_student/authentication/pages/no_permission_page.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
-import 'package:slove_student/nav.dart';
+import 'package:solve_student/authentication/pages/login_page.dart';
+import 'package:solve_student/authentication/pages/no_permission_page.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/nav.dart';
 
 class Authenticate extends StatefulWidget {
   const Authenticate({super.key});

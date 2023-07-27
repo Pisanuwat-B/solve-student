@@ -2,13 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/authentication/models/user_model.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
-import 'package:slove_student/feature/chat/models/chat_model.dart';
-import 'package:slove_student/feature/chat/models/message.dart';
-import 'package:slove_student/feature/chat/pages/chat_room_page.dart';
-import 'package:slove_student/feature/chat/service/chat_provider.dart';
-import 'package:slove_student/feature/order/model/order_class_model.dart';
+import 'package:solve_student/authentication/models/user_model.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/feature/chat/models/chat_model.dart';
+import 'package:solve_student/feature/chat/models/message.dart';
+import 'package:solve_student/feature/chat/pages/chat_room_page.dart';
+import 'package:solve_student/feature/chat/service/chat_provider.dart';
+import 'package:solve_student/feature/order/model/order_class_model.dart';
 
 class ChatOrderCard extends StatefulWidget {
   ChatOrderCard(this.chat, {super.key});

@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:slove_student/authentication/models/user_model.dart';
-import 'package:slove_student/widgets/date_until.dart';
-import 'package:slove_student/widgets/sizer.dart';
+import 'package:solve_student/authentication/models/user_model.dart';
+import 'package:solve_student/widgets/date_until.dart';
+import 'package:solve_student/widgets/sizer.dart';
 
 class ViewProfilePage extends StatefulWidget {
   final UserModel user;

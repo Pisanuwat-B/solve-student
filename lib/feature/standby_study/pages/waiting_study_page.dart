@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/constants/theme.dart';
-import 'package:slove_student/feature/standby_study/models/user_state_study_model.dart';
-import 'package:slove_student/feature/standby_study/service/state_study_provider.dart';
-import 'package:slove_student/widgets/sizer.dart';
+import 'package:solve_student/constants/theme.dart';
+import 'package:solve_student/feature/standby_study/models/user_state_study_model.dart';
+import 'package:solve_student/feature/standby_study/service/state_study_provider.dart';
+import 'package:solve_student/widgets/sizer.dart';
 
 class WaitingStudyPage extends StatefulWidget {
   WaitingStudyPage(this.roomId, {super.key});

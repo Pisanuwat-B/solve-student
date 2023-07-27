@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:slove_student/constants/theme.dart';
-import 'package:slove_student/widgets/sizer.dart';
+import 'package:solve_student/constants/theme.dart';
+import 'package:solve_student/widgets/sizer.dart';
 
 class ConfirmActionWidget extends StatefulWidget {
   ConfirmActionWidget({

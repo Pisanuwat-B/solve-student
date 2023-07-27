@@ -7,18 +7,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/authentication/models/user_model.dart';
-import 'package:slove_student/authentication/service/auth_provider.dart';
-import 'package:slove_student/constants/theme.dart';
-import 'package:slove_student/feature/chat/models/chat_model.dart';
-import 'package:slove_student/feature/chat/models/message.dart';
-import 'package:slove_student/feature/chat/service/chat_provider.dart';
-import 'package:slove_student/feature/chat/widgets/message_card.dart';
-import 'package:slove_student/feature/order/model/order_class_model.dart';
-import 'package:slove_student/feature/order/pages/payment_page.dart';
-import 'package:slove_student/feature/order/service/order_mock_provider.dart';
-import 'package:slove_student/widgets/date_until.dart';
-import 'package:slove_student/widgets/sizer.dart';
+import 'package:solve_student/authentication/models/user_model.dart';
+import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/constants/theme.dart';
+import 'package:solve_student/feature/chat/models/chat_model.dart';
+import 'package:solve_student/feature/chat/models/message.dart';
+import 'package:solve_student/feature/chat/service/chat_provider.dart';
+import 'package:solve_student/feature/chat/widgets/message_card.dart';
+import 'package:solve_student/feature/order/model/order_class_model.dart';
+import 'package:solve_student/feature/order/pages/payment_page.dart';
+import 'package:solve_student/feature/order/service/order_mock_provider.dart';
+import 'package:solve_student/widgets/date_until.dart';
+import 'package:solve_student/widgets/sizer.dart';
 
 class ChatRoomPage extends StatefulWidget {
   ChatRoomPage({

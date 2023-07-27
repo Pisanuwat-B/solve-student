@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:slove_student/feature/chat/service/chat_provider.dart';
-import 'package:slove_student/feature/order/model/order_class_model.dart';
+import 'package:solve_student/feature/chat/service/chat_provider.dart';
+import 'package:solve_student/feature/order/model/order_class_model.dart';
 
 class StackChatWidget extends StatefulWidget {
   StackChatWidget({Key? key, required this.order}) : super(key: key);

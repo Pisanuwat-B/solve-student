@@ -1,4 +1,4 @@
-package com.app.slove_student_v1
+package com.app.solve.solve
 
 import io.flutter.embedding.android.FlutterActivity
 
