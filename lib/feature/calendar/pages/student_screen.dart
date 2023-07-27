@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:solve_student/feature/calendar/constants/constants.dart';
 import 'package:solve_student/feature/calendar/controller/create_course_live_controller.dart';
@@ -8,6 +9,7 @@ import 'package:solve_student/feature/calendar/controller/student_controller.dar
 import 'package:solve_student/feature/calendar/helper/utility_helper.dart';
 import 'package:solve_student/feature/calendar/model/show_course.dart';
 import 'package:solve_student/feature/calendar/pages/utils.dart';
+import 'package:solve_student/feature/calendar/pages/waiting_join_room.dart';
 import 'package:solve_student/feature/calendar/widgets/alert_overlay.dart';
 import 'package:solve_student/feature/calendar/widgets/format_date.dart';
 import 'package:solve_student/feature/calendar/widgets/sizebox.dart';
@@ -46,9 +48,8 @@ class _StudentScreenState extends State<StudentScreen>
     courseController =
         Provider.of<CourseLiveController>(context, listen: false);
     // tabController = TabController(initialIndex: 0, length: 2, vsync: this);
-    getInit();
     authProvider = Provider.of<AuthProvider>(context, listen: false);
-    widget.studentId ??= authProvider?.user?.id;
+    getInit();
   }
 
   getInit() async {
@@ -80,7 +81,9 @@ class _StudentScreenState extends State<StudentScreen>
   }
 
   Future<void> getCalendarList() async {
-    await studentController.getCourseToday(widget.studentId ?? '');
+    print('getCalendarList');
+    print(authProvider?.user?.id);
+    await studentController.getCourseToday(authProvider?.user?.id ?? '');
     if (_util.isTablet()) {
       getDateAll();
       getDate(1);
@@ -92,7 +95,7 @@ class _StudentScreenState extends State<StudentScreen>
 
   Future<void> getTableCalendarList() async {
     await studentController
-        .getCalendarListForStudentById(widget.studentId ?? '');
+        .getCalendarListForStudentById(authProvider?.uid ?? '');
     await studentController
         .getDataCalendarList(studentController.calendarClassList);
     setState(() {});
@@ -175,7 +178,7 @@ class _StudentScreenState extends State<StudentScreen>
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  _listCalss(),
+                  _listClass(),
                   const SizedBox(
                     height: 50,
                   ),
@@ -189,123 +192,143 @@ class _StudentScreenState extends State<StudentScreen>
     );
   }
 
-  Widget _listCalss() {
-    return SingleChildScrollView(child: Consumer<CourseLiveController>(
-      builder: (_, student, child) {
-        return student.isLoading
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 60,
-                    height: 60,
-                    child: CircularProgressIndicator(),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 16),
-                    child: Text('กำลังโหลด...'),
-                  ),
-                ],
-              )
-            : Column(
-                children: [
-                  if (_util.isTablet() == false) ...[
+  Widget _listClass() {
+    return SingleChildScrollView(
+      child: Consumer<CourseLiveController>(
+        builder: (_, student, child) {
+          return student.isLoading
+              ? const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: CircularProgressIndicator(),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 16),
+                      child: Text('กำลังโหลด...'),
+                    ),
+                  ],
+                )
+              : Column(
+                  children: [
+                    if (_util.isTablet() == false) ...[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _historyText(),
+                          Expanded(child: Container()),
+                          _buildButtonSearch(),
+                          S.w(10),
+                          _buildButtonAddCourse(),
+                        ],
+                      )
+                    ],
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _historyText(),
-                        Expanded(child: Container()),
-                        _buildButtonSearch(),
-                        S.w(10),
-                        _buildButtonAddCourse(),
+                        _topicText('วันนี้'),
+                        if (_util.isTablet()) ...[
+                          _historyText(),
+                        ] else ...[
+                          _sellAll(),
+                        ]
                       ],
-                    )
+                    ),
+                    studentController.isLoadingCourseToday
+                        ? const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 60,
+                                height: 60,
+                                child: CircularProgressIndicator(),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(top: 16),
+                                child: Text('กำลังโหลด...'),
+                              ),
+                            ],
+                          )
+                        : studentController
+                                .showCourseStudentFilterToday.isNotEmpty
+                            ? SizedBox(
+                                height: _util.isTablet() ? 367 : 240,
+                                width: double.infinity,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: studentController
+                                              .showCourseStudentFilterToday
+                                              .length <=
+                                          10
+                                      ? studentController
+                                          .showCourseStudentFilterToday.length
+                                      : 10,
+                                  itemBuilder: (context, index) =>
+                                      _util.isTablet()
+                                          ? cardTablet(
+                                              showCourseStudent: studentController
+                                                      .showCourseStudentFilterToday[
+                                                  index],
+                                              onTap: () async {
+                                                print(index);
+                                                await Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        WaitingJoinRoom(
+                                                            course: studentController
+                                                                    .showCourseStudentFilterToday[
+                                                                index]),
+                                                  ),
+                                                );
+                                                setRefreshPreferredOrientations();
+                                              },
+                                            )
+                                          : cardMobile(
+                                              showCourseStudent: studentController
+                                                      .showCourseStudentFilterToday[
+                                                  index],
+                                              onTap: () {},
+                                            ),
+                                ),
+                              )
+                            : Container(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 20),
+                                decoration: BoxDecoration(
+                                  border:
+                                      Border.all(width: 1, color: Colors.grey),
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'ไม่มีการเรียนการสอน',
+                                    style: CustomStyles.bold14Gray878787,
+                                  ),
+                                ),
+                              ),
                   ],
-                  // if (studentController
-                  //     .showCourseStudentFilterToday.isNotEmpty) ...[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _topicText('วันนี้'),
-                      if (_util.isTablet()) ...[
-                        _historyText(),
-                      ] else ...[
-                        _sellAll(),
-                      ]
-                    ],
-                  ),
-                  studentController.isLoadingCourseToday
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 60,
-                              height: 60,
-                              child: CircularProgressIndicator(),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(top: 16),
-                              child: Text('กำลังโหลด...'),
-                            ),
-                          ],
-                        )
-                      : studentController
-                              .showCourseStudentFilterToday.isNotEmpty
-                          ? SizedBox(
-                              height: _util.isTablet() ? 367 : 240,
-                              width: double.infinity,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: studentController
-                                            .showCourseStudentFilterToday
-                                            .length <=
-                                        10
-                                    ? studentController
-                                        .showCourseStudentFilterToday.length
-                                    : 10,
-                                itemBuilder: (context, index) =>
-                                    _util.isTablet()
-                                        ? cardTablet(
-                                            showCourseStudent: studentController
-                                                    .showCourseStudentFilterToday[
-                                                index],
-                                            onTap: () {},
-                                          )
-                                        : cardMobile(
-                                            showCourseStudent: studentController
-                                                    .showCourseStudentFilterToday[
-                                                index],
-                                            onTap: () {},
-                                          ),
-                              ),
-                            )
-                          : Container(
-                              margin: const EdgeInsets.symmetric(vertical: 10),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 20),
-                              decoration: BoxDecoration(
-                                border:
-                                    Border.all(width: 1, color: Colors.grey),
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(10),
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'ไม่มีการเรียนการสอน',
-                                  style: CustomStyles.bold14Gray878787,
-                                ),
-                              ),
-                            ),
-                ],
-                // ],
-              );
-      },
-    ));
+                );
+        },
+      ),
+    );
+  }
+
+  setRefreshPreferredOrientations() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
   }
 
   Widget _buildButtonAddCourse() {
@@ -709,7 +732,6 @@ class _StudentScreenState extends State<StudentScreen>
         listCelendarTab.add(day);
       }
     }
-    print(studentController.showCourseStudentToday);
     setState(() {});
   }
 
@@ -766,9 +788,6 @@ class _StudentScreenState extends State<StudentScreen>
       ],
       Column(
         children: List.generate(listCelendarTab.length, (index) {
-          var filterLevelId = courseController.levels
-              .where((e) => e.id == listCelendarTab[index].levelId)
-              .toList();
           var filterSubjectId = courseController.subjects
               .where((e) => e.id == listCelendarTab[index].subjectId)
               .toList();
@@ -1148,15 +1167,6 @@ class _StudentScreenState extends State<StudentScreen>
             ),
           );
         },
-        selectedBuilder: (context, day, focusedDay) {
-          // return Container(
-          //   padding: const EdgeInsets.only(left: 20, top: 20),
-          //   height: 200,
-          //   width: 200,
-          //   color: CustomColors.green125924,
-          //   alignment: Alignment.topLeft,
-          // );
-        },
         markerBuilder: (context, day, event) {
           if (event.isNotEmpty && day.isAfter(DateTime.now())) {
             return SingleChildScrollView(
@@ -1518,22 +1528,21 @@ class _StudentScreenState extends State<StudentScreen>
     );
   }
 
-  Widget _learned() {
-    // if (tag.isEmpty) return const SizedBox();
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
-      decoration: BoxDecoration(
-        color: CustomColors.orangeFFE0B2,
-        borderRadius: BorderRadius.circular(20.0),
-      ),
-      child: Text(
-        'เรียนแล้ว: 5 / 50',
-        style: CustomStyles.med12gray878787.copyWith(
-          color: CustomColors.orangeCC6700,
-        ),
-      ),
-    );
-  }
+  // Widget _learned() {
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
+  //     decoration: BoxDecoration(
+  //       color: CustomColors.orangeFFE0B2,
+  //       borderRadius: BorderRadius.circular(20.0),
+  //     ),
+  //     child: Text(
+  //       'เรียนแล้ว: 5 / 50',
+  //       style: CustomStyles.med12gray878787.copyWith(
+  //         color: CustomColors.orangeCC6700,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _topicText(String text) {
     return Padding(

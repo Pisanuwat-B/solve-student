@@ -25,4 +25,10 @@ class CustomColors {
   static const Color yellowFF9800 = Color(0xffFF9800);
   static const Color white = Colors.white;
   static const Color black = Color(0xFF000000);
+  static const Color redFF4201 = Color(0xffFF4201);
+  static const Color pinkFFCDD2 = Color(0xffFFCDD2);
+  static const Color blue0D47A1 = Color(0xff0D47A1);
+  static const Color blueCFE8FC = Color(0xffCFE8FC);
+  static const Color activePagingBtn = Color(0xFF878787);
+  static const Color inactivePagingBtn = Color(0xFFCFCFCF);
 }

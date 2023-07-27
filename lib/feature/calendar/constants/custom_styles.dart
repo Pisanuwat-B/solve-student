@@ -283,6 +283,18 @@ class CustomStyles {
     fontSize: _util.addMinusFontSize(14),
   );
 
+  static TextStyle bold11Gray878787 = const TextStyle(
+    color: CustomColors.gray878787,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 11,
+  );
+
+  static TextStyle bold12redB71C1C = const TextStyle(
+    color: CustomColors.redB71C1C,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 12,
+  );
+
   static TextStyle bold14RedF44336 = TextStyle(
     color: CustomColors.redF44336,
     fontFamily: CustomFontFamily.NotoSansBold,
@@ -299,6 +311,17 @@ class CustomStyles {
     color: CustomColors.greenPrimary,
     fontFamily: CustomFontFamily.NotoSansBold,
     fontSize: _util.addMinusFontSize(14),
+  );
+  static TextStyle bold14bluePrimary = TextStyle(
+    color: CustomColors.blue0D47A1,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: _util.addMinusFontSize(14),
+  );
+  static TextStyle bold14bluePrimaryLine = TextStyle(
+    color: CustomColors.blue0D47A1,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: _util.addMinusFontSize(14),
+    decoration: TextDecoration.underline,
   );
   static TextStyle bold18greenPrimary = TextStyle(
     color: CustomColors.greenPrimary,
@@ -543,5 +566,167 @@ class CustomStyles {
     color: CustomColors.redF44336,
     fontFamily: CustomFontFamily.NotoSansMed,
     fontSize: _util.addMinusFontSize(32),
+  );
+
+  static TextStyle reg14black363636 = const TextStyle(
+    color: CustomColors.black363636,
+    fontFamily: CustomFontFamily.NotoSans,
+    fontSize: 14,
+  );
+
+  static TextStyle bold11White = const TextStyle(
+    color: CustomColors.whitePrimary,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 11,
+  );
+
+  static TextStyle bold12redF44336 = const TextStyle(
+    color: CustomColors.redF44336,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 12,
+  );
+
+  static TextStyle bold12gray878787 = const TextStyle(
+    color: CustomColors.gray878787,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 12,
+  );
+
+  static TextStyle bold12greenPrimary = const TextStyle(
+    color: CustomColors.greenPrimary,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 12,
+  );
+
+  static TextStyle bold14RedB71C1C = const TextStyle(
+    color: CustomColors.redB71C1C,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 14,
+  );
+  static TextStyle bold14Gray878787underline = const TextStyle(
+    color: CustomColors.gray878787,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 14,
+    decoration: TextDecoration.underline,
+  );
+
+  static TextStyle bold14grayCFCFCF = const TextStyle(
+    color: CustomColors.grayCFCFCF,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 14,
+  );
+
+  static TextStyle bold14Gray878787Overflow = const TextStyle(
+      color: CustomColors.gray878787,
+      fontFamily: CustomFontFamily.NotoSansBold,
+      fontSize: 14,
+      overflow: TextOverflow.ellipsis);
+
+  static TextStyle bold14orangeCC6700 = const TextStyle(
+    color: CustomColors.orangeCC6700,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 14,
+  );
+
+  static TextStyle bold14greenPrimaryUnderline = const TextStyle(
+    color: CustomColors.greenPrimary,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 14,
+    decoration: TextDecoration.underline,
+    decorationColor: CustomColors.greenPrimary,
+  );
+
+  static TextStyle bold14blue0D47A1 = const TextStyle(
+    color: CustomColors.blue0D47A1,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 14,
+  );
+
+  static TextStyle bold14blue0D47A1Line = const TextStyle(
+    color: CustomColors.blue0D47A1,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 14,
+    decoration: TextDecoration.underline,
+  );
+
+  static TextStyle bold18greenPrimaryOverflow = const TextStyle(
+      color: CustomColors.greenPrimary,
+      fontFamily: CustomFontFamily.NotoSansBold,
+      fontSize: 18,
+      overflow: TextOverflow.ellipsis);
+
+  static TextStyle bold16gray878787 = const TextStyle(
+    color: CustomColors.gray878787,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 16,
+  );
+
+  static TextStyle bold16Black363636Overflow = const TextStyle(
+      color: CustomColors.black363636,
+      fontFamily: CustomFontFamily.NotoSansBold,
+      fontSize: 16,
+      overflow: TextOverflow.ellipsis);
+
+  static TextStyle bold22Black363636underline = const TextStyle(
+    color: CustomColors.black363636,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 22,
+    decoration: TextDecoration.underline,
+  );
+
+  static TextStyle bold18gray878787 = const TextStyle(
+    color: CustomColors.gray878787,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 18,
+  );
+
+  static TextStyle bold16greenPrimaryOverflow = const TextStyle(
+      color: CustomColors.greenPrimary,
+      fontFamily: CustomFontFamily.NotoSansBold,
+      fontSize: 16,
+      overflow: TextOverflow.ellipsis);
+
+  static TextStyle bold16whitePrimary = const TextStyle(
+    color: CustomColors.whitePrimary,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 16,
+  );
+
+  static TextStyle med11white = const TextStyle(
+    color: CustomColors.whitePrimary,
+    fontFamily: CustomFontFamily.NotoSansMed,
+    fontSize: 11,
+  );
+
+  static TextStyle med11gray878787Overflow = const TextStyle(
+    color: CustomColors.gray878787,
+    fontFamily: CustomFontFamily.NotoSansMed,
+    fontSize: 11,
+    overflow: TextOverflow.ellipsis,
+  );
+
+  static TextStyle med12gray878787underline = const TextStyle(
+    color: CustomColors.gray878787,
+    fontFamily: CustomFontFamily.NotoSansMed,
+    fontSize: 12,
+    decoration: TextDecoration.underline,
+  );
+
+  static TextStyle med14redFF4201 = const TextStyle(
+    color: CustomColors.redFF4201,
+    fontFamily: CustomFontFamily.NotoSansMed,
+    fontSize: 14,
+  );
+
+  static TextStyle med16gray878787 = const TextStyle(
+    color: CustomColors.gray878787,
+    fontFamily: CustomFontFamily.NotoSansMed,
+    fontSize: 16,
+  );
+
+  static TextStyle weekendStyle = TextStyle(
+    color: CustomColors.redB71C1C,
+    fontFamily: CustomFontFamily.NotoSansMed,
+    fontSize: _util.addMinusFontSize(16),
   );
 }
