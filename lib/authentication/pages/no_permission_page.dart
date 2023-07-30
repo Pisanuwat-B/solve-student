@@ -11,10 +11,10 @@ class NoPermissionPage extends StatefulWidget {
 }
 
 class _NoPermissionPageState extends State<NoPermissionPage> {
-  AuthProvider? authprovider;
+  AuthProvider? authProvider;
   @override
   Widget build(BuildContext context) {
-    authprovider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider = Provider.of<AuthProvider>(context, listen: false);
     return Scaffold(
       body: Container(
         width: Sizer(context).w,
@@ -28,7 +28,7 @@ class _NoPermissionPageState extends State<NoPermissionPage> {
               padding: const EdgeInsets.only(bottom: 10),
               child: FloatingActionButton.extended(
                 onPressed: () async {
-                  await authprovider!.signOut();
+                  await authProvider!.signOut();
                 },
                 backgroundColor: Colors.redAccent,
                 icon: const Icon(Icons.logout),

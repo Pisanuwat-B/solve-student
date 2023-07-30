@@ -12,6 +12,7 @@ import '../../calendar/controller/create_course_live_controller.dart';
 import '../../calendar/widgets/sizebox.dart';
 import '../components/close_dialog.dart';
 import '../components/divider.dart';
+import '../components/divider_vertical.dart';
 import '../components/leaderboard.dart';
 import '../../calendar/constants/assets_manager.dart';
 import '../../calendar/constants/custom_colors.dart';
@@ -178,7 +179,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     }
   ];
   final List _listToolsDisable = [
-    {"image": ImageAssets.handTran},
+    {"image": "assets/images/hand-tran.png"},
     {"image": ImageAssets.pencilTran},
     {"image": ImageAssets.highlightTran},
     {"image": ImageAssets.rubberTran},
@@ -233,13 +234,27 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   Future<void> initPagesData() async {
     await courseController.getCourseById(widget.courseId);
     setState(() {
-      _pages = courseController.courseData!.document!.data!.docFiles!;
+      if (courseController.courseData?.document?.data?.docFiles == null) {
+        _pages = [
+          'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+          'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+          'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+          'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+          'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+        ];
+        for (int i = 1; i < 5; i++) {
+          _addPage();
+        }
+      } else {
+        _pages = courseController.courseData!.document!.data!.docFiles!;
+        updateRatio(_pages[0]);
+        for (int i = 1; i < _pages.length; i++) {
+          _addPage();
+        }
+      }
       courseName = courseController.courseData!.courseName!;
       micEnable = widget.micEnabled;
     });
-    for (int i = 1; i < _pages.length; i++) {
-      _addPage();
-    }
   }
 
   void initPagingBtn() {
@@ -331,6 +346,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       'RequestScreenShare': handleMessageRequestScreenShare,
       'FocusStudentScreen': handleMessageFocusStudentScreen,
       'HostLeaveScreen': handleMessageHostLeaveScreen,
+      'EndMeeting': handleMessageEndMeeting,
     };
   }
 
@@ -492,6 +508,10 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     }
   }
 
+  void handleMessageEndMeeting(String data) {
+    meeting.leave();
+  }
+
   Offset convertToOffset(String offsetString) {
     final matched = RegExp(r'Offset\((.*), (.*)\)').firstMatch(offsetString);
     final dx = double.tryParse(matched!.group(1)!);
@@ -630,6 +650,16 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     closeChanel();
     meeting.leave();
     return true;
+  }
+
+  void updateRatio(String url) {
+    Image image = Image.network(url);
+    image.image
+        .resolve(const ImageConfiguration())
+        .addListener(ImageStreamListener((ImageInfo info, bool _) {
+      double ratio = info.image.width / info.image.height;
+      hostImageRatio = ratio;
+    }));
   }
 
   // ---------- FUNCTION: solve pad feature
@@ -778,69 +808,78 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                       "หน้าจอติวเตอร์",
                       ImageAssets.shareGreen,
                     ),
-                  if (tabFreestyle && statusShare)
+                  if (isAllowSharingScreen && isHostFocus)
                     statusShareNowScreen(
                       "กำลังแชร์หน้าจอ",
                       ImageAssets.shareGreen,
-                    )
+                    ),
+                  if ((isHostRequestShareScreen && !isAllowSharingScreen) ||
+                      (isHostRequestShareScreen &&
+                          isAllowSharingScreen &&
+                          !isHostFocus))
+                    statusScreen(
+                      "ติวเตอร์ขอดูจอคุณ",
+                      ImageAssets.shareGreen,
+                      'green',
+                    ),
                 ],
               ),
             ),
           ],
         ),
       ),
-      floatingActionButton:
-          Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-        if (tabFreestyle)
-          Stack(
-            children: [
-              InkWell(
-                onTap: () {
-                  shareQuizModal();
-                },
-                child: Image.asset(
-                  ImageAssets.icQaFloat,
-                  width: 72,
-                ),
-              ),
-              Positioned(
-                top: 1,
-                right: 1,
-                child: Align(
-                  alignment: Alignment.topRight,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                        color: CustomColors.orangeCC6700,
-                        shape: BoxShape.circle),
-                    width: 25,
-                    height: 25,
-                    child: Center(
-                      child: Text(
-                        "12",
-                        style: CustomStyles.bold11White,
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            ],
-          ),
-        if (tabFreestyle) S.h(20),
-        if (tabFreestyle)
-          InkWell(
-            onTap: () {
-              setState(() {
-                statusShare = !statusShare;
-              });
-            },
-            child: Image.asset(
-              statusShare
-                  ? ImageAssets.icDisplayFloat
-                  : ImageAssets.icDisplayGray,
-              width: 72,
-            ),
-          ),
-      ]),
+      // floatingActionButton:
+      //     Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+      //   if (tabFreestyle)
+      //     Stack(
+      //       children: [
+      //         InkWell(
+      //           onTap: () {
+      //             shareQuizModal();
+      //           },
+      //           child: Image.asset(
+      //             ImageAssets.icQaFloat,
+      //             width: 72,
+      //           ),
+      //         ),
+      //         Positioned(
+      //           top: 1,
+      //           right: 1,
+      //           child: Align(
+      //             alignment: Alignment.topRight,
+      //             child: Container(
+      //               decoration: const BoxDecoration(
+      //                   color: CustomColors.orangeCC6700,
+      //                   shape: BoxShape.circle),
+      //               width: 25,
+      //               height: 25,
+      //               child: Center(
+      //                 child: Text(
+      //                   "12",
+      //                   style: CustomStyles.bold11White,
+      //                 ),
+      //               ),
+      //             ),
+      //           ),
+      //         )
+      //       ],
+      //     ),
+      //   if (tabFreestyle) S.h(20),
+      //   if (tabFreestyle)
+      //     InkWell(
+      //       onTap: () {
+      //         setState(() {
+      //           statusShare = !statusShare;
+      //         });
+      //       },
+      //       child: Image.asset(
+      //         statusShare
+      //             ? ImageAssets.icDisplayFloat
+      //             : ImageAssets.icDisplayGray,
+      //         width: 72,
+      //       ),
+      //     ),
+      // ]),
     );
   }
 
@@ -1245,7 +1284,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             Expanded(
               flex: 4,
               child: Text(
-                "คอร์สปรับพื้นฐานคณิตศาสตร์ ก่อนขึ้น ม.4  - 01 ม.ค. 2023",
+                courseName,
                 style: CustomStyles.bold16Black363636Overflow,
                 maxLines: 1,
               ),
@@ -1264,37 +1303,37 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Container(
-                  height: 32,
-                  width: 145,
-                  // margin: EdgeInsets.only(top: defaultPadding),
-                  // padding: EdgeInsets.all(defaultPadding),
-                  decoration: const BoxDecoration(
-                    color: CustomColors.pinkFFCDD2,
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(defaultPadding),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        ImageAssets.lowSignal,
-                        height: 22,
-                        width: 18,
-                      ),
-                      S.w(10),
-                      Flexible(
-                        child: Text(
-                          "สัญญาณอ่อน",
-                          style: CustomStyles.bold14redB71C1C,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // Container(
+                //   height: 32,
+                //   width: 145,
+                //   // margin: EdgeInsets.only(top: defaultPadding),
+                //   // padding: EdgeInsets.all(defaultPadding),
+                //   decoration: const BoxDecoration(
+                //     color: CustomColors.pinkFFCDD2,
+                //     borderRadius: BorderRadius.all(
+                //       Radius.circular(defaultPadding),
+                //     ),
+                //   ),
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.center,
+                //     children: [
+                //       Image.asset(
+                //         ImageAssets.lowSignal,
+                //         height: 22,
+                //         width: 18,
+                //       ),
+                //       S.w(10),
+                //       Flexible(
+                //         child: Text(
+                //           "สัญญาณอ่อน",
+                //           style: CustomStyles.bold14redB71C1C,
+                //           maxLines: 1,
+                //           overflow: TextOverflow.ellipsis,
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
                 S.w(16.0),
                 Container(
                   height: 11,
@@ -1312,7 +1351,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                     style: CustomStyles.med14redFF4201,
                     children: <TextSpan>[
                       TextSpan(
-                        text: '01 : 59 : 59',
+                        text: '00 : 00 : 00',
                         style: CustomStyles.med14Gray878787,
                       ),
                     ],
@@ -1321,8 +1360,10 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 S.w(16.0),
                 InkWell(
                   onTap: () {
-                    print('Lave room ?');
-                    // modalCloseClass(context);
+                    showCloseDialog(context, () {
+                      // meeting.leave();
+                      // Navigator.of(context).pop();
+                    });
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -1364,6 +1405,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             spreadRadius: 1)
       ]),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           S.w(Responsive.isTablet(context) ? 5 : 12),
           Expanded(
@@ -1398,11 +1440,11 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                           height: 24,
                           color: CustomColors.grayCFCFCF,
                         ),
-                      if (Responsive.isDesktop(context)) S.w(8),
                       InkWell(
                         onTap: () {
                           if (_pageController.hasClients &&
-                              _pageController.page!.toInt() != 0) {
+                              _pageController.page!.toInt() != 0 &&
+                              !tabFollowing) {
                             if (isAllowSharingScreen && isHostFocus) {
                               sendMessage(widget.userId,
                                   'ChangePage:${_currentPage - 1}');
@@ -1414,10 +1456,16 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                             );
                           }
                         },
-                        child: Image.asset(
-                          ImageAssets.backDis,
-                          height: 16,
-                          width: 17,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.asset(
+                            ImageAssets.backDis,
+                            height: 16,
+                            width: 17,
+                            color: _isPrevBtnActive
+                                ? CustomColors.activePagingBtn
+                                : CustomColors.inactivePagingBtn,
+                          ),
                         ),
                       ),
                       if (Responsive.isDesktop(context)) S.w(8),
@@ -1436,17 +1484,17 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
-                            Text("Page 20",
+                            Text("Page ${_currentPage + 1}",
                                 style: CustomStyles.bold14greenPrimary),
                           ],
                         ),
                       ),
                       S.w(8.0),
-                      Text("/ 149", style: CustomStyles.med14Gray878787),
-                      if (Responsive.isDesktop(context)) S.w(defaultPadding),
+                      Text("/ ${_pages.length}",
+                          style: CustomStyles.med14Gray878787),
                       InkWell(
                         onTap: () {
-                          if (_pages.length > 1) {
+                          if (_pages.length > 1 && !tabFollowing) {
                             if (_pageController.hasClients &&
                                 _pageController.page!.toInt() !=
                                     _pages.length - 1) {
@@ -1462,40 +1510,46 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                             }
                           }
                         },
-                        child: Image.asset(
-                          ImageAssets.forward,
-                          height: 16,
-                          width: 17,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.asset(
+                            ImageAssets.forward,
+                            height: 16,
+                            width: 17,
+                            color: _isNextBtnActive
+                                ? CustomColors.activePagingBtn
+                                : CustomColors.inactivePagingBtn,
+                          ),
                         ),
                       ),
-                      S.w(6.0),
-                      Container(
-                        width: 1,
-                        height: 24,
-                        color: CustomColors.grayCFCFCF,
-                      ),
-                      Transform.scale(
-                        scale: 0.6,
-                        child: CupertinoSwitch(
-                          value: _switchValue,
-                          onChanged: (bool value) {
-                            setState(() {
-                              _switchValue = value;
-                            });
-                          },
-                        ),
-                      ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("เลื่อนหน้า",
-                              style: CustomStyles.bold12gray878787),
-                          Text("ตามติวเตอร์",
-                              style: CustomStyles.bold12gray878787),
-                        ],
-                      ),
-                      S.w(8.0),
+                      // S.w(6.0),
+                      // Container(
+                      //   width: 1,
+                      //   height: 24,
+                      //   color: CustomColors.grayCFCFCF,
+                      // ),
+                      // Transform.scale(
+                      //   scale: 0.6,
+                      //   child: CupertinoSwitch(
+                      //     value: _switchValue,
+                      //     onChanged: (bool value) {
+                      //       setState(() {
+                      //         _switchValue = value;
+                      //       });
+                      //     },
+                      //   ),
+                      // ),
+                      // Column(
+                      //   mainAxisAlignment: MainAxisAlignment.center,
+                      //   crossAxisAlignment: CrossAxisAlignment.start,
+                      //   children: [
+                      //     Text("เลื่อนหน้า",
+                      //         style: CustomStyles.bold12gray878787),
+                      //     Text("ตามติวเตอร์",
+                      //         style: CustomStyles.bold12gray878787),
+                      //   ],
+                      // ),
+                      // S.w(8.0),
                     ],
                   ),
                 ),
@@ -1596,104 +1650,194 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                     ),
                   ),
                 ),
-                S.w(8),
-                Container(
-                  width: 1,
-                  height: 32,
-                  color: CustomColors.grayCFCFCF,
-                ),
-                S.w(8),
-                InkWell(
-                  onTap: () {},
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: CustomColors.greenPrimary,
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child:
-                        Text("ไปหน้าที่สอน", style: CustomStyles.bold14White),
-                  ),
-                ),
+                // S.w(8),
+                // Container(
+                //   width: 1,
+                //   height: 32,
+                //   color: CustomColors.grayCFCFCF,
+                // ),
+                // S.w(8),
+                // InkWell(
+                //   onTap: () {},
+                //   child: Container(
+                //     padding: const EdgeInsets.symmetric(
+                //       horizontal: 6,
+                //       vertical: 10,
+                //     ),
+                //     decoration: BoxDecoration(
+                //       color: CustomColors.greenPrimary,
+                //       borderRadius: BorderRadius.circular(8.0),
+                //     ),
+                //     child:
+                //         Text("ไปหน้าที่สอน", style: CustomStyles.bold14White),
+                //   ),
+                // ),
               ],
             ),
           ),
 
           /// Statistics
+          // Expanded(
+          //   flex: 2,
+          //   child: Align(
+          //     alignment: Alignment.centerRight,
+          //     child: InkWell(
+          //       onTap: () {
+          //         print('Go to Statistics');
+          //         showLeader(context);
+          //       },
+          //       child: Container(
+          //         decoration: BoxDecoration(
+          //           border: Border.all(
+          //             color: CustomColors.grayCFCFCF,
+          //             style: BorderStyle.solid,
+          //             width: 1.0,
+          //           ),
+          //           borderRadius: BorderRadius.circular(8),
+          //           color: CustomColors.whitePrimary,
+          //         ),
+          //         padding:
+          //             const EdgeInsets.symmetric(horizontal: 1, vertical: 6),
+          //         child: Padding(
+          //           padding: const EdgeInsets.all(6.0),
+          //           child: Row(
+          //             mainAxisSize: MainAxisSize.min,
+          //             mainAxisAlignment: MainAxisAlignment.center,
+          //             children: <Widget>[
+          //               Image.asset(
+          //                 ImageAssets.leaderboard,
+          //                 height: 23,
+          //                 width: 25,
+          //               ),
+          //               S.w(8),
+          //               Container(
+          //                 width: 1,
+          //                 height: 24,
+          //                 color: CustomColors.grayCFCFCF,
+          //               ),
+          //               S.w(8),
+          //               Image.asset(
+          //                 ImageAssets.checkTrue,
+          //                 height: 18,
+          //                 width: 18,
+          //               ),
+          //               if (!Responsive.isTablet(context)) S.w(8.0),
+          //               Text("7", style: CustomStyles.bold14Gray878787),
+          //               if (!Responsive.isTablet(context)) S.w(8.0),
+          //               Image.asset(
+          //                 ImageAssets.x,
+          //                 height: 18,
+          //                 width: 18,
+          //               ),
+          //               if (!Responsive.isTablet(context)) S.w(8.0),
+          //               Text("5", style: CustomStyles.bold14Gray878787),
+          //               if (!Responsive.isTablet(context)) S.w(8.0),
+          //               Image.asset(
+          //                 ImageAssets.icQa,
+          //                 height: 18,
+          //                 width: 18,
+          //               ),
+          //               if (!Responsive.isTablet(context)) S.w(8.0),
+          //               Text("0", style: CustomStyles.bold14Gray878787),
+          //               if (!Responsive.isTablet(context)) S.w(8.0),
+          //               Image.asset(
+          //                 ImageAssets.arrowNextCircle,
+          //                 width: 21,
+          //               ),
+          //             ],
+          //           ),
+          //         ),
+          //       ),
+          //     ),
+          //   ),
+          // ),
           Expanded(
-            flex: 2,
+            flex: 3,
             child: Align(
               alignment: Alignment.centerRight,
-              child: InkWell(
-                onTap: () {
-                  print('Go to Statistics');
-                  showLeader(context);
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: CustomColors.grayCFCFCF,
-                      style: BorderStyle.solid,
-                      width: 1.0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Material(
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          micEnable = !micEnable;
+                        });
+                        if (micEnable && !widget.isMock) {
+                          meeting.unmuteMic();
+                        } else {
+                          meeting.muteMic();
+                        }
+                      },
+                      child: Image.asset(
+                        micEnable ? ImageAssets.micEnable : ImageAssets.micDis,
+                        height: 44,
+                        width: 44,
+                      ),
                     ),
-                    borderRadius: BorderRadius.circular(8),
-                    color: CustomColors.whitePrimary,
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 1, vertical: 6),
-                  child: Padding(
-                    padding: const EdgeInsets.all(6.0),
+                  S.w(defaultPadding),
+                  const DividerVer(),
+                  S.w(defaultPadding),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isHostRequestShareScreen
+                            ? Colors.blue
+                            : Colors.grey,
+                        style: BorderStyle.solid,
+                        width: 2.0,
+                      ),
+                      borderRadius: BorderRadius.circular(100),
+                      color: CustomColors.whitePrimary,
+                    ),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Image.asset(
-                          ImageAssets.leaderboard,
-                          height: 23,
-                          width: 25,
+                        Transform.scale(
+                          scale: 0.7,
+                          child: CupertinoSwitch(
+                            trackColor: Colors.blue.withOpacity(0.1),
+                            activeColor: Colors.blue,
+                            value: isAllowSharingScreen,
+                            onChanged: (bool value) {
+                              if (isHostRequestShareScreen) {
+                                setState(() {
+                                  isAllowSharingScreen = !isAllowSharingScreen;
+                                });
+                                if (isAllowSharingScreen) {
+                                  // sendMessage(widget.userId, 'TEST_MESSAGE');
+                                  setState(() {
+                                    tabFollowing = false;
+                                    tabFreestyle = true;
+                                  });
+                                  sendMessage(widget.userId,
+                                      'StudentShareScreen:enable:${mySolvepadSize?.width.toStringAsFixed(2)}:${mySolvepadSize?.height.toStringAsFixed(2)}');
+                                } else {
+                                  sendMessage(widget.userId,
+                                      'StudentShareScreen:disable');
+                                }
+                              } else {
+                                print('host not request');
+                              }
+                            },
+                          ),
                         ),
-                        S.w(8),
-                        Container(
-                          width: 1,
-                          height: 24,
-                          color: CustomColors.grayCFCFCF,
-                        ),
-                        S.w(8),
-                        Image.asset(
-                          ImageAssets.checkTrue,
-                          height: 18,
-                          width: 18,
-                        ),
-                        if (!Responsive.isTablet(context)) S.w(8.0),
-                        Text("7", style: CustomStyles.bold14Gray878787),
-                        if (!Responsive.isTablet(context)) S.w(8.0),
-                        Image.asset(
-                          ImageAssets.x,
-                          height: 18,
-                          width: 18,
-                        ),
-                        if (!Responsive.isTablet(context)) S.w(8.0),
-                        Text("5", style: CustomStyles.bold14Gray878787),
-                        if (!Responsive.isTablet(context)) S.w(8.0),
-                        Image.asset(
-                          ImageAssets.icQa,
-                          height: 18,
-                          width: 18,
-                        ),
-                        if (!Responsive.isTablet(context)) S.w(8.0),
-                        Text("0", style: CustomStyles.bold14Gray878787),
-                        if (!Responsive.isTablet(context)) S.w(8.0),
-                        Image.asset(
-                          ImageAssets.arrowNextCircle,
-                          width: 21,
-                        ),
+                        Text("อนุญาตแชร์จอ",
+                            textAlign: TextAlign.center,
+                            style: isHostRequestShareScreen
+                                ? CustomStyles.bold14bluePrimary
+                                : CustomStyles.reg14Gray878787),
+                        S.w(4)
                       ],
                     ),
                   ),
-                ),
+                  S.w(32),
+                ],
               ),
             ),
           ),
@@ -2486,7 +2630,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                             MainAxisAlignment.spaceEvenly,
                                         children: [
                                           Image.asset(
-                                            ImageAssets.clearTran,
+                                            'assets/images/clear_tran.png',
                                             width: 38,
                                           ),
                                         ],
@@ -2520,6 +2664,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               onTap: () {
                 showCloseDialog(context, () {
                   meeting.leave();
+                  Navigator.of(context).pop();
                 });
               },
               child: Image.asset(
@@ -3056,25 +3201,25 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             style: CustomStyles.bold14greenPrimary,
           ),
           S.w(10),
-          Container(
-            width: 1,
-            height: 16,
-            color: CustomColors.greenPrimary,
-          ),
-          S.w(10),
-          InkWell(
-            onTap: () {
-              setState(() {
-                tabFreestyle = true;
-                tabFollowing = false;
-              });
-            },
-            child: Text(
-              'ออก',
-              style: CustomStyles.bold14greenPrimaryUnderline,
-            ),
-          ),
-          S.w(16),
+          // Container(
+          //   width: 1,
+          //   height: 16,
+          //   color: CustomColors.greenPrimary,
+          // ),
+          // S.w(10),
+          // InkWell(
+          //   onTap: () {
+          //     setState(() {
+          //       tabFreestyle = true;
+          //       tabFollowing = false;
+          //     });
+          //   },
+          //   child: Text(
+          //     'ออก',
+          //     style: CustomStyles.bold14greenPrimaryUnderline,
+          //   ),
+          // ),
+          // S.w(16),
         ],
       ),
     );

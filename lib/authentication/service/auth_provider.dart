@@ -18,7 +18,8 @@ class AuthProvider extends ChangeNotifier {
 
   getSelfInfo() async {
     log("getSelfInfo");
-    uid = firebaseAuth.currentUser?.uid ?? "";
+    if (firebaseAuth.currentUser?.uid == null) return;
+    uid = firebaseAuth.currentUser?.uid;
     await firebaseFirestore
         .collection('users')
         .doc(uid)

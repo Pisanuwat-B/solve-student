@@ -39,10 +39,10 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
   late AnimationController _controller;
   late StreamSubscription<DocumentSnapshot>? listener;
   DatabaseService dbService = DatabaseService();
-  String? _image;
   String tutorName = 'ติวเตอร์';
   String tutorImage = '';
-  String meetingCode = '';
+  late String meetingCode;
+  late double ratio;
 
   // VideoSDK
   String _token = "";

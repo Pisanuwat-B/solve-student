@@ -10,6 +10,12 @@ import 'package:provider/provider.dart';
 import 'package:solve_student/constants/theme.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import '../../feature/calendar/constants/assets_manager.dart';
+import '../../feature/calendar/constants/custom_colors.dart';
+import '../../feature/calendar/constants/custom_styles.dart';
+import '../../feature/calendar/helper/utility_helper.dart';
+import '../../feature/calendar/widgets/sizebox.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -24,11 +30,11 @@ class LoginPageState extends State<LoginPage> {
       if (user != null) {
         log('\nUser: ${user.user}');
         log('\nUserAdditionalInfo: ${user.additionalUserInfo}');
-        if (await authprovider!.userExists(user.user!)) {
+        if (await authProvider!.userExists(user.user!)) {
         } else {
-          await authprovider!.createUser(user.user!);
+          await authProvider!.createUser(user.user!);
         }
-        authprovider!.getSelfInfo();
+        authProvider!.getSelfInfo();
         // var route =
         //     MaterialPageRoute(builder: (context) => const Authenticate());
         // Navigator.pushReplacement(context, route);
@@ -46,7 +52,7 @@ class LoginPageState extends State<LoginPage> {
         accessToken: googleAuth?.accessToken,
         idToken: googleAuth?.idToken,
       );
-      return await authprovider!.firebaseAuth.signInWithCredential(credential);
+      return await authProvider!.firebaseAuth.signInWithCredential(credential);
     } catch (e) {
       log('\n_signInWithGoogle: $e');
       // Dialogs.showSnackbar(context, 'Something Went Wrong (Check Internet!)');
@@ -54,102 +60,357 @@ class LoginPageState extends State<LoginPage> {
     }
   }
 
-  AuthProvider? authprovider;
+  AuthProvider? authProvider;
+  // @override
+  // Widget build(BuildContext context) {
+  //   authProvider = Provider.of<AuthProvider>(context);
+  //   return GestureDetector(
+  //     onTap: () {
+  //       FocusScope.of(context).unfocus();
+  //     },
+  //     child: Scaffold(
+  //       backgroundColor: backgroundColor,
+  //       body: Container(
+  //         margin: const EdgeInsets.fromLTRB(20, 5, 20, 5),
+  //         child: Column(
+  //           children: <Widget>[
+  //             SizedBox(height: Sizer(context).h * 0.2),
+  //             Column(
+  //               crossAxisAlignment: CrossAxisAlignment.center,
+  //               children: const [
+  //                 Text(
+  //                   "Welcome in Tutor Application",
+  //                   style: TextStyle(
+  //                     fontSize: 18,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //             const SizedBox(height: 20),
+  //             // _buildFormWidget(),
+  //             // _buildRememberWidget(),
+  //             // const SizedBox(height: 20),
+  //             Row(
+  //               children: const [
+  //                 Expanded(
+  //                   child: Divider(
+  //                     thickness: 1,
+  //                     height: 1,
+  //                   ),
+  //                 ),
+  //                 Padding(
+  //                   padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+  //                   child: Text("Or Continue With"),
+  //                 ),
+  //                 Expanded(
+  //                   child: Divider(
+  //                     thickness: 1,
+  //                     height: 1,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //             const SizedBox(height: 10),
+  //             GestureDetector(
+  //               onTap: () {
+  //                 _handleGoogleBtnClick();
+  //               },
+  //               child: Container(
+  //                 height: 50,
+  //                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+  //                 decoration: BoxDecoration(
+  //                   color: Colors.white,
+  //                   borderRadius: BorderRadius.circular(10),
+  //                 ),
+  //                 child: Row(
+  //                   children: [
+  //                     // GoogleLogoWidget(size: 18),
+  //                     const SizedBox(width: 10),
+  //                     const Expanded(
+  //                       child: Text(
+  //                         'Sign in with Google',
+  //                         style: TextStyle(
+  //                           fontSize: 16,
+  //                           color: Colors.black,
+  //                         ),
+  //                         textAlign: TextAlign.center,
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
+  //
+  //             // Loading
+  //             // Positioned(
+  //             //   child: authProvider.status == Status.authenticating
+  //             //       ? LoadingView()
+  //             //       : SizedBox.shrink(),
+  //             // ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  final _util = UtilityHelper();
+  bool _obscured = false;
+  final textFieldFocusNode = FocusNode();
+  final TextEditingController email = TextEditingController();
+  final TextEditingController password = TextEditingController();
+
+  void _toggleObscured() {
+    setState(() {
+      _obscured = !_obscured;
+      if (textFieldFocusNode.hasPrimaryFocus)
+        return; // If focus is on text field, don't unfocused
+      textFieldFocusNode.canRequestFocus =
+          false; // Prevents focus if tap on eye
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    authprovider = Provider.of<AuthProvider>(context);
+    authProvider = Provider.of<AuthProvider>(context);
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: backgroundColor,
-        body: Container(
-          margin: const EdgeInsets.fromLTRB(20, 5, 20, 5),
-          child: Column(
-            children: <Widget>[
-              SizedBox(height: Sizer(context).h * 0.2),
-              Column(
+          backgroundColor: const Color(0xffFFFFFF),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 67.0, left: 24, right: 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: const [
-                  Text(
-                    "Welcome in Tutor Application",
-                    style: TextStyle(
-                      fontSize: 18,
-                    ),
+                children: [
+                  Text('เข้าสู่ระบบ', style: CustomStyles.bold22Black363636),
+                  S.h(8.00),
+                  Text("เสริมสร้างทักษะ และความรู้ผ่านคอร์สเรียนคุณภาพของเรา",
+                      style: CustomStyles.med14Black363636),
+                  Text("เข้าถึงเนื้อหาบทเรียนและเทคนิคต่าง ๆ จากติวเตอร์",
+                      style: CustomStyles.med14Black363636),
+                  S.h(45.0),
+                  Image.asset(
+                    'assets/images/touch_video.png',
+                    width: 165,
+                    height: 165,
                   ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              // _buildFormWidget(),
-              // _buildRememberWidget(),
-              // const SizedBox(height: 20),
-              Row(
-                children: const [
-                  Expanded(
-                    child: Divider(
-                      thickness: 1,
-                      height: 1,
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    child: Text("Or Continue With"),
-                  ),
-                  Expanded(
-                    child: Divider(
-                      thickness: 1,
-                      height: 1,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: () {
-                  _handleGoogleBtnClick();
-                },
-                child: Container(
-                  height: 50,
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
+                  S.h(46.0),
+                  Text('เข้าสู่ระบบด้วยบัญชี',
+                      style: CustomStyles.med18Black363636),
+                  S.h(36.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // GoogleLogoWidget(size: 18),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Sign in with Google',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.black,
+                      // Login with Google
+                      InkWell(
+                        onTap: () {
+                          _handleGoogleBtnClick();
+                        },
+                        child: Container(
+                          width: 200.0,
+                          height: 50.0,
+                          decoration: BoxDecoration(
+                            color: CustomColors.grayF3F3F3,
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
-                          textAlign: TextAlign.center,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/images/ic_google.png',
+                                width: 23.4,
+                                height: 24,
+                              ),
+                              S.w(16.0),
+                              Text("Google",
+                                  style: CustomStyles.med14Black363636)
+                            ],
+                          ),
                         ),
                       ),
+                      S.w(16.0),
+                      // Login with Apple ID
+                      Platform.isIOS
+                          ? InkWell(
+                              onTap: () {},
+                              child: Container(
+                                width: 176.0,
+                                height: 40.0,
+                                decoration: BoxDecoration(
+                                  color: CustomColors.grayF3F3F3,
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Image.asset(
+                                      ImageAssets.icApple,
+                                      width: 19.56,
+                                      height: 24,
+                                    ),
+                                    S.w(16.0),
+                                    Text("Apple ID",
+                                        style: CustomStyles.med14Black363636)
+                                  ],
+                                ),
+                              ),
+                            )
+                          : Container(),
                     ],
                   ),
-                ),
+                  S.h(32.0),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   children: [
+                  //     Container(
+                  //       height: 1,
+                  //       width: _util.isTablet() ? 161 : 132,
+                  //       color: CustomColors.grayF3F3F3,
+                  //     ),
+                  // S.w(8.0),
+                  // Text("หรือ", style: CustomStyles.med18Black363636),
+                  // S.w(8.0),
+                  // Container(
+                  //   height: 1,
+                  //   width: _util.isTablet() ? 161 : 132,
+                  //   color: CustomColors.grayF3F3F3,
+                  // )
+                  //   ],
+                  // ),
+                  // S.h(32.0),
+                  //
+                  // /// Form For Email
+                  // SizedBox(
+                  //   height: 40,
+                  //   width: 368,
+                  //   child: TextFormField(
+                  //     controller: email,
+                  //     style: CustomStyles.med14Black363636,
+                  //     decoration: InputDecoration(
+                  //         labelText: 'อีเมล',
+                  //         labelStyle: CustomStyles.med14Black363636,
+                  //         prefixIcon: const Icon(Icons.mail),
+                  //         enabledBorder: const OutlineInputBorder(
+                  //           // width: 0.0 produces a thin "hairline" border
+                  //           borderSide: BorderSide(
+                  //               color: CustomColors.grayE5E6E9, width: 1),
+                  //         ),
+                  //         border: const OutlineInputBorder()),
+                  //   ),
+                  // ),
+                  // S.h(16.0),
+                  //
+                  // /// Form For Password
+                  // SizedBox(
+                  //   height: 40,
+                  //   width: 368,
+                  //   child: TextFormField(
+                  //     style: CustomStyles.med14Black363636,
+                  //     obscureText: _obscured,
+                  //     focusNode: textFieldFocusNode,
+                  //     keyboardType: TextInputType.visiblePassword,
+                  //     controller: password,
+                  //     decoration: InputDecoration(
+                  //       labelText: 'รหัสผ่าน',
+                  //       labelStyle: CustomStyles.med14Black363636,
+                  //       prefixIcon: const Icon(Icons.lock),
+                  //       enabledBorder: const OutlineInputBorder(
+                  //         // width: 0.0 produces a thin "hairline" border
+                  //         borderSide: BorderSide(
+                  //             color: CustomColors.grayE5E6E9, width: 1),
+                  //       ),
+                  //       border: const OutlineInputBorder(),
+                  //       suffixIcon: Padding(
+                  //         padding: const EdgeInsets.fromLTRB(0, 0, 4, 0),
+                  //         child: GestureDetector(
+                  //           onTap: _toggleObscured,
+                  //           child: Icon(
+                  //             _obscured
+                  //                 ? Icons.visibility_rounded
+                  //                 : Icons.visibility_off_rounded,
+                  //             size: 24,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                  // S.h(32.0),
+                  // GestureDetector(
+                  //   // onTap: () => Navigator.push(
+                  //   //   context,
+                  //   //   MaterialPageRoute(
+                  //   //       builder: (context) => const ForgotPasswordPage()),
+                  //   // ),
+                  //   child: Text("ลืมรหัสผ่าน",
+                  //       style: CustomStyles.med16GreenUnderline),
+                  // ),
+                  // S.h(32.0),
+                  // InkWell(
+                  //   onTap: () {
+                  //     // if (email.text == 'tutor') {
+                  //     //   Navigator.push(
+                  //     //     context,
+                  //     //     MaterialPageRoute(
+                  //     //         builder: (context) => const MainTabPage()),
+                  //     //   );
+                  //     // } else {
+                  //     //   Navigator.push(
+                  //     //     context,
+                  //     //     MaterialPageRoute(
+                  //     //         builder: (context) =>
+                  //     //             const OnBoardingSettingPage()),
+                  //     //   );
+                  //     // }
+                  //   },
+                  //   child: Container(
+                  //     width: 174.0,
+                  //     height: 40.0,
+                  //     decoration: BoxDecoration(
+                  //       color: CustomColors.greenPrimary,
+                  //       borderRadius: BorderRadius.circular(8.0),
+                  //     ),
+                  //     child: Center(
+                  //       child: Text('ลงชื่อเข้าใช้',
+                  //           style: CustomStyles.med14White),
+                  //     ),
+                  //   ),
+                  // ),
+                  // S.h(32.0),
+                  // Container(
+                  //   height: 1,
+                  //   width: 368,
+                  //   color: CustomColors.grayF3F3F3,
+                  // ),
+                  // S.h(40.0),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   children: [
+                  //     Text("หากคุณเข้าใช้  Solve ครั้งแรก?",
+                  //         style: CustomStyles.bold16Black363636),
+                  //     S.w(16.0),
+                  //     GestureDetector(
+                  //       // onTap: () => Navigator.push(
+                  //       //   context,
+                  //       //   MaterialPageRoute(
+                  //       //       builder: (context) =>
+                  //       //           const CreateAccountPage()),
+                  //       // ),
+                  //       child: Text("สร้างบัญชี",
+                  //           style: CustomStyles.med16GreenUnderline),
+                  //     ),
+                  //   ],
+                  // ),
+                  // S.h(24.0),
+                ],
               ),
-
-              // Loading
-              // Positioned(
-              //   child: authProvider.status == Status.authenticating
-              //       ? LoadingView()
-              //       : SizedBox.shrink(),
-              // ),
-            ],
-          ),
-        ),
-      ),
+            ),
+          )),
     );
   }
 
-  final TextEditingController _email = TextEditingController();
-  final TextEditingController _password = TextEditingController();
   // Widget _buildFormWidget() {
   //   return AutofillGroup(
   //     child: Column(
