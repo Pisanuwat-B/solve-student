@@ -26,6 +26,7 @@ import '../utils/responsive.dart';
 class StudentLiveClassroom extends StatefulWidget {
   final String meetingId, userId, token, displayName, courseId;
   final bool micEnabled, camEnabled, chatEnabled, isHost, isMock;
+  final int startTime;
   const StudentLiveClassroom({
     Key? key,
     required this.meetingId,
@@ -34,6 +35,7 @@ class StudentLiveClassroom extends StatefulWidget {
     required this.displayName,
     required this.isHost,
     required this.courseId,
+    required this.startTime,
     this.micEnabled = true,
     this.camEnabled = false,
     this.chatEnabled = false,
@@ -95,11 +97,12 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   // ---------- VARIABLE: page control
   final PageController _pageController = PageController();
   final List<TransformationController> _transformationController = [];
-  String _formattedElapsedTime = 'Recording 0:00:00';
+  String _formattedElapsedTime = ' 00 : 00 : 00 ';
   String _currentScrollZoom = '';
   String _currentHostScrollZoom = '';
   Timer? _laserTimer;
   Timer? _hostLaserTimer;
+  Timer? _meetingTimer;
   int _currentPage = 0;
   int _currentHostPage = 0;
   int _hostColorIndex = 0;
@@ -222,6 +225,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       ),
     );
     initPagesData();
+    initTimer();
     initPagingBtn();
     initMessageHandler();
     if (!widget.isMock) {
@@ -254,6 +258,15 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       }
       courseName = courseController.courseData!.courseName!;
       micEnable = widget.micEnabled;
+    });
+  }
+
+  void initTimer() {
+    stopwatch.start();
+    _meetingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _formattedElapsedTime = _formatElapsedTime(stopwatch.elapsed);
+      });
     });
   }
 
@@ -304,12 +317,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   void initWss() {
     if (!widget.isMock) {
       channel = WebSocketChannel.connect(
-        Uri.parse('ws://35.240.169.164:3000/${widget.meetingId}/${meeting.id}'),
+        Uri.parse(
+            'ws://35.240.169.164:3000/${widget.courseId}/${widget.startTime}'),
       );
     } else {
       channel = WebSocketChannel.connect(
         Uri.parse(
-            'ws://35.240.169.164:3000/${widget.meetingId}/${widget.meetingId}'),
+            'ws://35.240.169.164:3000/${widget.courseId}/${widget.courseId}'),
       );
     }
     channel?.stream.listen((message) {
@@ -510,6 +524,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
 
   void handleMessageEndMeeting(String data) {
     meeting.leave();
+    Navigator.pop(context);
   }
 
   Offset convertToOffset(String offsetString) {
@@ -537,6 +552,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     // ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: SystemUiOverlay.values);
+    _meetingTimer?.cancel();
     super.dispose();
   }
 
@@ -750,6 +766,14 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       _currentPage = page;
       _penPoints[_currentPage].add(null);
     });
+  }
+
+  String _formatElapsedTime(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String hours = twoDigits(duration.inHours);
+    String minutes = twoDigits(duration.inMinutes.remainder(60));
+    String seconds = twoDigits(duration.inSeconds.remainder(60));
+    return ' $hours : $minutes : $seconds ';
   }
 
   @override
@@ -1351,7 +1375,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                     style: CustomStyles.med14redFF4201,
                     children: <TextSpan>[
                       TextSpan(
-                        text: '00 : 00 : 00',
+                        text: _formattedElapsedTime,
                         style: CustomStyles.med14Gray878787,
                       ),
                     ],

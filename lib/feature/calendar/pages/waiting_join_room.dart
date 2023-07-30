@@ -137,6 +137,7 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
               token: _token,
               userId: authProvider.uid!,
               courseId: widget.course.courseId!,
+              startTime: widget.course.start!.millisecondsSinceEpoch,
               meetingId: meetingId,
               displayName: displayName,
               isHost: false,
@@ -190,6 +191,8 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
             children: [
               InkWell(
                 onTap: () {
+                  print('EPOCH');
+                  print(widget.course.start!.millisecondsSinceEpoch);
                   setState(() {
                     isActive = !isActive;
                   });

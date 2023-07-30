@@ -16,6 +16,7 @@ import 'package:solve_student/feature/calendar/widgets/sizebox.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../../authentication/service/auth_provider.dart';
+import 'course_history.dart';
 
 class StudentScreen extends StatefulWidget {
   StudentScreen({super.key, this.studentId});
@@ -723,7 +724,7 @@ class _StudentScreenState extends State<StudentScreen>
 
   var indexListCalendar = 0;
 
-  List<ShowCourseStudent> listCelendarTab = [];
+  List<ShowCourseStudent> listCalendarTab = [];
   void getDateAll() {
     studentController.daysForTablet.map((e) => e.sum = 0).toList();
     for (var day in studentController.showCourseStudentToday) {
@@ -737,10 +738,10 @@ class _StudentScreenState extends State<StudentScreen>
   }
 
   void getDate(int daySelected) {
-    listCelendarTab.clear();
+    listCalendarTab.clear();
     for (var day in studentController.showCourseStudentToday) {
       if (day.start?.weekday == daySelected) {
-        listCelendarTab.add(day);
+        listCalendarTab.add(day);
       }
     }
     setState(() {});
@@ -779,7 +780,7 @@ class _StudentScreenState extends State<StudentScreen>
             )),
       ),
       S.h(20),
-      if (listCelendarTab.isEmpty) ...[
+      if (listCalendarTab.isEmpty) ...[
         Container(
           margin: const EdgeInsets.symmetric(vertical: 10),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -798,9 +799,9 @@ class _StudentScreenState extends State<StudentScreen>
         ),
       ],
       Column(
-        children: List.generate(listCelendarTab.length, (index) {
+        children: List.generate(listCalendarTab.length, (index) {
           var filterSubjectId = courseController.subjects
-              .where((e) => e.id == listCelendarTab[index].subjectId)
+              .where((e) => e.id == listCalendarTab[index].subjectId)
               .toList();
 
           return Container(
@@ -818,12 +819,12 @@ class _StudentScreenState extends State<StudentScreen>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${FormatDate.timeOnlyNumber(listCelendarTab[index].start)} น. - ${FormatDate.timeOnlyNumber(listCelendarTab[index].end)} น.',
+                      '${FormatDate.timeOnlyNumber(listCalendarTab[index].start)} น. - ${FormatDate.timeOnlyNumber(listCalendarTab[index].end)} น.',
                       style: CustomStyles.blod16gray878787
                           .copyWith(color: Colors.black),
                     ),
                     Text(
-                      FormatDate.dayOnly(listCelendarTab[index].start),
+                      FormatDate.dayOnly(listCalendarTab[index].start),
                       style: CustomStyles.reg16gray878787,
                     )
                   ],
@@ -849,7 +850,7 @@ class _StudentScreenState extends State<StudentScreen>
                             ),
                           ),
                         ),
-                        imageUrl: listCelendarTab[index].thumbnailUrl ?? '',
+                        imageUrl: listCalendarTab[index].thumbnailUrl ?? '',
                       ),
                     ),
                     S.w(10),
@@ -858,13 +859,13 @@ class _StudentScreenState extends State<StudentScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            listCelendarTab[index].courseName ?? '',
+                            listCalendarTab[index].courseName ?? '',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: CustomStyles.bold16Black363636,
                           ),
                           Text(
-                            listCelendarTab[index].detailsText ?? '',
+                            listCalendarTab[index].detailsText ?? '',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: CustomStyles.med14Black363636Overflow,
@@ -879,7 +880,7 @@ class _StudentScreenState extends State<StudentScreen>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      listCelendarTab[index].tutorId ?? '',
+                      listCalendarTab[index].tutorId ?? '',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: CustomStyles.reg16Green,
@@ -920,14 +921,15 @@ class _StudentScreenState extends State<StudentScreen>
           tabs: List.generate(
             studentController.daysForTablet.length,
             (index) => Tab(
-                child: Text(
-              '${studentController.daysForTablet[index].day} (${studentController.daysForTablet[index].sum})',
-              maxLines: 1,
-            )),
+              child: Text(
+                '${studentController.daysForTablet[index].day} (${studentController.daysForTablet[index].sum})',
+                maxLines: 1,
+              ),
+            ),
           ),
         ),
         S.h(20),
-        if (listCelendarTab.isEmpty) ...[
+        if (listCalendarTab.isEmpty) ...[
           Container(
             margin: const EdgeInsets.symmetric(vertical: 10),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -946,12 +948,12 @@ class _StudentScreenState extends State<StudentScreen>
           ),
         ],
         Column(
-          children: List.generate(listCelendarTab.length, (index) {
+          children: List.generate(listCalendarTab.length, (index) {
             var filterLevelId = courseController.levels
-                .where((e) => e.id == listCelendarTab[index].levelId)
+                .where((e) => e.id == listCalendarTab[index].levelId)
                 .toList();
             var filterSubjectId = courseController.subjects
-                .where((e) => e.id == listCelendarTab[index].subjectId)
+                .where((e) => e.id == listCalendarTab[index].subjectId)
                 .toList();
 
             return Container(
@@ -969,28 +971,54 @@ class _StudentScreenState extends State<StudentScreen>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _tagTime(
-                          '${FormatDate.timeOnlyNumber(listCelendarTab[index].start)} น. - ${FormatDate.timeOnlyNumber(listCelendarTab[index].end)} น.'),
+                          '${FormatDate.timeOnlyNumber(listCalendarTab[index].start)} น. - ${FormatDate.timeOnlyNumber(listCalendarTab[index].end)} น.'),
                       S.w(50),
                       SizedBox(
                         height: 48,
                         width: 85,
-                        child: CachedNetworkImage(
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          imageBuilder: (context, imageProvider) => Container(
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(8),
-                                topRight: Radius.circular(8),
-                              ),
-                              image: DecorationImage(
-                                image: imageProvider,
+                        child: listCalendarTab[index]
+                                    .thumbnailUrl
+                                    .toString()
+                                    .isNotEmpty ==
+                                true
+                            ? CachedNetworkImage(
+                                width: double.infinity,
                                 fit: BoxFit.cover,
+                                imageBuilder: (context, imageProvider) =>
+                                    Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(8),
+                                      topRight: Radius.circular(8),
+                                    ),
+                                    image: DecorationImage(
+                                      image: imageProvider,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                imageUrl:
+                                    listCalendarTab[index].thumbnailUrl ?? '',
+                              )
+                            : Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  border: Border.all(
+                                    color: const Color.fromRGBO(29, 41, 57, 1),
+                                    width: 0.5,
+                                  ),
+                                ),
+                                height: 48,
+                                width: 85,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Image.asset(
+                                    ImageAssets.emptyCourse,
+                                    width: double.infinity,
+                                    fit: BoxFit.fitHeight,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          imageUrl: listCelendarTab[index].thumbnailUrl ?? '',
-                        ),
                       ),
                       S.w(10),
                       Expanded(
@@ -999,13 +1027,13 @@ class _StudentScreenState extends State<StudentScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              listCelendarTab[index].courseName ?? '',
+                              listCalendarTab[index].courseName ?? '',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: CustomStyles.bold14Black363636,
                             ),
                             Text(
-                              listCelendarTab[index].detailsText ?? '',
+                              listCalendarTab[index].detailsText ?? '',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: CustomStyles.med14Black363636Overflow,
@@ -1038,7 +1066,7 @@ class _StudentScreenState extends State<StudentScreen>
                             ),
                             S.w(10),
                             Text(
-                              listCelendarTab[index].tutorId ?? '',
+                              listCalendarTab[index].tutorId ?? '',
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: CustomStyles.reg16Green,
@@ -1049,7 +1077,7 @@ class _StudentScreenState extends State<StudentScreen>
                       Column(
                         children: [
                           Text(
-                            FormatDate.dayOnly(listCelendarTab[index].start),
+                            FormatDate.dayOnly(listCalendarTab[index].start),
                             style: CustomStyles.bold14Black363636,
                           ),
                           S.w(10),
@@ -1069,6 +1097,8 @@ class _StudentScreenState extends State<StudentScreen>
 
   Widget tableCalendarTablet() {
     var now = DateTime.now();
+    DateTime today =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     return TableCalendar<Event>(
       availableGestures: AvailableGestures.horizontalSwipe,
       locale: 'en_US',
@@ -1179,7 +1209,7 @@ class _StudentScreenState extends State<StudentScreen>
           );
         },
         markerBuilder: (context, day, event) {
-          if (event.isNotEmpty && day.isAfter(DateTime.now())) {
+          if (event.isNotEmpty && (day.isAfter(today) || day == today)) {
             return SingleChildScrollView(
               child: Column(
                 children: [
@@ -1251,7 +1281,76 @@ class _StudentScreenState extends State<StudentScreen>
               ),
             );
           } else {
-            return const SizedBox();
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  S.h(0),
+                  if (event.isNotEmpty) ...[
+                    InkWell(
+                      onTap: () async {},
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5.0, vertical: 0.0),
+                        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: CustomColors.gray878787,
+                            width: 1,
+                          ),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(20.0)),
+                          shape: BoxShape.rectangle,
+                          color: Colors.white,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          event.first.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: CustomStyles.med12GreenPrimary
+                              .copyWith(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                  S.h(5),
+                  if (event.length > 1)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5.0, vertical: 0.0),
+                      margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                      decoration: BoxDecoration(
+                          border: Border.all(
+                            color: CustomColors.gray878787,
+                            width: 1,
+                          ),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(20.0)),
+                          shape: BoxShape.rectangle,
+                          color: CustomColors.white),
+                      alignment: Alignment.center,
+                      child: Column(
+                        children: [
+                          InkWell(
+                            onTap: () async {
+                              await showDialog(
+                                  context: context,
+                                  builder: (context) => _eventList(day, event));
+                            },
+                            child: Text(
+                              '+${event.length - 1} รายการ',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: CustomStyles.med12GreenPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  S.h(5),
+                ],
+              ),
+            );
           }
         },
       ),
@@ -1569,20 +1668,30 @@ class _StudentScreenState extends State<StudentScreen>
   }
 
   Widget _historyText() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const Icon(
-          Icons.history,
-          color: CustomColors.greenPrimary,
-        ),
-        Text(
-          'ประวัติการเรียน',
-          style:
-              CustomStyles.bold16Green.copyWith(fontWeight: FontWeight.normal),
-        ),
-      ],
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const CourseHistory(),
+          ),
+        );
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.history,
+            color: CustomColors.greenPrimary,
+          ),
+          Text(
+            'ประวัติการเรียน',
+            style: CustomStyles.bold16Green
+                .copyWith(fontWeight: FontWeight.normal),
+          ),
+        ],
+      ),
     );
   }
 
