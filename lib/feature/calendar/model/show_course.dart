@@ -9,18 +9,21 @@ class ShowCourseStudent {
   String? levelId;
   String? detailsText;
   String? documentId;
+  String? file;
 
-  ShowCourseStudent(
-      {this.courseId,
-      this.courseName,
-      this.start,
-      this.end,
-      this.thumbnailUrl,
-      this.tutorId,
-      this.subjectId,
-      this.levelId,
-      this.detailsText,
-      this.documentId});
+  ShowCourseStudent({
+    this.courseId,
+    this.courseName,
+    this.start,
+    this.end,
+    this.thumbnailUrl,
+    this.tutorId,
+    this.subjectId,
+    this.levelId,
+    this.detailsText,
+    this.documentId,
+    this.file,
+  });
 
   ShowCourseStudent.fromJson(Map<String, dynamic> json) {
     courseId = json['course_id'];
@@ -34,6 +37,7 @@ class ShowCourseStudent {
     levelId = json['level_id'];
     detailsText = json['details_text'];
     documentId = json['document_id'];
+    file = json['review_file'] ?? '';
   }
 
   Map<String, dynamic> toJson() {
@@ -48,6 +52,7 @@ class ShowCourseStudent {
     data['level_id'] = levelId;
     data['details_text'] = detailsText;
     data['document_id'] = documentId;
+    data['review_file'] = file;
     return data;
   }
 }

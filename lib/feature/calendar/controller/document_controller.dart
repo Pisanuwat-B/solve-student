@@ -14,9 +14,9 @@ class DocumentController extends ChangeNotifier {
   var documentList = <DocumentModel>[];
   var isLoading = false;
   var document = DocumentModel();
-  var docmentName = TextEditingController();
-  var haveEorrorLevel = '';
-  var haveEorrorSubject = '';
+  var documentName = TextEditingController();
+  var haveErrorLevel = '';
+  var haveErrorSubject = '';
   var selectedIndex = 0;
 
   final ImagePicker _picker = ImagePicker();
@@ -27,7 +27,7 @@ class DocumentController extends ChangeNotifier {
     keywordTextEditingController.addListener(() {
       String keyword = keywordTextEditingController.text;
       _timer?.cancel();
-      debugPrint('filter object fosr keyword = $keyword');
+      debugPrint('filter object for keyword = $keyword');
 
       _timer = Timer(const Duration(milliseconds: 500), () {
         documentListFilter.clear();
@@ -50,17 +50,17 @@ class DocumentController extends ChangeNotifier {
   }
 
   setRequestData() {
-    docmentName.text = document.data?.documentName ?? '';
+    documentName.text = document.data?.documentName ?? '';
   }
 
-  claerData() {
-    if (docmentName.text.isNotEmpty) {
-      docmentName.clear();
+  clearData() {
+    if (documentName.text.isNotEmpty) {
+      documentName.clear();
     }
   }
 
-  dlastChangeName(String value) {
-    docmentName.text = value;
+  lastChangeName(String value) {
+    documentName.text = value;
   }
 
   setLevel(String value) {
@@ -244,18 +244,18 @@ class DocumentController extends ChangeNotifier {
     }
 
     if (levelId?.isEmpty == true || levelId == null) {
-      haveEorrorLevel = 'กรุณาเลือกระดับชั้นปีการศึกษา';
+      haveErrorLevel = 'กรุณาเลือกระดับชั้นปีการศึกษา';
       notifyListeners();
       return false;
     } else {
-      haveEorrorLevel = '';
+      haveErrorLevel = '';
     }
     if (subjectId?.isEmpty == true || subjectId == null) {
-      haveEorrorSubject = 'กรุณาเลือกเลือกหมวดหมู่';
+      haveErrorSubject = 'กรุณาเลือกเลือกหมวดหมู่';
       notifyListeners();
       return false;
     } else {
-      haveEorrorSubject = '';
+      haveErrorSubject = '';
     }
     notifyListeners();
     return true;

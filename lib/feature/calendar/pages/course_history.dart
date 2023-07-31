@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:solve_student/feature/calendar/constants/constants.dart';
@@ -6,12 +7,11 @@ import 'package:solve_student/feature/calendar/controller/create_course_live_con
 import 'package:solve_student/feature/calendar/controller/student_controller.dart';
 import 'package:solve_student/feature/calendar/helper/utility_helper.dart';
 import 'package:solve_student/feature/calendar/model/show_course.dart';
-import 'package:solve_student/feature/calendar/pages/utils.dart';
 import 'package:solve_student/feature/calendar/widgets/format_date.dart';
 import 'package:solve_student/feature/calendar/widgets/sizebox.dart';
-import 'package:table_calendar/table_calendar.dart';
 
 import '../../../authentication/service/auth_provider.dart';
+import '../../live_classroom/page/review_lesson.dart';
 
 class CourseHistory extends StatefulWidget {
   const CourseHistory({super.key, this.studentId});
@@ -27,6 +27,7 @@ class _CourseHistoryState extends State<CourseHistory>
   int indexTab = 0;
   var studentController = StudentController();
   var courseController = CourseLiveController();
+  List<ShowCourseStudent> reviewList = [];
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
   AuthProvider? authProvider;
@@ -43,27 +44,41 @@ class _CourseHistoryState extends State<CourseHistory>
 
   getInit() async {
     getCalendarList();
-    getTableCalendarList();
-    await courseController.getLevels();
-    await courseController.getSubjects();
+  }
+
+  Future<List<ShowCourseStudent>> getCoursesWithReviewFile(
+      String studentId) async {
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('course_live')
+        .where('student_list', arrayContains: studentId)
+        .get();
+
+    List<ShowCourseStudent> showCourseStudents = [];
+
+    for (final document in querySnapshot.docs) {
+      List<dynamic> calendar = document.get('calendar') as List<dynamic>;
+      final studentsWithReviewFile = calendar
+          .where((item) =>
+              (item as Map<String, dynamic>).containsKey('review_file'))
+          .map((item) =>
+              ShowCourseStudent.fromJson(item as Map<String, dynamic>))
+          .toList();
+      showCourseStudents.addAll(studentsWithReviewFile);
+    }
+    return showCourseStudents;
   }
 
   Future<void> getCalendarList() async {
-    await studentController.getCourseToday(authProvider?.user?.id ?? '');
+    var courseList = await getCoursesWithReviewFile(authProvider!.user!.id!);
+    setState(() {
+      studentController.showCourseStudentFilterToday = courseList;
+    });
     if (_util.isTablet()) {
       getDateAll();
       getDate(1);
     } else {
       getDate(7);
     }
-  }
-
-  Future<void> getTableCalendarList() async {
-    await studentController
-        .getCalendarListForStudentById(authProvider?.uid ?? '');
-    await studentController
-        .getDataCalendarList(studentController.calendarClassList);
-    setState(() {});
   }
 
   @override
@@ -87,12 +102,6 @@ class _CourseHistoryState extends State<CourseHistory>
           'ประวัติการเรียนของฉัน',
           style: CustomStyles.bold22Black363636,
         ),
-        actions: [
-          if (_util.isTablet()) ...[
-            _buildButtonSearch(),
-            _buildButtonAddCourse()
-          ]
-        ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -123,84 +132,8 @@ class _CourseHistoryState extends State<CourseHistory>
     );
   }
 
-  Widget _buildButtonAddCourse() {
-    return _util.isTablet()
-        ? Container(
-            margin: const EdgeInsets.all(8),
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.add),
-              label: Text(
-                'เพิ่มคอร์สเรียน',
-                style: CustomStyles.med14White.copyWith(
-                  color: CustomColors.white,
-                ),
-              ),
-              onPressed: () async {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: CustomColors.greenPrimary,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0)),
-              ),
-            ),
-          )
-        : Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            decoration: const BoxDecoration(
-              color: CustomColors.greenPrimary,
-              borderRadius: BorderRadius.all(
-                Radius.circular(10),
-              ),
-            ),
-            child: const Icon(
-              Icons.add,
-              color: Colors.white,
-            ),
-          );
-  }
-
-  Widget _buildButtonSearch() {
-    if (_util.isTablet()) {
-      return Container(
-        margin: const EdgeInsets.all(8),
-        child: ElevatedButton.icon(
-          icon: const Icon(
-            Icons.search,
-            color: CustomColors.gray363636,
-          ),
-          label: Text(
-            'ค้นหาติวเตอร์',
-            style: CustomStyles.med14White.copyWith(
-              color: CustomColors.gray363636,
-            ),
-          ),
-          onPressed: () async {},
-          style: ElevatedButton.styleFrom(
-            backgroundColor: CustomColors.white,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0)),
-          ),
-        ),
-      );
-    } else {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          border: Border.all(width: 1, color: Colors.grey),
-          borderRadius: const BorderRadius.all(
-            Radius.circular(10),
-          ),
-        ),
-        child: Text(
-          'ค้นหาติวเตอร์',
-          style: CustomStyles.bold16Green,
-        ),
-      );
-    }
-  }
-
   var indexListCalendar = 0;
 
-  List<ShowCourseStudent> listCalendarTab = [];
   void getDateAll() {
     studentController.daysForTablet.map((e) => e.sum = 0).toList();
     for (var day in studentController.showCourseStudentToday) {
@@ -214,10 +147,10 @@ class _CourseHistoryState extends State<CourseHistory>
   }
 
   void getDate(int daySelected) {
-    listCalendarTab.clear();
+    reviewList.clear();
     for (var day in studentController.showCourseStudentToday) {
       if (day.start?.weekday == daySelected) {
-        listCalendarTab.add(day);
+        reviewList.add(day);
       }
     }
     setState(() {});
@@ -256,7 +189,7 @@ class _CourseHistoryState extends State<CourseHistory>
             )),
       ),
       S.h(20),
-      if (listCalendarTab.isEmpty) ...[
+      if (reviewList.isEmpty) ...[
         Container(
           margin: const EdgeInsets.symmetric(vertical: 10),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -275,9 +208,9 @@ class _CourseHistoryState extends State<CourseHistory>
         ),
       ],
       Column(
-        children: List.generate(listCalendarTab.length, (index) {
+        children: List.generate(reviewList.length, (index) {
           var filterSubjectId = courseController.subjects
-              .where((e) => e.id == listCalendarTab[index].subjectId)
+              .where((e) => e.id == reviewList[index].subjectId)
               .toList();
 
           return Container(
@@ -295,12 +228,12 @@ class _CourseHistoryState extends State<CourseHistory>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${FormatDate.timeOnlyNumber(listCalendarTab[index].start)} น. - ${FormatDate.timeOnlyNumber(listCalendarTab[index].end)} น.',
+                      '${FormatDate.timeOnlyNumber(reviewList[index].start)} น. - ${FormatDate.timeOnlyNumber(reviewList[index].end)} น.',
                       style: CustomStyles.blod16gray878787
                           .copyWith(color: Colors.black),
                     ),
                     Text(
-                      FormatDate.dayOnly(listCalendarTab[index].start),
+                      FormatDate.dayOnly(reviewList[index].start),
                       style: CustomStyles.reg16gray878787,
                     )
                   ],
@@ -326,7 +259,7 @@ class _CourseHistoryState extends State<CourseHistory>
                             ),
                           ),
                         ),
-                        imageUrl: listCalendarTab[index].thumbnailUrl ?? '',
+                        imageUrl: reviewList[index].thumbnailUrl ?? '',
                       ),
                     ),
                     S.w(10),
@@ -335,13 +268,13 @@ class _CourseHistoryState extends State<CourseHistory>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            listCalendarTab[index].courseName ?? '',
+                            reviewList[index].courseName ?? '',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: CustomStyles.bold16Black363636,
                           ),
                           Text(
-                            listCalendarTab[index].detailsText ?? '',
+                            reviewList[index].detailsText ?? '',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: CustomStyles.med14Black363636Overflow,
@@ -356,7 +289,7 @@ class _CourseHistoryState extends State<CourseHistory>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      listCalendarTab[index].tutorId ?? '',
+                      reviewList[index].tutorId ?? '',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: CustomStyles.reg16Green,
@@ -405,7 +338,7 @@ class _CourseHistoryState extends State<CourseHistory>
           ),
         ),
         S.h(20),
-        if (listCalendarTab.isEmpty) ...[
+        if (reviewList.isEmpty) ...[
           Container(
             margin: const EdgeInsets.symmetric(vertical: 10),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -424,145 +357,163 @@ class _CourseHistoryState extends State<CourseHistory>
           ),
         ],
         Column(
-          children: List.generate(listCalendarTab.length, (index) {
+          children: List.generate(reviewList.length, (index) {
             var filterLevelId = courseController.levels
-                .where((e) => e.id == listCalendarTab[index].levelId)
+                .where((e) => e.id == reviewList[index].levelId)
                 .toList();
             var filterSubjectId = courseController.subjects
-                .where((e) => e.id == listCalendarTab[index].subjectId)
+                .where((e) => e.id == reviewList[index].subjectId)
                 .toList();
 
-            return Container(
-              margin: const EdgeInsets.symmetric(vertical: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                border: Border.all(width: 1, color: Colors.grey),
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(10),
+            return InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ReviewLesson(
+                      courseId: reviewList[index].courseId!,
+                      courseName: reviewList[index].courseName!,
+                      file: reviewList[index].file!,
+                      tutorId: reviewList[index].tutorId!,
+                      docId: reviewList[index].documentId!,
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  border: Border.all(width: 1, color: Colors.grey),
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(10),
+                  ),
                 ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _tagTime(
-                          '${FormatDate.timeOnlyNumber(listCalendarTab[index].start)} น. - ${FormatDate.timeOnlyNumber(listCalendarTab[index].end)} น.'),
-                      S.w(50),
-                      SizedBox(
-                        height: 48,
-                        width: 85,
-                        child: listCalendarTab[index]
-                                    .thumbnailUrl
-                                    .toString()
-                                    .isNotEmpty ==
-                                true
-                            ? CachedNetworkImage(
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                imageBuilder: (context, imageProvider) =>
-                                    Container(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _tagTime(
+                            '${FormatDate.timeOnlyNumber(reviewList[index].start)} น. - ${FormatDate.timeOnlyNumber(reviewList[index].end)} น.'),
+                        S.w(50),
+                        SizedBox(
+                          height: 48,
+                          width: 85,
+                          child: reviewList[index]
+                                      .thumbnailUrl
+                                      .toString()
+                                      .isNotEmpty ==
+                                  true
+                              ? CachedNetworkImage(
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  imageBuilder: (context, imageProvider) =>
+                                      Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(8),
+                                        topRight: Radius.circular(8),
+                                      ),
+                                      image: DecorationImage(
+                                        image: imageProvider,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  imageUrl:
+                                      reviewList[index].thumbnailUrl ?? '',
+                                )
+                              : Container(
                                   decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(8),
-                                      topRight: Radius.circular(8),
-                                    ),
-                                    image: DecorationImage(
-                                      image: imageProvider,
-                                      fit: BoxFit.cover,
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    border: Border.all(
+                                      color:
+                                          const Color.fromRGBO(29, 41, 57, 1),
+                                      width: 0.5,
                                     ),
                                   ),
-                                ),
-                                imageUrl:
-                                    listCalendarTab[index].thumbnailUrl ?? '',
-                              )
-                            : Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  border: Border.all(
-                                    color: const Color.fromRGBO(29, 41, 57, 1),
-                                    width: 0.5,
+                                  height: 48,
+                                  width: 85,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Image.asset(
+                                      ImageAssets.emptyCourse,
+                                      width: double.infinity,
+                                      fit: BoxFit.fitHeight,
+                                    ),
                                   ),
                                 ),
-                                height: 48,
-                                width: 85,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Image.asset(
-                                    ImageAssets.emptyCourse,
-                                    width: double.infinity,
-                                    fit: BoxFit.fitHeight,
-                                  ),
-                                ),
+                        ),
+                        S.w(10),
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                reviewList[index].courseName ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: CustomStyles.bold14Black363636,
                               ),
-                      ),
-                      S.w(10),
-                      Expanded(
-                        flex: 2,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                              Text(
+                                reviewList[index].detailsText ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: CustomStyles.med14Black363636Overflow,
+                              ),
+                            ],
+                          ),
+                        ),
+                        S.w(50),
+                        Row(
+                          children: [
+                            _tagType(
+                                '${filterLevelId.isNotEmpty ? filterLevelId.first.name : ''}'),
+                            S.w(10),
+                            _tagType(
+                                '${filterSubjectId.isNotEmpty ? filterSubjectId.first.name : ''}'),
+                          ],
+                        ),
+                      ],
+                    ),
+                    S.h(10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Image.asset(
+                                'assets/images/tutor_icon.png',
+                                scale: 4,
+                              ),
+                              S.w(10),
+                              Text(
+                                reviewList[index].tutorId ?? '',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: CustomStyles.reg16Green,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Column(
                           children: [
                             Text(
-                              listCalendarTab[index].courseName ?? '',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                              FormatDate.dayOnly(reviewList[index].start),
                               style: CustomStyles.bold14Black363636,
                             ),
-                            Text(
-                              listCalendarTab[index].detailsText ?? '',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: CustomStyles.med14Black363636Overflow,
-                            ),
-                          ],
-                        ),
-                      ),
-                      S.w(50),
-                      Row(
-                        children: [
-                          _tagType(
-                              '${filterLevelId.isNotEmpty ? filterLevelId.first.name : ''}'),
-                          S.w(10),
-                          _tagType(
-                              '${filterSubjectId.isNotEmpty ? filterSubjectId.first.name : ''}'),
-                        ],
-                      ),
-                    ],
-                  ),
-                  S.h(10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Image.asset(
-                              'assets/images/tutor_icon.png',
-                              scale: 4,
-                            ),
                             S.w(10),
-                            Text(
-                              listCalendarTab[index].tutorId ?? '',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: CustomStyles.reg16Green,
-                            ),
+                            // _learned(),
                           ],
                         ),
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            FormatDate.dayOnly(listCalendarTab[index].start),
-                            style: CustomStyles.bold14Black363636,
-                          ),
-                          S.w(10),
-                          // _learned(),
-                        ],
-                      ),
-                    ],
-                  )
-                ],
+                      ],
+                    )
+                  ],
+                ),
               ),
             );
           }),
