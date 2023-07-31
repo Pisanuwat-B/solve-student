@@ -129,16 +129,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   int _selectedIndexColors = 0;
   int _selectedIndexLines = 0;
   late bool isSelected;
-  final List _listToolsMobile = [
-    {
-      "image_active": ImageAssets.highlightActive,
-      "image_dis": ImageAssets.highlightDis,
-    },
-    {
-      "image_active": ImageAssets.rubberActive,
-      "image_dis": ImageAssets.rubberDis,
-    }
-  ];
   final List _listLines = [
     {
       "image_active": ImageAssets.line1Active,
