@@ -119,7 +119,38 @@ class _ChatOrderCardState extends State<ChatOrderCard> {
                 },
               );
             } catch (e) {
-              return const Text("Errod Data..");
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Chat ${widget.chat.chatId}"),
+                          Text("Error Data.. $e"),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        chat.deleteChatInfo(widget.chat.chatId ?? "");
+                        setState(() {});
+                      },
+                      onDoubleTap: () {},
+                      child: Container(
+                        width: 50,
+                        child: Text(
+                          "ลบห้องแชทนี้",
+                          style: TextStyle(
+                            color: Colors.red,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
             }
           },
         ),

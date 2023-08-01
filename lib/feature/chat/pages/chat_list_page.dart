@@ -4,11 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:solve_student/authentication/models/user_model.dart';
 import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:solve_student/constants/theme.dart';
 import 'package:solve_student/feature/chat/models/chat_model.dart';
-import 'package:solve_student/feature/chat/models/message.dart' as msg;
 import 'package:solve_student/feature/chat/widgets/chat_order_card.dart';
 import 'package:solve_student/feature/chat/service/chat_provider.dart';
 import 'package:solve_student/widgets/dialogs.dart';
@@ -21,8 +19,6 @@ class ChatListPage extends StatefulWidget {
 }
 
 class _ChatListPageState extends State<ChatListPage> {
-  List<ChatModel> _list = [];
-  final List<UserModel> _searchList = [];
   // bool _isSearching = false;
   late AuthProvider auth;
   late ChatProvider chat;
@@ -75,66 +71,68 @@ class _ChatListPageState extends State<ChatListPage> {
               ),
             ),
           ),
-          body: Consumer<ChatProvider>(builder: (context, con, _) {
-            try {
-              return StreamBuilder(
-                stream: con.getMyOrderChat(auth.uid ?? ""),
-                builder: (context, snapshot) {
-                  var dataSet =
-                      snapshot.data?.docs.map((e) => e.id).toList() ?? [];
-                  if (dataSet.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'No Chat Found!',
-                        style: TextStyle(fontSize: 20),
-                      ),
-                    );
-                  }
-                  switch (snapshot.connectionState) {
-                    case ConnectionState.waiting:
-                    case ConnectionState.none:
-                      return const Center(child: CircularProgressIndicator());
-                    case ConnectionState.active:
-                    case ConnectionState.done:
-                      if (dataSet.isNotEmpty) {
-                        return FutureBuilder(
-                            future: con.getAllChatV2(dataSet),
-                            builder: (context, snap) {
-                              if (snap.data?.isNotEmpty ?? false) {
-                                return ListView.builder(
-                                    itemCount: snap.data?.length ?? 0,
-                                    padding: EdgeInsets.only(
-                                        top: Sizer(context).h * .01),
-                                    physics: const BouncingScrollPhysics(),
-                                    itemBuilder: (context, index) {
-                                      ChatModel only = snap.data![index];
-                                      return ChatOrderCard(only);
-                                    });
-                              } else if (snap.data?.isEmpty ?? false) {
+          body: SafeArea(
+            child: Consumer<ChatProvider>(builder: (context, con, _) {
+              try {
+                return StreamBuilder(
+                  stream: con.getMyOrderChat(auth.uid ?? ""),
+                  builder: (context, snapshot) {
+                    var dataSet =
+                        snapshot.data?.docs.map((e) => e.id).toList() ?? [];
+                    if (dataSet.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'No Chat Found!',
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      );
+                    }
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                      case ConnectionState.none:
+                        return const Center(child: CircularProgressIndicator());
+                      case ConnectionState.active:
+                      case ConnectionState.done:
+                        if (dataSet.isNotEmpty) {
+                          return FutureBuilder(
+                              future: con.getAllChatV2(dataSet),
+                              builder: (context, snap) {
+                                if (snap.data?.isNotEmpty ?? false) {
+                                  return ListView.builder(
+                                      itemCount: snap.data?.length ?? 0,
+                                      padding: EdgeInsets.only(
+                                          top: Sizer(context).h * .01),
+                                      physics: const BouncingScrollPhysics(),
+                                      itemBuilder: (context, index) {
+                                        ChatModel only = snap.data![index];
+                                        return ChatOrderCard(only);
+                                      });
+                                } else if (snap.data?.isEmpty ?? false) {
+                                  return const Center(
+                                    child: Text('No Chat Found!',
+                                        style: TextStyle(fontSize: 20)),
+                                  );
+                                }
                                 return const Center(
-                                  child: Text('No Chat Found!',
+                                  child: Text('Loading...',
                                       style: TextStyle(fontSize: 20)),
                                 );
-                              }
-                              return const Center(
-                                child: Text('Loading...',
-                                    style: TextStyle(fontSize: 20)),
-                              );
-                            });
-                      }
-                      return const Center(
-                        child:
-                            Text('Loading...', style: TextStyle(fontSize: 20)),
-                      );
-                  }
-                },
-              );
-            } catch (e) {
-              return const Center(
-                child: Text('Error data', style: TextStyle(fontSize: 20)),
-              );
-            }
-          }),
+                              });
+                        }
+                        return const Center(
+                          child: Text('Loading...',
+                              style: TextStyle(fontSize: 20)),
+                        );
+                    }
+                  },
+                );
+              } catch (e) {
+                return const Center(
+                  child: Text('Error data', style: TextStyle(fontSize: 20)),
+                );
+              }
+            }),
+          ),
           // floatingActionButton: Padding(
           //   padding: const EdgeInsets.only(bottom: 10),
           //   child: Column(

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:solve_student/authentication/pages/login_page.dart';
@@ -23,7 +21,6 @@ class _AuthenticateState extends State<Authenticate> {
       auth = Provider.of<AuthProvider>(context, listen: false);
       if (auth.firebaseAuth.currentUser != null) {
         auth.getSelfInfo();
-        // await auth.updateRoleFirestore(role);
         await Future.delayed(const Duration(milliseconds: 500));
       }
     });
