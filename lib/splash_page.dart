@@ -3,7 +3,6 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:solve_student/auth.dart';
 import 'package:solve_student/authentication/service/auth_provider.dart';
-import 'package:solve_student/constants/theme.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -15,9 +14,12 @@ class SplashPage extends StatefulWidget {
 class SplashPageState extends State<SplashPage> {
   @override
   void initState() {
+    auth = Provider.of<AuthProvider>(context, listen: false);
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      auth!.getSelfInfo();
+      if (auth.firebaseAuth.currentUser != null) {
+        auth.getSelfInfo();
+      }
       await Future.delayed(const Duration(seconds: 2));
       goToMiddleware();
     });
@@ -30,10 +32,9 @@ class SplashPageState extends State<SplashPage> {
     );
   }
 
-  AuthProvider? auth;
+  late AuthProvider auth;
   @override
   Widget build(BuildContext context) {
-    auth = Provider.of<AuthProvider>(context, listen: false);
     return Scaffold(
       body: Center(
         child: Lottie.asset("assets/images/logo.json", width: 100),
