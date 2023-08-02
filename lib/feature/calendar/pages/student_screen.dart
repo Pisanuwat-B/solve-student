@@ -16,6 +16,7 @@ import 'package:solve_student/feature/calendar/widgets/sizebox.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../../authentication/service/auth_provider.dart';
+import '../../class/pages/class_list_page.dart';
 import 'course_history.dart';
 
 class StudentScreen extends StatefulWidget {
@@ -147,27 +148,27 @@ class _StudentScreenState extends State<StudentScreen>
         centerTitle: false,
         backgroundColor: CustomColors.whitePrimary,
         elevation: 6,
-        leading: InkWell(
-          onTap: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-          },
-          child: const Icon(
-            Icons.arrow_back,
-            color: Colors.black,
-          ),
-        ),
+        // leading: InkWell(
+        //   onTap: () {
+        //     if (Navigator.canPop(context)) {
+        //       Navigator.pop(context);
+        //     }
+        //   },
+        //   child: const Icon(
+        //     Icons.arrow_back,
+        //     color: Colors.black,
+        //   ),
+        // ),
         title: Text(
           'คอร์สเรียนสดของฉัน',
           style: CustomStyles.bold22Black363636,
         ),
-        actions: [
-          if (_util.isTablet()) ...[
-            _buildButtonSearch(),
-            _buildButtonAddCourse()
-          ]
-        ],
+        // actions: [
+        //   if (_util.isTablet()) ...[
+        //     _buildButtonSearch(),
+        //     // _buildButtonAddCourse()
+        //   ]
+        // ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -220,13 +221,13 @@ class _StudentScreenState extends State<StudentScreen>
                     if (_util.isTablet() == false) ...[
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           _historyText(),
-                          Expanded(child: Container()),
-                          _buildButtonSearch(),
-                          S.w(10),
-                          _buildButtonAddCourse(),
+                          // Expanded(child: Container()),
+                          // _buildButtonSearch(),
+                          // S.w(10),
+                          // _buildButtonAddCourse(),
                         ],
                       )
                     ],
@@ -237,8 +238,6 @@ class _StudentScreenState extends State<StudentScreen>
                         _topicText('วันนี้'),
                         if (_util.isTablet()) ...[
                           _historyText(),
-                        ] else ...[
-                          _sellAll(),
                         ]
                       ],
                     ),
@@ -326,7 +325,7 @@ class _StudentScreenState extends State<StudentScreen>
                                 ),
                                 child: Center(
                                   child: Text(
-                                    'ไม่มีการเรียนการสอน',
+                                    'ไม่มีตารางเรียนวันนี้',
                                     style: CustomStyles.bold14Gray878787,
                                   ),
                                 ),
@@ -395,7 +394,14 @@ class _StudentScreenState extends State<StudentScreen>
               color: CustomColors.gray363636,
             ),
           ),
-          onPressed: () async {},
+          onPressed: () async {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ClassListPage(),
+              ),
+            );
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: CustomColors.white,
             shape: RoundedRectangleBorder(
@@ -404,17 +410,27 @@ class _StudentScreenState extends State<StudentScreen>
         ),
       );
     } else {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          border: Border.all(width: 1, color: Colors.grey),
-          borderRadius: const BorderRadius.all(
-            Radius.circular(10),
+      return InkWell(
+        onTap: () async {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ClassListPage(),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border.all(width: 1, color: Colors.grey),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(10),
+            ),
           ),
-        ),
-        child: Text(
-          'ค้นหาติวเตอร์',
-          style: CustomStyles.bold16Green,
+          child: Text(
+            'ค้นหาติวเตอร์',
+            style: CustomStyles.bold16Green,
+          ),
         ),
       );
     }
@@ -428,6 +444,7 @@ class _StudentScreenState extends State<StudentScreen>
     var filterSubjectId = courseController.subjects
         .where((e) => e.id == showCourseStudent.subjectId)
         .toList();
+    var courseReady = (joinReady(showCourseStudent.start ?? DateTime.now()));
     return InkWell(
       onTap: () => onTap(),
       child: SizedBox(
@@ -459,8 +476,7 @@ class _StudentScreenState extends State<StudentScreen>
                             image: imageProvider,
                             fit: BoxFit.cover,
                             colorFilter: ColorFilter.mode(
-                                joinReady(showCourseStudent.start ??
-                                        DateTime.now())
+                                courseReady
                                     ? Colors.black.withOpacity(0.6)
                                     : Colors.transparent,
                                 BlendMode.screen),
@@ -474,8 +490,7 @@ class _StudentScreenState extends State<StudentScreen>
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.error),
                     ),
-                    if (joinReady(
-                        showCourseStudent.start ?? DateTime.now())) ...[
+                    if (!courseReady) ...[
                       const Text(
                         '- ยังไม่ถึงเวลาเข้าเรียน -',
                         style: TextStyle(color: Colors.white),
@@ -526,7 +541,7 @@ class _StudentScreenState extends State<StudentScreen>
                       style: CustomStyles.med14Black363636Overflow,
                     ),
                     S.h(8),
-                    _buttonCard(showCourseStudent),
+                    // _buttonCard(showCourseStudent),
                   ],
                 ),
               ),
@@ -546,6 +561,7 @@ class _StudentScreenState extends State<StudentScreen>
     var filterSubjectId = courseController.subjects
         .where((e) => e.id == showCourseStudent.subjectId)
         .toList();
+    var courseReady = (joinReady(showCourseStudent.start ?? DateTime.now()));
     return InkWell(
       onTap: () => onTap(),
       child: SizedBox(
@@ -577,8 +593,7 @@ class _StudentScreenState extends State<StudentScreen>
                             image: imageProvider,
                             fit: BoxFit.cover,
                             colorFilter: ColorFilter.mode(
-                                joinReady(showCourseStudent.start ??
-                                        DateTime.now())
+                                courseReady
                                     ? Colors.black.withOpacity(0.6)
                                     : Colors.transparent,
                                 BlendMode.screen),
@@ -592,8 +607,7 @@ class _StudentScreenState extends State<StudentScreen>
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.error),
                     ),
-                    if (joinReady(
-                        showCourseStudent.start ?? DateTime.now())) ...[
+                    if (!courseReady) ...[
                       Text(
                         '- ยังไม่ถึงเวลาเข้าเรียน -',
                         style: CustomStyles.med14White,
@@ -693,8 +707,8 @@ class _StudentScreenState extends State<StudentScreen>
               )
             ]
           : <Widget>[
-              const Icon(Icons.list),
               const Icon(Icons.calendar_month),
+              const Icon(Icons.list),
             ],
     );
   }
@@ -704,7 +718,7 @@ class _StudentScreenState extends State<StudentScreen>
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [_topicText('ตารางเรียนสอนชองฉัน'), _swicth()],
+          children: [_topicText('ตารางเรียนของฉัน'), _swicth()],
         ),
         if (_isSelected.last == true) ...[
           if (_util.isTablet()) ...[
@@ -1067,12 +1081,12 @@ class _StudentScreenState extends State<StudentScreen>
                               scale: 4,
                             ),
                             S.w(10),
-                            Text(
-                              listCalendarTab[index].tutorId ?? '',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: CustomStyles.reg16Green,
-                            ),
+                            // Text(
+                            //   listCalendarTab[index].tutorId ?? '',
+                            //   maxLines: 1,
+                            //   overflow: TextOverflow.ellipsis,
+                            //   style: CustomStyles.reg16Green,
+                            // ),
                           ],
                         ),
                       ),
@@ -1238,8 +1252,9 @@ class _StudentScreenState extends State<StudentScreen>
                           event.first.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: CustomStyles.med12GreenPrimary
-                              .copyWith(color: Colors.white),
+                          style: CustomStyles.med12GreenPrimary.copyWith(
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 12),
                         ),
                       ),
                     ),
@@ -1607,7 +1622,7 @@ class _StudentScreenState extends State<StudentScreen>
   }
 
   bool joinReady(DateTime start) {
-    return DateTime.now().isBefore(start);
+    return DateTime.now().isAfter(start.subtract(const Duration(minutes: 30)));
   }
 
   Widget _tagTime(String tag) {

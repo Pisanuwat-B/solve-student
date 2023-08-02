@@ -75,16 +75,6 @@ class _ReviewLessonState extends State<ReviewLesson>
     {"color": ImageAssets.pickGreen},
     {"color": ImageAssets.pickYellow}
   ];
-  final List _listToolsMobile = [
-    {
-      "image_active": ImageAssets.highlightActive,
-      "image_dis": ImageAssets.highlightDis,
-    },
-    {
-      "image_active": ImageAssets.rubberActive,
-      "image_dis": ImageAssets.rubberDis,
-    }
-  ];
   final List _listTools = [
     {
       "image_active": ImageAssets.handActive,
@@ -194,8 +184,12 @@ class _ReviewLessonState extends State<ReviewLesson>
   }
 
   Future<void> initPagesData() async {
+    print('init data');
+    print(widget.file);
+    print(widget.docId);
     if (widget.docId == '') return;
     var sheet = await getDocFiles(widget.tutorId, widget.docId);
+    print(sheet.length);
     setState(() {
       _pages = sheet;
       _isPageReady = true;
@@ -832,29 +826,29 @@ class _ReviewLessonState extends State<ReviewLesson>
 
   _buildMobile() {
     return Scaffold(
-        backgroundColor: CustomColors.grayCFCFCF,
-        body: SafeArea(
-            right: false,
-            left: false,
-            bottom: false,
-            child: Stack(
+      backgroundColor: CustomColors.grayCFCFCF,
+      body: SafeArea(
+        right: false,
+        left: false,
+        bottom: false,
+        child: Stack(
+          children: [
+            Column(
               children: [
-                Column(
-                  children: [
-                    headerLayer2Mobile(),
-                    const DividerLine(),
-                  ],
-                ),
-
-                ///tools widget
-                if (!selectedTools) toolsUndoMobile(),
-                if (!selectedTools) toolsMobile(),
-                if (selectedTools) toolsActiveMobile(),
-
-                /// Control menu
-                if (openShowDisplay == false) toolsControlMobile(),
+                mobileReviewHeader(),
+                const DividerLine(),
+                solvePad(),
               ],
-            )));
+            ),
+            if (!selectedTools) toolsMobile(),
+            if (selectedTools) toolsActiveMobile(),
+
+            /// Control menu
+            // if (openShowDisplay == false) toolsControlMobile(),
+          ],
+        ),
+      ),
+    );
   }
 
   _buildMobileFullScreen() {
@@ -1821,45 +1815,46 @@ class _ReviewLessonState extends State<ReviewLesson>
       useSafeArea: false,
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Column(
-              children: [
-                Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    width: double.infinity,
-                    height: 60,
-                    color: CustomColors.whitePrimary,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        S.w(defaultPadding),
-                        if (Responsive.isMobile(context))
+        return SafeArea(
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return Column(
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      width: double.infinity,
+                      height: 60,
+                      color: CustomColors.whitePrimary,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          S.w(defaultPadding),
+                          if (Responsive.isMobile(context))
+                            Expanded(
+                                flex: 4,
+                                child: Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => Navigator.of(context).pop(),
+                                      child: const Icon(
+                                        Icons.close,
+                                        color: CustomColors.gray878787,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    S.w(8),
+                                    Flexible(
+                                      child: Text(
+                                        "คอร์สปรับพื้นฐานคณิตศาสตร์ ก่อนขึ้น ม.4  - 01 ม.ค. 2023",
+                                        style: CustomStyles
+                                            .bold16Black363636Overflow,
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                  ],
+                                )),
                           Expanded(
-                              flex: 4,
-                              child: Row(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () => Navigator.of(context).pop(),
-                                    child: const Icon(
-                                      Icons.close,
-                                      color: CustomColors.gray878787,
-                                      size: 18,
-                                    ),
-                                  ),
-                                  S.w(8),
-                                  Flexible(
-                                    child: Text(
-                                      "คอร์สปรับพื้นฐานคณิตศาสตร์ ก่อนขึ้น ม.4  - 01 ม.ค. 2023",
-                                      style: CustomStyles
-                                          .bold16Black363636Overflow,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ],
-                              )),
-                        Expanded(
                             flex: 2,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
@@ -1889,16 +1884,73 @@ class _ReviewLessonState extends State<ReviewLesson>
                                 ),
                                 S.w(defaultPadding),
                               ],
-                            ))
-                      ],
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         );
       },
+    );
+  }
+
+  Widget mobileReviewHeader() {
+    return SafeArea(
+      child: StatefulBuilder(
+        builder: (context, setState) {
+          return Column(
+            children: [
+              Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: double.infinity,
+                  height: 55,
+                  color: CustomColors.whitePrimary,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        flex: 4,
+                        child: Row(
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Icon(
+                                  Icons.arrow_back,
+                                  color: CustomColors.gray878787,
+                                  size: 20.0,
+                                ),
+                              ),
+                            ),
+                            S.w(defaultPadding),
+                            Text(
+                              widget.courseName,
+                              style: CustomStyles.bold16Black363636Overflow,
+                              maxLines: 1,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Align(
+                          alignment: Alignment.centerRight,
+                          child: pagingTools()),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -1915,133 +1967,129 @@ class _ReviewLessonState extends State<ReviewLesson>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          S.w(28),
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
-              child: Container(
-                  height: 38,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: CustomColors.grayCFCFCF,
-                      style: BorderStyle.solid,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                    color: CustomColors.whitePrimary,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+            child: Container(
+                height: 38,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: CustomColors.grayCFCFCF,
+                    style: BorderStyle.solid,
+                    width: 1.0,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      S.w(8),
-                      InkWell(
-                        onTap: () => headerLayer1Mobile(),
-                        child: Image.asset(
-                          ImageAssets.iconInfoPage,
-                          height: 24,
-                          width: 24,
-                        ),
-                      ),
-                      S.w(8),
-                      Container(
-                        width: 1,
-                        height: 32,
-                        color: CustomColors.grayCFCFCF,
-                      ),
-                      S.w(8),
-                      Image.asset(
-                        ImageAssets.allPages,
+                  borderRadius: BorderRadius.circular(8),
+                  color: CustomColors.whitePrimary,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    S.w(8),
+                    InkWell(
+                      onTap: () => headerLayer1Mobile(),
+                      child: Image.asset(
+                        ImageAssets.iconInfoPage,
                         height: 24,
                         width: 24,
                       ),
-                      S.w(8),
-                      Container(
-                        width: 1,
-                        height: 32,
-                        color: CustomColors.grayCFCFCF,
-                      ),
-                      S.w(8),
-                      Transform.scale(
-                        scale: 0.6,
-                        child: CupertinoSwitch(
-                          value: _switchValue,
-                          onChanged: (bool value) {
-                            setState(() {
-                              _switchValue = value;
-                            });
-                            print(value);
-                          },
-                        ),
-                      ),
-                      Text("เลื่อนหน้าตามติวเตอร์",
-                          style: CustomStyles.bold12gray878787),
-                      S.w(8.0),
-                    ],
-                  )),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Image.asset(
-                  ImageAssets.avatarMen,
-                  height: 32,
-                  width: 32,
-                ),
-                S.w(8),
-                Container(
-                  height: 32,
-                  decoration: BoxDecoration(
-                    border: Border.all(
+                    ),
+                    S.w(8),
+                    Container(
+                      width: 1,
+                      height: 32,
                       color: CustomColors.grayCFCFCF,
-                      style: BorderStyle.solid,
-                      width: 1.0,
                     ),
-                    borderRadius: BorderRadius.circular(8),
-                    color: CustomColors.whitePrimary,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      S.w(8),
-                      InkWell(
-                        onTap: () {
-                          print('leader');
-                          // showLeader(context);
+                    S.w(8),
+                    Image.asset(
+                      ImageAssets.allPages,
+                      height: 24,
+                      width: 24,
+                    ),
+                    S.w(8),
+                    Container(
+                      width: 1,
+                      height: 32,
+                      color: CustomColors.grayCFCFCF,
+                    ),
+                    S.w(8),
+                    Transform.scale(
+                      scale: 0.6,
+                      child: CupertinoSwitch(
+                        value: _switchValue,
+                        onChanged: (bool value) {
+                          setState(() {
+                            _switchValue = value;
+                          });
+                          print(value);
                         },
-                        child: Image.asset(
-                          ImageAssets.leaderboard,
-                          height: 24,
-                          width: 24,
-                        ),
                       ),
-                      S.w(8),
-                    ],
-                  ),
-                ),
-                S.w(defaultPadding),
-                InkWell(
-                  onTap: () {},
-                  child: Container(
-                    height: 32,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 10,
                     ),
-                    decoration: BoxDecoration(
-                      color: CustomColors.greenPrimary,
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child:
-                        Text("ไปหน้าที่สอน", style: CustomStyles.bold11White),
-                  ),
-                ),
-              ],
-            ),
+                    Text("เลื่อนหน้าตามติวเตอร์",
+                        style: CustomStyles.bold12gray878787),
+                    S.w(8.0),
+                  ],
+                )),
           ),
+          // Expanded(
+          //   flex: 3,
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.end,
+          //     children: [
+          //       Image.asset(
+          //         ImageAssets.avatarMen,
+          //         height: 32,
+          //         width: 32,
+          //       ),
+          //       S.w(8),
+          //       Container(
+          //         height: 32,
+          //         decoration: BoxDecoration(
+          //           border: Border.all(
+          //             color: CustomColors.grayCFCFCF,
+          //             style: BorderStyle.solid,
+          //             width: 1.0,
+          //           ),
+          //           borderRadius: BorderRadius.circular(8),
+          //           color: CustomColors.whitePrimary,
+          //         ),
+          //         child: Row(
+          //           mainAxisAlignment: MainAxisAlignment.center,
+          //           children: <Widget>[
+          //             S.w(8),
+          //             InkWell(
+          //               onTap: () {
+          //                 print('leader');
+          //                 // showLeader(context);
+          //               },
+          //               child: Image.asset(
+          //                 ImageAssets.leaderboard,
+          //                 height: 24,
+          //                 width: 24,
+          //               ),
+          //             ),
+          //             S.w(8),
+          //           ],
+          //         ),
+          //       ),
+          //       S.w(defaultPadding),
+          //       InkWell(
+          //         onTap: () {},
+          //         child: Container(
+          //           height: 32,
+          //           padding: const EdgeInsets.symmetric(
+          //             horizontal: 6,
+          //             vertical: 10,
+          //           ),
+          //           decoration: BoxDecoration(
+          //             color: CustomColors.greenPrimary,
+          //             borderRadius: BorderRadius.circular(8.0),
+          //           ),
+          //           child:
+          //               Text("ไปหน้าที่สอน", style: CustomStyles.bold11White),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
           S.w(28),
         ],
       ),
@@ -2404,40 +2452,41 @@ class _ReviewLessonState extends State<ReviewLesson>
                           S.h(defaultPadding),
                           Expanded(
                             child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 1),
-                                child: Column(
-                                  children: [
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Image.asset(
-                                            ImageAssets.pickGreenTran,
-                                            width: 38,
-                                          ),
-                                          Image.asset(
-                                            ImageAssets.pickLineTran,
-                                            width: 38,
-                                          ),
-                                        ],
-                                      ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 1),
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Image.asset(
+                                          ImageAssets.pickGreenTran,
+                                          width: 38,
+                                        ),
+                                        Image.asset(
+                                          ImageAssets.pickLineTran,
+                                          width: 38,
+                                        ),
+                                      ],
                                     ),
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Image.asset(
-                                            ImageAssets.clearTran,
-                                            width: 38,
-                                          ),
-                                        ],
-                                      ),
+                                  ),
+                                  Expanded(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Image.asset(
+                                          ImageAssets.clearTran,
+                                          width: 38,
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                )),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -2667,7 +2716,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                 duration: const Duration(seconds: 1),
                 curve: Curves.fastOutSlowIn,
                 height: 65,
-                width: selectedTools ? 0 : 310,
+                width: selectedTools ? 0 : 430,
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: CustomColors.grayCFCFCF,
@@ -2690,7 +2739,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Image.asset(
-                                    _listToolsMobile[_selectedIndexTools]
+                                    _listTools[_selectedIndexTools]
                                         ['image_active'],
                                     width: 10.w,
                                   )
@@ -2709,7 +2758,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                                   physics: const NeverScrollableScrollPhysics(),
                                   scrollDirection: Axis.horizontal,
                                   shrinkWrap: true,
-                                  itemCount: _listToolsMobile.length,
+                                  itemCount: _listTools.length,
                                   itemBuilder: (context, index) {
                                     return Row(
                                       children: [
@@ -2724,9 +2773,9 @@ class _ReviewLessonState extends State<ReviewLesson>
                                           },
                                           child: Image.asset(
                                             _selectedIndexTools == index
-                                                ? _listToolsMobile[index]
+                                                ? _listTools[index]
                                                     ['image_active']
-                                                : _listToolsMobile[index]
+                                                : _listTools[index]
                                                     ['image_dis'],
                                             width: 48,
                                           ),
@@ -2778,16 +2827,19 @@ class _ReviewLessonState extends State<ReviewLesson>
                                   width: 38,
                                 ),
                               ),
-                              S.w(defaultPadding),
+                              S.w(4),
                               InkWell(
                                 onTap: () {
                                   setState(() {
                                     selectedTools = !selectedTools;
                                   });
                                 },
-                                child: Image.asset(
-                                  ImageAssets.arrowLeftDouble,
-                                  width: 14,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Image.asset(
+                                    ImageAssets.arrowLeftDouble,
+                                    width: 14,
+                                  ),
                                 ),
                               ),
                             ],
@@ -2807,25 +2859,66 @@ class _ReviewLessonState extends State<ReviewLesson>
         padding: const EdgeInsets.only(left: 15),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          // mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             InkWell(
               onTap: () {
-                print("Undo");
+                if (_pageController.hasClients &&
+                    _pageController.page!.toInt() != 0) {
+                  _pageController.animateToPage(
+                    _pageController.page!.toInt() - 1,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                }
               },
-              child: Image.asset(
-                ImageAssets.undo,
-                width: 38,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.all(Radius.circular(90)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: 8, right: 8, top: 10, bottom: 14),
+                  child: Image.asset(
+                    ImageAssets.arrowUp,
+                    width: 20,
+                    color: _isPrevBtnActive
+                        ? CustomColors.activePagingBtn
+                        : CustomColors.inactivePagingBtn,
+                  ),
+                ),
               ),
             ),
             S.h(8),
             InkWell(
               onTap: () {
-                print("Redo");
+                if (_pages.length > 1) {
+                  if (_pageController.hasClients &&
+                      _pageController.page!.toInt() != _pages.length - 1) {
+                    _pageController.animateToPage(
+                      _pageController.page!.toInt() + 1,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  }
+                }
               },
-              child: Image.asset(
-                ImageAssets.redo,
-                width: 38,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.all(Radius.circular(90)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: 8, right: 8, top: 14, bottom: 10),
+                  child: Image.asset(
+                    ImageAssets.arrowDown,
+                    width: 20,
+                    color: _isNextBtnActive
+                        ? CustomColors.activePagingBtn
+                        : CustomColors.inactivePagingBtn,
+                  ),
+                ),
               ),
             ),
           ],
@@ -2858,7 +2951,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                       });
                     },
                     child: Image.asset(
-                      _listToolsMobile[_selectedIndexTools]['image_active'],
+                      _listTools[_selectedIndexTools]['image_active'],
                       height: 70,
                       width: 70,
                     ),

@@ -27,10 +27,10 @@ Future<void> showCloseDialog(BuildContext context, Function onConfirm) {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Text('ต้องการจบการสอน?',
+                  Text('ต้องการออกจากห้องเรียน?',
                       style: CustomStyles.bold22Black363636),
                   S.h(32),
-                  Text("นักเรียนในห้องของคุณทั้งหมดจะถูกบังคับให้ออกจากห้อง",
+                  Text("สามารถกลับเข้าห้องได้อีกครั้ง หากผู้สอนยังอยู่ในห้อง",
                       style: CustomStyles.med14Gray878787,
                       textAlign: TextAlign.center),
                   S.h(32),
@@ -58,7 +58,7 @@ Future<void> showCloseDialog(BuildContext context, Function onConfirm) {
                               );
                               onConfirm(); // Execute the confirmation function
                             },
-                            child: Text('ปิดห้องเรียน',
+                            child: Text('ออกห้องเรียน',
                                 style: CustomStyles.bold14White)),
                       ),
                       SizedBox(

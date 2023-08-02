@@ -14,6 +14,8 @@ import 'package:solve_student/feature/order/model/order_class_model.dart';
 import 'package:solve_student/feature/order/service/order_mock_provider.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import '../../calendar/widgets/sizebox.dart';
+
 class ClassDetailPage extends StatefulWidget {
   ClassDetailPage({
     super.key,
@@ -50,7 +52,7 @@ class _OrderDetailPageState extends State<ClassDetailPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
-          "Course Detail",
+          "รายละเอียดคอร์ส",
           style: TextStyle(
             color: appTextPrimaryColor,
           ),
@@ -94,7 +96,7 @@ class _OrderDetailPageState extends State<ClassDetailPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -103,7 +105,7 @@ class _OrderDetailPageState extends State<ClassDetailPage> {
                         Expanded(
                           child: Text(
                             widget.classDetail.name ?? "",
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: appTextPrimaryColor,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -148,7 +150,7 @@ class _OrderDetailPageState extends State<ClassDetailPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    S.h(10),
                     Row(
                       children: [
                         Icon(
@@ -166,22 +168,23 @@ class _OrderDetailPageState extends State<ClassDetailPage> {
                         )
                       ],
                     ),
-                    Text(
-                      "UUID: 00000001",
-                      style: TextStyle(
-                        color: greyColor,
-                        fontSize: 15,
-                      ),
-                    ),
-                    Text(
-                      widget.classDetail.detail ?? "",
-                      style: TextStyle(
-                        color: appTextPrimaryColor,
-                        fontSize: 15,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    S.h(10),
+                    // Text(
+                    //   "UUID: 00000001",
+                    //   style: TextStyle(
+                    //     color: greyColor,
+                    //     fontSize: 15,
+                    //   ),
+                    // ),
+                    // Text(
+                    //   widget.classDetail.detail ?? "",
+                    //   style: TextStyle(
+                    //     color: appTextPrimaryColor,
+                    //     fontSize: 15,
+                    //   ),
+                    //   maxLines: 2,
+                    //   overflow: TextOverflow.ellipsis,
+                    // ),
                     Row(
                       children: [
                         Container(
@@ -217,17 +220,17 @@ class _OrderDetailPageState extends State<ClassDetailPage> {
                         ),
                       ],
                     ),
-                    Row(
-                      children: [
-                        const Icon(Icons.account_circle_outlined),
-                        Container(
-                          height: 30,
-                          child: const VerticalDivider(color: Colors.black),
-                        ),
-                        starRateFromNumWidget(4),
-                      ],
-                    ),
-                    const SizedBox(height: 5),
+                    // Row(
+                    //   children: [
+                    //     const Icon(Icons.account_circle_outlined),
+                    //     Container(
+                    //       height: 30,
+                    //       child: const VerticalDivider(color: Colors.black),
+                    //     ),
+                    //     starRateFromNumWidget(4),
+                    //   ],
+                    // ),
+                    const SizedBox(height: 15),
                     const Text(
                       "สร้างโดย",
                       style: TextStyle(
@@ -248,7 +251,7 @@ class _OrderDetailPageState extends State<ClassDetailPage> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 15),
                     const Text(
                       "รายละเอียด",
                       style: TextStyle(

@@ -61,7 +61,7 @@ class _CourseHistoryState extends State<CourseHistory>
       // Fetching other fields from 'course_live' document
       String thumbnailUrl = document.get('thumbnail_url');
       String tutorId = document.get('tutor_id');
-      String docId = document.id; // Updated to get the document ID
+      String docId = document.get('document_id');
       String detailsText = document.get('details_text');
 
       final studentsWithReviewFile = calendar
@@ -274,7 +274,7 @@ class _CourseHistoryState extends State<CourseHistory>
                                 ],
                               ),
                             ),
-                            S.w(50),
+                            if (_util.isTablet()) S.w(50),
                             Row(
                               children: [
                                 _tagType(
@@ -298,12 +298,12 @@ class _CourseHistoryState extends State<CourseHistory>
                                     scale: 4,
                                   ),
                                   S.w(10),
-                                  Text(
-                                    (reviewList[index].tutorId) ?? '',
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: CustomStyles.reg16Green,
-                                  ),
+                                  // Text(
+                                  //   (reviewList[index].tutorId) ?? '',
+                                  //   maxLines: 2,
+                                  //   overflow: TextOverflow.ellipsis,
+                                  //   style: CustomStyles.reg16Green,
+                                  // ),
                                 ],
                               ),
                             ),

@@ -57,19 +57,20 @@ class _FilterClassWidgetState extends State<FilterClassWidget> {
                   SizedBox(
                     width: 110,
                     child: IconButton(
-                        onPressed: () {
-                          isDateTimeEnum = null;
-                          setState(() {});
-                        },
-                        icon: Row(
-                          children: [
-                            const Icon(Icons.clear),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            const Text('ล้างข้อมูล'),
-                          ],
-                        )),
+                      onPressed: () {
+                        isDateTimeEnum = null;
+                        setState(() {});
+                      },
+                      icon: const Row(
+                        children: [
+                          Icon(Icons.clear),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text('ล้างข้อมูล'),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),

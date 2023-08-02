@@ -10,6 +10,8 @@ import 'package:solve_student/widgets/confirm_action_widget.dart';
 import 'package:solve_student/widgets/show_my_id_widget.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import '../components/webview.dart';
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
   @override
@@ -28,8 +30,8 @@ class _ProfilePageState extends State<ProfilePage> {
   TextEditingController classCtl = TextEditingController();
   static FirebaseFirestore firestore = FirebaseFirestore.instance;
   Future<void> updateUserInfo() async {
-    authprovider.getSelfInfo();
-    await firestore.collection('users').doc(authprovider.user!.id).update({
+    authProvider.getSelfInfo();
+    await firestore.collection('users').doc(authProvider.user!.id).update({
       'name': nameCtl.text,
       'about': aboutCtl.text,
       'role': roleCtl.text,
@@ -37,12 +39,12 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-  late AuthProvider authprovider;
+  late AuthProvider authProvider;
   init() {
-    nameCtl = TextEditingController(text: authprovider.user?.name);
-    aboutCtl = TextEditingController(text: authprovider.user?.about);
-    roleCtl = TextEditingController(text: authprovider.user?.role);
-    classCtl = TextEditingController(text: authprovider.user?.classLevel);
+    nameCtl = TextEditingController(text: authProvider.user?.name);
+    aboutCtl = TextEditingController(text: authProvider.user?.about);
+    roleCtl = TextEditingController(text: authProvider.user?.role);
+    classCtl = TextEditingController(text: authProvider.user?.classLevel);
     if (roleCtl.text.isNotEmpty) {
       roleSelected = roleCtl.text;
     }
@@ -53,7 +55,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   void initState() {
-    authprovider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider = Provider.of<AuthProvider>(context, listen: false);
     init();
     super.initState();
   }
@@ -70,15 +72,6 @@ class _ProfilePageState extends State<ProfilePage> {
             'ตั้งค่า',
             style: TextStyle(
               color: appTextPrimaryColor,
-            ),
-          ),
-          leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(
-              Icons.chevron_left,
-              color: Colors.black,
             ),
           ),
         ),
@@ -120,7 +113,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       width: Sizer(context).h * .15,
                                       height: Sizer(context).h * .15,
                                       fit: BoxFit.cover,
-                                      imageUrl: authprovider.user?.image ?? "",
+                                      imageUrl: authProvider.user?.image ?? "",
                                       errorWidget: (context, url, error) =>
                                           const CircleAvatar(
                                               child:
@@ -134,7 +127,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              authprovider.user?.name ?? "",
+                              authProvider.user?.name ?? "",
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
@@ -159,13 +152,13 @@ class _ProfilePageState extends State<ProfilePage> {
                             color: greyColor2,
                             borderRadius: BorderRadius.circular(50),
                           ),
-                          child: Text("${authprovider.user?.role ?? ""} "),
+                          child: Text("${authProvider.user?.role ?? ""} "),
                         ),
                         const SizedBox(height: 10),
                         Container(
                           padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
                           child: const Text(
-                            "รหัสของฉัน",
+                            "ID ของฉัน",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -176,7 +169,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         Container(
                           height: 50,
                           margin: const EdgeInsets.fromLTRB(30, 0, 30, 30),
-                          child: ShowMyIdWidget(authprovider: authprovider),
+                          child: ShowMyIdWidget(authprovider: authProvider),
                         ),
                       ],
                     ),
@@ -204,50 +197,55 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  settingCard(title: 'เงื่อนไขข้อตกลงการใช้บริการ'),
+                  settingCard(
+                      title: 'เงื่อนไขข้อตกลงการใช้บริการ',
+                      url: 'https://solve.in.th/terms-of-service/'),
                   const Divider(thickness: 2),
                   const SizedBox(height: 10),
-                  settingCard(title: 'นโยบายความเป็นส่วนตัว'),
+                  settingCard(
+                      title: 'นโยบายความเป็นส่วนตัว',
+                      url: 'https://solve.in.th/privacy-policy/'),
                   const Divider(thickness: 2),
                   const SizedBox(height: 60),
                   Center(
-                      child: Column(
-                    children: [
-                      TextButton(
-                        onPressed: () async {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return ConfirmActionWidget(
-                                title: 'ออกจากระบบ',
-                                content: 'ออกจากระบบบัญชีของคุณใช่หรือไม่',
-                                confirmText: 'ออกจากระบบ',
-                                confirmColor: Colors.red,
-                                onPressed: () async {
-                                  await authprovider.signOut().then((value) {
-                                    Navigator.of(context)
-                                        .popUntil((route) => route.isFirst);
-                                    var route = MaterialPageRoute(
-                                        builder: (context) =>
-                                            const Authenticate());
-                                    Navigator.pushReplacement(context, route);
-                                  });
-                                },
-                              );
-                            },
-                          );
-                        },
-                        child: const Text("ออกจากระบบ"),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        authprovider.user?.email ?? "",
-                        style: const TextStyle(
-                          color: greyColor,
+                    child: Column(
+                      children: [
+                        TextButton(
+                          onPressed: () async {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return ConfirmActionWidget(
+                                  title: 'ออกจากระบบ',
+                                  content: 'ออกจากระบบบัญชีของคุณใช่หรือไม่',
+                                  confirmText: 'ออกจากระบบ',
+                                  confirmColor: Colors.red,
+                                  onPressed: () async {
+                                    await authProvider.signOut().then((value) {
+                                      Navigator.of(context)
+                                          .popUntil((route) => route.isFirst);
+                                      var route = MaterialPageRoute(
+                                          builder: (context) =>
+                                              const Authenticate());
+                                      Navigator.pushReplacement(context, route);
+                                    });
+                                  },
+                                );
+                              },
+                            );
+                          },
+                          child: const Text("ออกจากระบบ"),
                         ),
-                      ),
-                    ],
-                  )),
+                        const SizedBox(height: 10),
+                        Text(
+                          authProvider.user?.email ?? "",
+                          style: const TextStyle(
+                            color: greyColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -257,34 +255,47 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Container settingCard({
+  Widget settingCard({
     required String title,
     IconData? icon,
+    String? url,
   }) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
-      child: Row(
-        children: [
-          icon == null
-              ? const SizedBox()
-              : Icon(
-                  icon,
-                  color: primaryColor,
+    return InkWell(
+      onTap: () {
+        if (url != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PrivacyPolicyScreen(url: url),
+            ),
+          );
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
+        child: Row(
+          children: [
+            icon == null
+                ? const SizedBox()
+                : Icon(
+                    icon,
+                    color: primaryColor,
+                  ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
                 ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
               ),
             ),
-          ),
-          const Icon(
-            Icons.chevron_right,
-            color: primaryColor,
-          ),
-        ],
+            const Icon(
+              Icons.chevron_right,
+              color: primaryColor,
+            ),
+          ],
+        ),
       ),
     );
   }

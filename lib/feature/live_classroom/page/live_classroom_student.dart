@@ -166,10 +166,10 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       "image_active": ImageAssets.rubberActive,
       "image_dis": ImageAssets.rubberDis,
     },
-    {
-      "image_active": ImageAssets.laserPenActive,
-      "image_dis": ImageAssets.laserPenDis,
-    }
+    // {
+    //   "image_active": ImageAssets.laserPenActive,
+    //   "image_dis": ImageAssets.laserPenDis,
+    // }
   ];
   final List _listToolsDisable = [
     {"image": "assets/images/hand-tran.png"},
@@ -2179,7 +2179,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             child: AnimatedContainer(
               duration: const Duration(seconds: 1),
               curve: Curves.fastOutSlowIn,
-              height: selectedTools ? 270 : MediaQuery.of(context).size.height,
+              height: selectedTools ? 350 : MediaQuery.of(context).size.height,
               width: 120,
               decoration: BoxDecoration(
                 border: Border.all(
@@ -2193,39 +2193,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  S.h(8),
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: defaultPadding, vertical: 1),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              print("Undo");
-                            },
-                            child: Image.asset(
-                              ImageAssets.undo,
-                              width: 38,
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () {
-                              print("Redo");
-                            },
-                            child: Image.asset(
-                              ImageAssets.redo,
-                              width: 38,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Container(
-                      height: 2, width: 80, color: CustomColors.grayF3F3F3),
+                  S.h(16),
                   selectedTools
                       ? Expanded(
                           flex: 2,
@@ -2365,41 +2333,41 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                       ],
                                     ),
                                   ),
-                                  Expanded(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        InkWell(
-                                          onTap: () {
-                                            print("Clear");
-                                          },
-                                          child: Image.asset(
-                                            ImageAssets.bin,
-                                            width: 38,
-                                          ),
-                                        ),
-                                        InkWell(
-                                          onTap: () {
-                                            print("More");
-
-                                            setState(() {
-                                              if (openColors ||
-                                                  openLines == true) {
-                                                openColors = false;
-                                                openLines = false;
-                                              }
-                                              openMore = !openMore;
-                                            });
-                                          },
-                                          child: Image.asset(
-                                            ImageAssets.more,
-                                            width: 38,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                  // Expanded(
+                                  //   child: Row(
+                                  //     mainAxisAlignment:
+                                  //         MainAxisAlignment.spaceEvenly,
+                                  //     children: [
+                                  //       InkWell(
+                                  //         onTap: () {
+                                  //           print("Clear");
+                                  //         },
+                                  //         child: Image.asset(
+                                  //           ImageAssets.bin,
+                                  //           width: 38,
+                                  //         ),
+                                  //       ),
+                                  //       InkWell(
+                                  //         onTap: () {
+                                  //           print("More");
+                                  //
+                                  //           setState(() {
+                                  //             if (openColors ||
+                                  //                 openLines == true) {
+                                  //               openColors = false;
+                                  //               openLines = false;
+                                  //             }
+                                  //             openMore = !openMore;
+                                  //           });
+                                  //         },
+                                  //         child: Image.asset(
+                                  //           ImageAssets.more,
+                                  //           width: 38,
+                                  //         ),
+                                  //       ),
+                                  //     ],
+                                  //   ),
+                                  // ),
                                   Expanded(
                                     child: InkWell(
                                       onTap: () {
@@ -2585,29 +2553,29 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    S.h(8),
-                    Expanded(
-                      flex: 1,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: defaultPadding, vertical: 1),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Image.asset(
-                              ImageAssets.undoTran,
-                              width: 38,
-                            ),
-                            Image.asset(
-                              ImageAssets.redoTran,
-                              width: 38,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Container(
-                        height: 2, width: 80, color: CustomColors.grayF3F3F3),
+                    S.h(16),
+                    // Expanded(
+                    //   flex: 1,
+                    //   child: Padding(
+                    //     padding: const EdgeInsets.symmetric(
+                    //         horizontal: defaultPadding, vertical: 1),
+                    //     child: Row(
+                    //       mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    //       children: [
+                    //         Image.asset(
+                    //           ImageAssets.undoTran,
+                    //           width: 38,
+                    //         ),
+                    //         Image.asset(
+                    //           ImageAssets.redoTran,
+                    //           width: 38,
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // ),
+                    // Container(
+                    //     height: 2, width: 80, color: CustomColors.grayF3F3F3),
                     Expanded(
                       flex: 4,
                       child: ListView.builder(

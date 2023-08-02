@@ -20,6 +20,8 @@ import 'package:solve_student/feature/order/pages/order_mock_detail_page.dart';
 import 'package:solve_student/widgets/date_time_format_util.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import '../../calendar/helper/utility_helper.dart';
+
 class ClassListPage extends StatefulWidget {
   ClassListPage({
     super.key,
@@ -41,7 +43,7 @@ class _ClassListPageState extends State<ClassListPage>
     with TickerProviderStateMixin {
   AuthProvider? authProvider;
   ClassProvider? classProvider;
-
+  final _util = UtilityHelper();
   // String selectClass = "วิชาคณิตศาสตร์";
   int count = 0;
   final txtSearchName = TextEditingController();
@@ -205,7 +207,7 @@ class _ClassListPageState extends State<ClassListPage>
               Container(
                 height: 30,
                 // color: Colors.red,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
                       color: greyColor,
@@ -245,7 +247,7 @@ class _ClassListPageState extends State<ClassListPage>
                       filSubject: widget.filSubject,
                       filterClass: widget.filterClass,
                     ),
-                    MyClassPage(),
+                    const MyClassPage(),
                   ],
                 ),
               ),
@@ -260,17 +262,8 @@ class _ClassListPageState extends State<ClassListPage>
     return AppBar(
       backgroundColor: Colors.white,
       title: const Text(
-        'ค้นหาติวเตอร์',
+        'ค้นหาติวเตอร์สอนตัวต่อตัว',
         style: TextStyle(color: appTextPrimaryColor),
-      ),
-      leading: IconButton(
-        onPressed: () {
-          Navigator.pop(context);
-        },
-        icon: const Icon(
-          Icons.chevron_left,
-          color: Colors.black,
-        ),
       ),
       actions: [
         Column(
@@ -289,7 +282,8 @@ class _ClassListPageState extends State<ClassListPage>
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const CreateClassPage()),
+                      builder: (context) => const CreateClassPage(),
+                    ),
                   );
                 },
                 child: Row(
@@ -297,14 +291,13 @@ class _ClassListPageState extends State<ClassListPage>
                   children: [
                     const Icon(
                       Icons.add,
-                      size: 12,
+                      size: 16,
                     ),
-                    Text(
-                      authProvider?.user!.getRoleType() == RoleType.tutor
-                          ? 'สร้างประกาศหานักเรียน'
-                          : 'สร้างประกาศหาติวเตอร์',
-                      style: const TextStyle(fontSize: 10),
-                    )
+                    if (_util.isTablet())
+                      const Text(
+                        'สร้างประกาศหาติวเตอร์',
+                        style: TextStyle(fontSize: 14),
+                      )
                   ],
                 ),
               ),
