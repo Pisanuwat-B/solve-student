@@ -149,7 +149,9 @@ class _StudentScreenState extends State<StudentScreen>
         elevation: 6,
         leading: InkWell(
           onTap: () {
-            Navigator.of(context).pop();
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
           },
           child: const Icon(
             Icons.arrow_back,

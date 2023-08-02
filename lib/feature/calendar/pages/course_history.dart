@@ -61,12 +61,13 @@ class _CourseHistoryState extends State<CourseHistory>
       // Fetching other fields from 'course_live' document
       String thumbnailUrl = document.get('thumbnail_url');
       String tutorId = document.get('tutor_id');
-      String docId = document.get('document_id');
+      String docId = document.id; // Updated to get the document ID
       String detailsText = document.get('details_text');
 
       final studentsWithReviewFile = calendar
           .where((item) =>
-              (item as Map<String, dynamic>).containsKey('review_file'))
+              (item as Map<String, dynamic>)['review_file'] != null &&
+              (item)['review_file'].isNotEmpty) // Updated condition
           .map((item) {
         Map<String, dynamic> itemWithAdditionalFields =
             (item as Map<String, dynamic>)
@@ -81,6 +82,7 @@ class _CourseHistoryState extends State<CourseHistory>
       }).toList();
       showCourseStudents.addAll(studentsWithReviewFile);
     }
+    showCourseStudents.sort((a, b) => b.start!.compareTo(a.start!));
     return showCourseStudents;
   }
 
@@ -297,7 +299,7 @@ class _CourseHistoryState extends State<CourseHistory>
                                   ),
                                   S.w(10),
                                   Text(
-                                    reviewList[index].tutorId ?? '',
+                                    (reviewList[index].tutorId) ?? '',
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: CustomStyles.reg16Green,

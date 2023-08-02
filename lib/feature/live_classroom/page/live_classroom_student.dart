@@ -198,6 +198,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
 
   var courseController = CourseLiveController();
   late String courseName;
+  bool isCourseLoaded = false;
 
   @override
   void initState() {
@@ -248,6 +249,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       }
       courseName = courseController.courseData!.courseName!;
       micEnable = widget.micEnabled;
+      isCourseLoaded = true;
     });
   }
 
@@ -310,6 +312,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
         Uri.parse(
             'ws://35.240.169.164:3000/${widget.courseId}/${widget.startTime}'),
       );
+      sendMessage(widget.userId, 'RequestSolvepadSize');
     } else {
       channel = WebSocketChannel.connect(
         Uri.parse(
@@ -351,6 +354,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       'FocusStudentScreen': handleMessageFocusStudentScreen,
       'HostLeaveScreen': handleMessageHostLeaveScreen,
       'EndMeeting': handleMessageEndMeeting,
+      'SetSolvepad': handleMessageSetSolvepad,
     };
   }
 
@@ -515,6 +519,15 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   void handleMessageEndMeeting(String data) {
     meeting.leave();
     Navigator.pop(context);
+    Navigator.pop(context);
+  }
+
+  void handleMessageSetSolvepad(String data) {
+    var parts = data.split(':');
+    setState(() {
+      hostSolvepadSize = Size(double.parse(parts[1]), double.parse(parts[2]));
+      initVariableSetup(mySolvepadSize!.width, mySolvepadSize!.height);
+    });
   }
 
   Offset convertToOffset(String offsetString) {
@@ -534,12 +547,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
 
   @override
   dispose() {
-    // SystemChrome.setPreferredOrientations([
-    //   DeviceOrientation.portraitUp,
-    //   DeviceOrientation.portraitDown,
-    //   DeviceOrientation.landscapeRight,
-    //   DeviceOrientation.landscapeLeft,
-    // ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: SystemUiOverlay.values);
     _meetingTimer?.cancel();
@@ -733,6 +740,23 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     });
   }
 
+  void snapFollow() {
+    _pageController.animateToPage(
+      _currentHostPage,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+    var parts = _currentHostScrollZoom.split(':');
+    var scrollX = double.parse(parts[0]);
+    var scrollY = double.parse(parts[1]);
+    var zoom = double.parse(parts.last);
+    if (_currentHostScrollZoom != '') {
+      _transformationController[_currentHostPage].value = Matrix4.identity()
+        ..translate(scrollX, scaleScrollY(scrollY))
+        ..scale(zoom);
+    }
+  }
+
   // ---------- FUNCTION: page control
   void _addPage() {
     setState(() {
@@ -770,20 +794,22 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _onWillPopScope,
-      child: _joined
-          ? Scaffold(
-              backgroundColor: CustomColors.grayCFCFCF,
-              body: !Responsive.isMobile(context)
-                  ? _buildTablet()
-                  : fullScreen
-                      ? _buildMobileFullScreen()
-                      : _buildMobile(),
-            )
-          : const LoadingScreen(),
+      child: SafeArea(
+        child: _joined && isCourseLoaded
+            ? Scaffold(
+                backgroundColor: CustomColors.grayCFCFCF,
+                body: !Responsive.isMobile(context)
+                    ? _buildTablet()
+                    : fullScreen
+                        ? _buildMobileFullScreen()
+                        : _buildMobile(),
+              )
+            : const LoadingScreen(),
+      ),
     );
   }
 
-  _buildTablet() {
+  Widget _buildTablet() {
     return Scaffold(
       backgroundColor: CustomColors.grayCFCFCF,
       body: SafeArea(
@@ -897,7 +923,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     );
   }
 
-  _buildMobile() {
+  Widget _buildMobile() {
     return Scaffold(
       backgroundColor: CustomColors.grayCFCFCF,
       body: Stack(
@@ -944,7 +970,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     );
   }
 
-  _buildMobileFullScreen() {
+  Widget _buildMobileFullScreen() {
     return Scaffold(
       backgroundColor: CustomColors.grayCFCFCF,
       body: Stack(
@@ -1359,16 +1385,21 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                       ),
                 ),
                 S.w(4.0),
-                RichText(
-                  text: TextSpan(
-                    text: 'Live Time: ',
-                    style: CustomStyles.med14redFF4201,
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: _formattedElapsedTime,
-                        style: CustomStyles.med14Gray878787,
-                      ),
-                    ],
+                InkWell(
+                  onTap: () {
+                    print(hostSolvepadSize.toString());
+                  },
+                  child: RichText(
+                    text: TextSpan(
+                      text: 'Live Time: ',
+                      style: CustomStyles.med14redFF4201,
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: _formattedElapsedTime,
+                          style: CustomStyles.med14Gray878787,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 S.w(16.0),
@@ -1581,6 +1612,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                       if (tabFreestyle == true) {
                         tabFollowing = !tabFollowing;
                         tabFreestyle = false;
+                        snapFollow();
                       }
                     });
                   },
@@ -2016,21 +2048,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                           tabFollowing = value;
                           tabFreestyle = !value;
                           if (tabFollowing) {
-                            _pageController.animateToPage(
-                              _currentHostPage,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                            if (_currentHostScrollZoom != '') {
-                              var parts = _currentHostScrollZoom.split(':');
-                              var scrollX = double.parse(parts[0]);
-                              var scrollY = double.parse(parts[1]);
-                              var zoom = double.parse(parts.last);
-                              _transformationController[_currentHostPage]
-                                  .value = Matrix4.identity()
-                                ..translate(scrollX, scaleScrollY(scrollY))
-                                ..scale(zoom);
-                            }
+                            snapFollow();
                           }
                         });
                       },
