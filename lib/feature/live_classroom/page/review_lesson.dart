@@ -462,12 +462,6 @@ class _ReviewLessonState extends State<ReviewLesson>
           );
         }
       } // Paging
-      // for (var entry in handlers.entries) {
-      //   if (actionData.startsWith(entry.key)) {
-      //     entry.value(actionData);
-      //     break;
-      //   }
-      // }
     }
     print('exit replay loop');
     setState(() {
@@ -477,8 +471,6 @@ class _ReviewLessonState extends State<ReviewLesson>
   }
 
   void instantReplay() async {
-    print('start instant replay');
-    print(widget.userId);
     for (int i = 0; i < downloadedSolvepad.length; i++) {
       if (downloadedSolvepad[i]['uid'] != widget.tutorId &&
           downloadedSolvepad[i]['uid'] != widget.userId) {
@@ -565,7 +557,16 @@ class _ReviewLessonState extends State<ReviewLesson>
         setState(() {
           _tutorStrokeWidthIndex = index;
         });
-      } // WidthPaging
+      } // Width
+      else if (actionData.startsWith('ChangePage')) {
+        var parts = actionData.split(':');
+        var pageAction = parts.last;
+        if (pageAction == 'prev') {
+          _tutorCurrentPage--;
+        } else if (pageAction == 'next') {
+          _tutorCurrentPage++;
+        }
+      } // Paging
     }
   }
 
