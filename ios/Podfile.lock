@@ -964,6 +964,8 @@ PODS:
   - videosdk (0.0.1):
     - Flutter
   - WebRTC-SDK (114.5735.02)
+  - webview_flutter_wkwebview (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
@@ -990,6 +992,7 @@ DEPENDENCIES:
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - video_thumbnail (from `.symlinks/plugins/video_thumbnail/ios`)
   - videosdk (from `.symlinks/plugins/videosdk/ios`)
+  - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/ios`)
 
 SPEC REPOS:
   trunk:
@@ -1077,6 +1080,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/video_thumbnail/ios"
   videosdk:
     :path: ".symlinks/plugins/videosdk/ios"
+  webview_flutter_wkwebview:
+    :path: ".symlinks/plugins/webview_flutter_wkwebview/ios"
 
 SPEC CHECKSUMS:
   abseil: 926fb7a82dc6d2b8e1f2ed7f3a718bce691d1e46
@@ -1137,6 +1142,7 @@ SPEC CHECKSUMS:
   video_thumbnail: c4e2a3c539e247d4de13cd545344fd2d26ffafd1
   videosdk: a23c2981afcefd8ac781c7778d39669282441093
   WebRTC-SDK: dd913fd31cfbf1d43b9a22d83f4c6354c960c623
+  webview_flutter_wkwebview: 2e2d318f21a5e036e2c3f26171342e95908bd60a
 
 PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3
 
