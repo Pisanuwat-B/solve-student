@@ -47,76 +47,63 @@ class _ChatOrderCardState extends State<ChatOrderCard> {
           future: chat.getOrderInfo(widget.chat.chatId ?? ""),
           builder: (context, snapshot1) {
             try {
-              OrderClassModel? order;
-              if (snapshot1.hasData) {
-                order = OrderClassModel.fromJson(snapshot1.data!.data()!);
-              }
-              return FutureBuilder(
-                future: chat.getTutorInfo("${order?.tutorId ?? ""}"),
-                builder: (context, snapshot2) {
-                  UserModel? tutor;
-                  if (snapshot1.hasData && snapshot2.hasData) {
-                    tutor = UserModel.fromJson(snapshot2.data!.data()!);
-                    return InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ChatRoomPage(
-                              chat: widget.chat,
-                              order: order!,
-                            ),
-                          ),
-                        );
-                      },
-                      child: Row(
+              OrderClassModel? order = snapshot1.data?.keys.first;
+              UserModel? student = snapshot1.data?.values.first;
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ChatRoomPage(
+                        chat: widget.chat,
+                        order: order!,
+                      ),
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    const SizedBox(width: 10),
+                    Builder(builder: (context) {
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(500),
+                        child: CachedNetworkImage(
+                          width: 50,
+                          height: 50,
+                          imageUrl: student?.image ?? "",
+                          errorWidget: (context, url, error) =>
+                              const CircleAvatar(
+                                  child: Icon(CupertinoIcons.person)),
+                        ),
+                      );
+                    }),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(width: 10),
-                          Builder(builder: (context) {
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(500),
-                              child: CachedNetworkImage(
-                                width: 50,
-                                height: 50,
-                                imageUrl: tutor?.image ?? "",
-                                errorWidget: (context, url, error) =>
-                                    const CircleAvatar(
-                                        child: Icon(CupertinoIcons.person)),
-                              ),
-                            );
-                          }),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("class : ${order?.title}"),
-                                StreamBuilder(
-                                  stream: chat
-                                      .getLastMessage(widget.chat.chatId ?? ""),
-                                  builder: (context, snapshot) {
-                                    final data = snapshot.data?.docs;
-                                    final list = data
-                                            ?.map((e) =>
-                                                Message.fromJson(e.data()))
-                                            .toList() ??
-                                        [];
-                                    if (list.isNotEmpty) _message = list[0];
-                                    if (_message?.type == Type.image) {
-                                      return const Text("รูปภาพ");
-                                    }
-                                    return Text("${_message?.msg ?? ""} ");
-                                  },
-                                ),
-                              ],
-                            ),
+                          Text("class : ${order?.title ?? ""}"),
+                          StreamBuilder(
+                            stream:
+                                chat.getLastMessage(widget.chat.chatId ?? ""),
+                            builder: (context, snapshot) {
+                              final data = snapshot.data?.docs;
+                              final list = data
+                                      ?.map((e) => Message.fromJson(e.data()))
+                                      .toList() ??
+                                  [];
+                              if (list.isNotEmpty) _message = list[0];
+                              if (_message?.type == Type.image) {
+                                return const Text("รูปภาพ");
+                              }
+                              return Text("${_message?.msg ?? ""} ");
+                            },
                           ),
                         ],
                       ),
-                    );
-                  }
-                  return const Text("loading..");
-                },
+                    ),
+                  ],
+                ),
               );
             } catch (e) {
               return Padding(

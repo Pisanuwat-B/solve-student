@@ -10,6 +10,7 @@ import 'package:solve_student/authentication/models/user_model.dart';
 import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:solve_student/feature/chat/models/chat_model.dart';
 import 'package:solve_student/feature/chat/models/message.dart' as messageModel;
+import 'package:solve_student/feature/order/model/order_class_model.dart';
 import 'package:uuid/uuid.dart';
 
 class ChatProvider extends ChangeNotifier {
@@ -191,15 +192,29 @@ class ChatProvider extends ChangeNotifier {
         .snapshots();
   }
 
-  Future<DocumentSnapshot<Map<String, dynamic>>> getOrderInfo(String id) async {
-    // log("message : $id");
-    return await firebaseFirestore.collection('orders').doc(id).get();
+  Future<Map<OrderClassModel, UserModel>?> getOrderInfo(String id) async {
+    log("getOrderInfo");
+    OrderClassModel? order;
+    await firebaseFirestore.collection('orders').doc(id).get().then((value) {
+      order = OrderClassModel.fromJson(value.data()!);
+    });
+    UserModel? userChatInfo;
+    await firebaseFirestore
+        .collection('users')
+        .doc(order?.tutorId ?? "")
+        .get()
+        .then((value) {
+      userChatInfo = UserModel.fromJson(value.data()!);
+    });
+    Map<OrderClassModel, UserModel>? data = {
+      order!: userChatInfo!,
+    };
+    return data;
   }
-
-  Future<DocumentSnapshot<Map<String, dynamic>>> getTutorInfo(String id) async {
-    log("getTutorInfo : $id");
-    return await firebaseFirestore.collection('users').doc(id).get();
-  }
+  // Future<DocumentSnapshot<Map<String, dynamic>>> getTutorInfo(String id) async {
+  //   log("getTutorInfo : $id");
+  //   return await firebaseFirestore.collection('users').doc(id).get();
+  // }
 
   Future<void> deleteChatInfo(String id) async {
     log("deleteChatInfo : $id");
