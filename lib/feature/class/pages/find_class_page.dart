@@ -180,11 +180,11 @@ class _FindClassPageState extends State<FindClassPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: _util.isTablet() ? 70 : 50),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: SingleChildScrollView(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: size.width > 480 ? 40 : 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -331,46 +331,66 @@ class _FindClassPageState extends State<FindClassPage> {
             ],
           ),
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: Container(
-          color: Colors.white,
-          child: Builder(builder: (context) {
-            if (searchClassList.isNotEmpty) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ConstrainedBox(
-                    constraints:
-                        BoxConstraints(maxWidth: getMaxWidth(totalPage)),
-                    child: NumberPaginator(
-                      // by default, the paginator shows numbers as center content
-                      initialPage: currentPage,
-                      numberPages: totalPage,
-                      onPageChange: (int index) {
-                        setState(() {
-                          currentPage = index;
-                          initSearchClassList();
-                        });
-                      },
-                      config: NumberPaginatorUIConfig(
-                          buttonSelectedBackgroundColor: Colors.green,
-                          // buttonSelectedForegroundColor: Colors.blue,
-                          buttonShape: RoundedRectangleBorder(
-                              side: const BorderSide(color: Colors.green),
-                              borderRadius: BorderRadius.circular(5)),
-                          mode: ContentDisplayMode.numbers,
-                          mainAxisAlignment: MainAxisAlignment.center),
-                      // contentBuilder: (index) {
-                      //   return Container(child: Text('${index+1}'),);
-                      // },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: Offset(0, 3), // changes position of shadow
+                ),
+              ],
+            ),
+            child: Builder(builder: (context) {
+              if (searchClassList.isNotEmpty) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ConstrainedBox(
+                      constraints:
+                          BoxConstraints(maxWidth: getMaxWidth(totalPage)),
+                      child: NumberPaginator(
+                        // by default, the paginator shows numbers as center content
+                        initialPage: currentPage,
+                        numberPages: totalPage,
+                        onPageChange: (int index) {
+                          setState(() {
+                            currentPage = index;
+                            initSearchClassList();
+                            // print('=================: ${currentPage}');
+                          });
+                        },
+                        config: NumberPaginatorUIConfig(
+                            buttonSelectedBackgroundColor: Colors.green,
+                            // buttonSelectedForegroundColor: Colors.blue,
+                            buttonShape: RoundedRectangleBorder(
+                                side: const BorderSide(color: Colors.green),
+                                borderRadius: BorderRadius.circular(5)),
+                            mode: ContentDisplayMode.numbers,
+                            mainAxisAlignment: MainAxisAlignment.center),
+                        // contentBuilder: (index) {
+                        //   return Container(child: Text('${index+1}'),);
+                        // },
+                      ),
                     ),
-                  ),
-                ],
-              );
-            }
-            return const SizedBox();
-          }),
-        ),
+                  ],
+                );
+              }
+              return const SizedBox();
+            }),
+          ),
+          const SizedBox(height: 5),
+        ],
       ),
     );
   }

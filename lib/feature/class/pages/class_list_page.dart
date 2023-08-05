@@ -194,12 +194,11 @@ class _ClassListPageState extends State<ClassListPage>
     showCount = Sizer(context).w <= 850 ? 1 : 2;
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: appBar(),
-        body: Padding(
-          padding: EdgeInsets.symmetric(horizontal: size.width > 480 ? 40 : 20),
-          child: Column(
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          appBar: appBar(),
+          body: Column(
             children: [
               const SizedBox(
                 height: 20,

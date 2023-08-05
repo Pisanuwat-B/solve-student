@@ -19,10 +19,8 @@ class _MyClassPageState extends State<MyClassPage> {
   ClassProvider? classProvider;
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      authProvider = Provider.of<AuthProvider>(context, listen: false);
-      classProvider = Provider.of<ClassProvider>(context, listen: false);
-    });
+    authProvider = Provider.of<AuthProvider>(context, listen: false);
+    classProvider = Provider.of<ClassProvider>(context, listen: false);
     super.initState();
   }
 
@@ -30,7 +28,8 @@ class _MyClassPageState extends State<MyClassPage> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5),
+        padding:
+            EdgeInsets.symmetric(horizontal: Sizer(context).w > 480 ? 40 : 20),
         child: Column(
           children: [
             const SizedBox(
