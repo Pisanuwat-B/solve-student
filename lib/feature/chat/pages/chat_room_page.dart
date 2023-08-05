@@ -73,21 +73,21 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     mq = Sizer(context);
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      child: SafeArea(
-        child: WillPopScope(
-          onWillPop: () {
-            if (_showEmoji) {
-              setState(() => _showEmoji = !_showEmoji);
-              return Future.value(false);
-            } else {
-              return Future.value(true);
-            }
-          },
-          child: Scaffold(
-            appBar: PreferredSize(
-              preferredSize: widget.order.fromMarketPlace
-                  ? Size.fromHeight(70)
-                  : Size.fromHeight(100),
+      child: WillPopScope(
+        onWillPop: () {
+          if (_showEmoji) {
+            setState(() => _showEmoji = !_showEmoji);
+            return Future.value(false);
+          } else {
+            return Future.value(true);
+          }
+        },
+        child: Scaffold(
+          appBar: PreferredSize(
+            preferredSize: widget.order.fromMarketPlace
+                ? Size.fromHeight(70)
+                : Size.fromHeight(100),
+            child: SafeArea(
               child: AppBar(
                 backgroundColor: Colors.white,
                 leading: IconButton(
@@ -105,9 +105,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 }),
               ),
             ),
-            backgroundColor: Colors.white,
-            // backgroundColor: const Color.fromARGB(255, 234, 248, 255),
-            body: Column(
+          ),
+          backgroundColor: Colors.white,
+          // backgroundColor: const Color.fromARGB(255, 234, 248, 255),
+          body: SafeArea(
+            child: Column(
               children: [
                 Expanded(
                   child: StreamBuilder(
