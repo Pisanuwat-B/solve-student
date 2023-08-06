@@ -17,6 +17,7 @@ import flutter_local_notifications
 import flutter_webrtc
 import path_provider_foundation
 import shared_preferences_foundation
+import sign_in_with_apple
 import sqflite
 import url_launcher_macos
 import videosdk
@@ -34,6 +35,7 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FlutterWebRTCPlugin.register(with: registry.registrar(forPlugin: "FlutterWebRTCPlugin"))
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
   SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "SharedPreferencesPlugin"))
+  SignInWithApplePlugin.register(with: registry.registrar(forPlugin: "SignInWithApplePlugin"))
   SqflitePlugin.register(with: registry.registrar(forPlugin: "SqflitePlugin"))
   UrlLauncherPlugin.register(with: registry.registrar(forPlugin: "UrlLauncherPlugin"))
   VideosdkPlugin.register(with: registry.registrar(forPlugin: "VideosdkPlugin"))

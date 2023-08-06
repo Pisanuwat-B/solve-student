@@ -49,24 +49,24 @@ class ShowMyIdWidget extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 20),
-          Container(
-            padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: greyColor,
-              ),
-            ),
-            child: IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.ios_share,
-                color: Colors.grey,
-              ),
-            ),
-          ),
+          // const SizedBox(width: 20),
+          // Container(
+          //   padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+          //   decoration: BoxDecoration(
+          //     color: Colors.transparent,
+          //     borderRadius: BorderRadius.circular(10),
+          //     border: Border.all(
+          //       color: greyColor,
+          //     ),
+          //   ),
+          //   child: IconButton(
+          //     onPressed: () {},
+          //     icon: const Icon(
+          //       Icons.ios_share,
+          //       color: Colors.grey,
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

@@ -135,14 +135,14 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(width: 5),
-                            IconButton(
-                              onPressed: () {},
-                              icon: const Icon(
-                                Icons.edit,
-                                color: Colors.grey,
-                              ),
-                            ),
+                            // const SizedBox(width: 5),
+                            // IconButton(
+                            //   onPressed: () {},
+                            //   icon: const Icon(
+                            //     Icons.edit,
+                            //     color: Colors.grey,
+                            //   ),
+                            // ),
                           ],
                         ),
                         const SizedBox(height: 10),
@@ -174,18 +174,18 @@ class _ProfilePageState extends State<ProfilePage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  settingCard(title: 'ตั้งค่าบัญชี', icon: Icons.settings),
-                  const Divider(thickness: 2),
-                  const SizedBox(height: 10),
-                  settingCard(title: 'ค่าบริการสมาชิก', icon: Icons.list),
-                  const Divider(thickness: 2),
-                  const SizedBox(height: 10),
-                  settingCard(
-                      title: 'ตั้งค่าการแจ้งเตือน',
-                      icon: Icons.notifications_active),
-                  const Divider(thickness: 2),
-                  const SizedBox(height: 30),
+                  // const SizedBox(height: 20),
+                  // settingCard(title: 'ตั้งค่าบัญชี', icon: Icons.settings),
+                  // const Divider(thickness: 2),
+                  // const SizedBox(height: 10),
+                  // settingCard(title: 'ค่าบริการสมาชิก', icon: Icons.list),
+                  // const Divider(thickness: 2),
+                  // const SizedBox(height: 10),
+                  // settingCard(
+                  //     title: 'ตั้งค่าการแจ้งเตือน',
+                  //     icon: Icons.notifications_active),
+                  // const Divider(thickness: 2),
+                  // const SizedBox(height: 30),
                   const Padding(
                     padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
                     child: Text(

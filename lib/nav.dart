@@ -9,6 +9,7 @@ import 'package:solve_student/feature/class/pages/class_list_page.dart';
 import 'package:solve_student/feature/course_live/pages/course_live_page.dart';
 import 'package:solve_student/feature/home/pages/home_page.dart';
 import 'package:solve_student/feature/my_course/pages/my_course_page.dart';
+import 'package:solve_student/feature/notification/notification_page.dart';
 import 'package:solve_student/feature/profile/pages/profile_page.dart';
 
 import 'authentication/service/auth_provider.dart';
@@ -35,7 +36,7 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
     StudentScreen(),
     ClassListPage(),
     const ChatListPage(),
-    const Center(child: Text("Notification")),
+    const NotificationPage(),
     const ProfilePage(),
   ];
 
