@@ -206,6 +206,88 @@ class _ProfilePageState extends State<ProfilePage> {
                       title: 'นโยบายความเป็นส่วนตัว',
                       url: 'https://solve.in.th/privacy-policy/'),
                   const Divider(thickness: 2),
+                  const SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: () {
+                      showDialog<void>(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            content: Container(
+                              width: 300,
+                              child: const SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    Text(
+                                      "เราเสียใจที่คุณจะไม่ได้ใช้งานบริการของเราอีก หากคุณได้ทำการลบบัญชีผู้ใช้แล้ว จะไม่สามารถทำการกู้กลับข้อมูลเดินมาได้ และไม่สามารถสมัครสมาชิกใหม่ด้วยบัญชีเดิมได้อีก",
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            actionsAlignment: MainAxisAlignment.center,
+                            actions: <Widget>[
+                              Container(
+                                width: double.infinity,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextButton(
+                                        child: const Text(
+                                          'ยกเลิก',
+                                          style: TextStyle(color: Colors.grey),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: TextButton(
+                                        child: const Text(
+                                          'ตกลง',
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                        onPressed: () async {
+                                          Navigator.of(context).pop();
+                                          await authProvider.deleteAccount();
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    onDoubleTap: () {},
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(20, 15, 20, 5),
+                      child: const Row(
+                        children: [
+                          SizedBox(width: 20),
+                          Expanded(
+                            child: Text(
+                              'คำขอลบบัญชี',
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            Icons.chevron_right,
+                            color: primaryColor,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const Divider(thickness: 2),
                   const SizedBox(height: 60),
                   Center(
                     child: Column(

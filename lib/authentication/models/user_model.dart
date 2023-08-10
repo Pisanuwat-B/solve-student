@@ -11,6 +11,7 @@ class UserModel {
     this.pushToken,
     this.role,
     this.classLevel,
+    this.isDeleted,
   });
   String? image;
   String? about;
@@ -23,6 +24,7 @@ class UserModel {
   String? pushToken;
   String? role;
   String? classLevel;
+  bool? isDeleted;
 
   RoleType getRoleType() {
     RoleType? result = RoleType.tutor;
@@ -51,6 +53,7 @@ class UserModel {
     pushToken = json['push_token'] ?? '';
     role = json['role'] ?? '';
     classLevel = json['class_level'] ?? '';
+    isDeleted = json['is_deleted'] ?? false;
   }
 
   Map<String, dynamic> toJson() {
@@ -66,6 +69,7 @@ class UserModel {
     data['push_token'] = pushToken;
     data['role'] = role;
     data['class_level'] = classLevel;
+    data['is_deleted'] = isDeleted;
     return data;
   }
 }

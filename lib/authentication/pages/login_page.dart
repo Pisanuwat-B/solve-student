@@ -5,16 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:solve_student/auth.dart';
 import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:solve_student/constants/theme.dart';
-import 'package:solve_student/widgets/sizer.dart';
+import 'package:solve_student/widgets/dialogs.dart';
 
 import '../../feature/calendar/constants/assets_manager.dart';
 import '../../feature/calendar/constants/custom_colors.dart';
 import '../../feature/calendar/constants/custom_styles.dart';
-import '../../feature/calendar/helper/utility_helper.dart';
 import '../../feature/calendar/widgets/sizebox.dart';
 
 class LoginPage extends StatefulWidget {
@@ -25,9 +22,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class LoginPageState extends State<LoginPage> {
-  _handleGoogleBtnClick() {
-    // Dialogs.showProgressBar(context);
-    _signInWithGoogle().then((user) async {
+  _handleGoogleBtnClick() async {
+    try {
+      // Dialogs.showProgressBar(context);
+      var user = await _signInWithGoogle();
       if (user != null) {
         log('\nUser: ${user.user}');
         log('\nUserAdditionalInfo: ${user.additionalUserInfo}');
@@ -45,25 +43,21 @@ class LoginPageState extends State<LoginPage> {
         //     MaterialPageRoute(builder: (context) => const Authenticate());
         // Navigator.pushReplacement(context, route);
       }
-    });
+    } catch (e) {
+      Dialogs.showSnackbar(context, 'Login failed');
+    }
   }
 
   Future<UserCredential?> _signInWithGoogle() async {
-    try {
-      await InternetAddress.lookup('google.com');
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser?.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
-      );
-      return await authProvider!.firebaseAuth.signInWithCredential(credential);
-    } catch (e) {
-      log('\n_signInWithGoogle: $e');
-      // Dialogs.showSnackbar(context, 'Something Went Wrong (Check Internet!)');
-      return null;
-    }
+    await InternetAddress.lookup('google.com');
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+    return await authProvider!.firebaseAuth.signInWithCredential(credential);
   }
 
   _handleAppleBtnClick() async {
@@ -83,6 +77,7 @@ class LoginPageState extends State<LoginPage> {
       }
     } catch (e) {
       log("_handleAppleBtnClick : $e");
+      Dialogs.showSnackbar(context, 'Login failed');
     }
   }
 
@@ -103,100 +98,6 @@ class LoginPageState extends State<LoginPage> {
   }
 
   AuthProvider? authProvider;
-  // @override
-  // Widget build(BuildContext context) {
-  //   authProvider = Provider.of<AuthProvider>(context);
-  //   return GestureDetector(
-  //     onTap: () {
-  //       FocusScope.of(context).unfocus();
-  //     },
-  //     child: Scaffold(
-  //       backgroundColor: backgroundColor,
-  //       body: Container(
-  //         margin: const EdgeInsets.fromLTRB(20, 5, 20, 5),
-  //         child: Column(
-  //           children: <Widget>[
-  //             SizedBox(height: Sizer(context).h * 0.2),
-  //             Column(
-  //               crossAxisAlignment: CrossAxisAlignment.center,
-  //               children: const [
-  //                 Text(
-  //                   "Welcome in Tutor Application",
-  //                   style: TextStyle(
-  //                     fontSize: 18,
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //             const SizedBox(height: 20),
-  //             // _buildFormWidget(),
-  //             // _buildRememberWidget(),
-  //             // const SizedBox(height: 20),
-  //             Row(
-  //               children: const [
-  //                 Expanded(
-  //                   child: Divider(
-  //                     thickness: 1,
-  //                     height: 1,
-  //                   ),
-  //                 ),
-  //                 Padding(
-  //                   padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-  //                   child: Text("Or Continue With"),
-  //                 ),
-  //                 Expanded(
-  //                   child: Divider(
-  //                     thickness: 1,
-  //                     height: 1,
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //             const SizedBox(height: 10),
-  //             GestureDetector(
-  //               onTap: () {
-  //                 _handleGoogleBtnClick();
-  //               },
-  //               child: Container(
-  //                 height: 50,
-  //                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-  //                 decoration: BoxDecoration(
-  //                   color: Colors.white,
-  //                   borderRadius: BorderRadius.circular(10),
-  //                 ),
-  //                 child: Row(
-  //                   children: [
-  //                     // GoogleLogoWidget(size: 18),
-  //                     const SizedBox(width: 10),
-  //                     const Expanded(
-  //                       child: Text(
-  //                         'Sign in with Google',
-  //                         style: TextStyle(
-  //                           fontSize: 16,
-  //                           color: Colors.black,
-  //                         ),
-  //                         textAlign: TextAlign.center,
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ),
-  //             ),
-  //
-  //             // Loading
-  //             // Positioned(
-  //             //   child: authProvider.status == Status.authenticating
-  //             //       ? LoadingView()
-  //             //       : SizedBox.shrink(),
-  //             // ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  final _util = UtilityHelper();
   bool _obscured = false;
   final textFieldFocusNode = FocusNode();
   final TextEditingController email = TextEditingController();
@@ -276,7 +177,9 @@ class LoginPageState extends State<LoginPage> {
                       // Login with Apple ID
                       Platform.isIOS
                           ? InkWell(
-                              onTap: () {},
+                              onTap: () {
+                                _handleAppleBtnClick();
+                              },
                               child: Container(
                                 width: 200.0,
                                 height: 50.0,
