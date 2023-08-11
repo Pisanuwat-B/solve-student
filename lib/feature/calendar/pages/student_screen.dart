@@ -235,7 +235,7 @@ class _StudentScreenState extends State<StudentScreen>
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _topicText('วันนี้'),
+                        _topicText('คาบเรียนวันนี้'),
                         if (_util.isTablet()) ...[
                           _historyText(),
                         ]
@@ -1119,10 +1119,10 @@ class _StudentScreenState extends State<StudentScreen>
       availableGestures: AvailableGestures.horizontalSwipe,
       locale: 'en_US',
       firstDay: now,
-      lastDay: courseController.kEvents?.isNotEmpty == true
-          ? courseController.kEvents?.keys.last ??
-              DateTime(now.year, now.month + 1, now.day)
-          : DateTime(now.year, now.month + 1, now.day),
+      lastDay: (studentController.kEvents != null &&
+              studentController.kEvents!.isNotEmpty)
+          ? studentController.kEvents!.keys.last
+          : DateTime(now.year, now.month + 3, now.day),
       focusedDay: now,
       calendarFormat: _calendarFormat,
       availableCalendarFormats: const {
@@ -1171,6 +1171,7 @@ class _StudentScreenState extends State<StudentScreen>
           return TextButton(
             onPressed: () {},
             child: Container(
+              color: const Color(0xffB9E7C9),
               padding: const EdgeInsets.only(left: 20, top: 20),
               alignment: Alignment.topLeft,
               child: Text(
@@ -1297,7 +1298,8 @@ class _StudentScreenState extends State<StudentScreen>
                 ],
               ),
             );
-          } else {
+          } // today and future
+          else {
             return SingleChildScrollView(
               child: Column(
                 children: [
@@ -1368,42 +1370,23 @@ class _StudentScreenState extends State<StudentScreen>
                 ],
               ),
             );
-          }
+          } // past and null
         },
       ),
     );
   }
 
-  Color _getWeekColor(int weekday) {
-    switch (weekday) {
-      case 1:
-        return Colors.black;
-      case 2:
-        return Colors.pinkAccent;
-      case 3:
-        return CustomColors.greenPrimary;
-      case 4:
-        return const Color(0xffFF9800);
-      case 5:
-        return Colors.blueAccent;
-      case 6:
-        return const Color(0xff8B5CF6);
-      case 7:
-        return const Color(0xffF44336);
-      default:
-        return Colors.black; // Should never be reached.
-    }
-  }
-
   Widget tableCalendarMobile() {
-    var now = DateTime.now();
+    var today = resetToMidnight(DateTime.now());
     return TableCalendar<Event>(
       availableGestures: AvailableGestures.horizontalSwipe,
       locale: 'en_US',
-      firstDay: now,
-      lastDay: studentController.kEvents?.keys.last ??
-          DateTime(now.year, now.month + 3, now.day),
-      focusedDay: now,
+      firstDay: today,
+      lastDay: (studentController.kEvents != null &&
+              studentController.kEvents!.isNotEmpty)
+          ? studentController.kEvents!.keys.last
+          : DateTime(today.year, today.month + 3, today.day),
+      focusedDay: today,
       calendarFormat: _calendarFormat,
       availableCalendarFormats: const {
         CalendarFormat.month: 'Month',
@@ -1450,11 +1433,16 @@ class _StudentScreenState extends State<StudentScreen>
           ),
         ),
         todayBuilder: (context, day, focusedDay) => SizedBox(
-          child: Center(
-            child: Text(
-              day.day.toString(),
-              style: CustomStyles.med16Black363636.copyWith(
-                  fontWeight: FontWeight.bold, color: CustomColors.gray878787),
+          child: Container(
+            color: const Color(0xffB9E7C9),
+            margin: const EdgeInsets.all(4),
+            child: Center(
+              child: Text(
+                day.day.toString(),
+                style: CustomStyles.med16Black363636.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: CustomColors.gray878787),
+              ),
             ),
           ),
         ),
@@ -1468,7 +1456,7 @@ class _StudentScreenState extends State<StudentScreen>
           ),
         ),
         markerBuilder: (context, day, event) {
-          if (event.isNotEmpty && day.isAfter(DateTime.now())) {
+          if (event.isNotEmpty && (day.isAfter(today) || day == today)) {
             return InkWell(
               onTap: () async {
                 await showDialog(
@@ -1483,15 +1471,17 @@ class _StudentScreenState extends State<StudentScreen>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(
-                            event.length,
-                            (index) => Container(
-                                  height: 7,
-                                  width: 7,
-                                  decoration: const BoxDecoration(
-                                    color: CustomColors.greenPrimary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                )),
+                          event.length,
+                          (index) => Container(
+                            margin: const EdgeInsets.only(left: 1),
+                            height: 7,
+                            width: 7,
+                            decoration: const BoxDecoration(
+                              color: CustomColors.greenPrimary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -1504,6 +1494,31 @@ class _StudentScreenState extends State<StudentScreen>
         },
       ),
     );
+  }
+
+  Color _getWeekColor(int weekday) {
+    switch (weekday) {
+      case 1:
+        return Colors.black;
+      case 2:
+        return Colors.pinkAccent;
+      case 3:
+        return CustomColors.greenPrimary;
+      case 4:
+        return const Color(0xffFF9800);
+      case 5:
+        return Colors.blueAccent;
+      case 6:
+        return const Color(0xff8B5CF6);
+      case 7:
+        return const Color(0xffF44336);
+      default:
+        return Colors.black; // Should never be reached.
+    }
+  }
+
+  DateTime resetToMidnight(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
   }
 
   Widget _eventList(DateTime day, List<Event>? event) {
