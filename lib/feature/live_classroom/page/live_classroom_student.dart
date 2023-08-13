@@ -199,6 +199,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   var courseController = CourseLiveController();
   late String courseName;
   bool isCourseLoaded = false;
+  bool showHeader = false;
 
   @override
   void initState() {
@@ -323,18 +324,12 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   void initWss() {
-    if (!widget.isMock) {
-      channel = WebSocketChannel.connect(
-        Uri.parse(
-            'ws://35.240.169.164:3000/${widget.courseId}/${widget.startTime}'),
-      );
-      sendMessage(widget.userId, 'RequestSolvepadSize');
-    } else {
-      channel = WebSocketChannel.connect(
-        Uri.parse(
-            'ws://35.240.169.164:3000/${widget.courseId}/${widget.courseId}'),
-      );
-    }
+    channel = WebSocketChannel.connect(
+      Uri.parse(
+          'ws://35.240.169.164:3000/${widget.courseId}/${widget.startTime}'),
+    );
+    sendMessage(widget.userId, 'RequestSolvepadSize');
+
     channel?.stream.listen((message) {
       setState(() {
         var decodedMessage = json.decode(message);
@@ -576,6 +571,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   void sendMessage(String name, dynamic data) {
+    if (widget.isMock) return;
     try {
       final message = json.encode({'uid': name, 'data': data});
       channel?.sink.add(message);
@@ -810,18 +806,16 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _onWillPopScope,
-      child: SafeArea(
-        child: _joined && isCourseLoaded
-            ? Scaffold(
-                backgroundColor: CustomColors.grayCFCFCF,
-                body: !Responsive.isMobile(context)
-                    ? _buildTablet()
-                    : fullScreen
-                        ? _buildMobileFullScreen()
-                        : _buildMobile(),
-              )
-            : const LoadingScreen(),
-      ),
+      child: _joined && isCourseLoaded
+          ? Scaffold(
+              backgroundColor: CustomColors.grayCFCFCF,
+              body: !Responsive.isMobile(context)
+                  ? _buildTablet()
+                  : fullScreen
+                      ? _buildMobileFullScreen()
+                      : _buildMobile(),
+            )
+          : const LoadingScreen(),
     );
   }
 
@@ -884,6 +878,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
           ],
         ),
       ),
+
+      /// TODO: wait for Quiz ready
       // floatingActionButton:
       //     Column(mainAxisAlignment: MainAxisAlignment.end, children: [
       //   if (tabFreestyle)
@@ -942,46 +938,61 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   Widget _buildMobile() {
     return Scaffold(
       backgroundColor: CustomColors.grayCFCFCF,
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              headerLayer2Mobile(),
-              const DividerLine(),
-              solvePad(),
-            ],
-          ),
-          if (!selectedTools) toolsUndoMobile(),
-          if (!selectedTools) toolsMobile(),
-          if (selectedTools) toolsActiveMobile(),
-          Positioned(
-            top: 55,
-            right: 15,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+      body: GestureDetector(
+        onTap: () {
+          setState(() {
+            showHeader = false;
+          });
+        },
+        child: Stack(
+          children: [
+            Column(
               children: [
-                if ((isHostRequestShareScreen && !isAllowSharingScreen) ||
-                    (isHostRequestShareScreen &&
-                        isAllowSharingScreen &&
-                        !isHostFocus))
-                  statusScreen(
-                    "ติวเตอร์ขอดูจอคุณ",
-                    ImageAssets.shareGreen,
-                    'green',
-                  ),
-                if (isAllowSharingScreen && isHostFocus)
-                  statusScreen(
-                    "ติวเตอร์กำลังดูจอคุณ",
-                    ImageAssets.displayBlue,
-                    'blue',
-                  ),
+                headerLayer2Mobile(),
+                const DividerLine(),
+                solvePad(),
               ],
             ),
-          ),
-
-          /// Control display
-          toolsControlMobile()
-        ],
+            if (!selectedTools) toolsUndoMobile(),
+            if (!selectedTools) toolsMobile(),
+            if (selectedTools) toolsActiveMobile(),
+            Positioned(
+              top: 55,
+              right: 15,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if ((isHostRequestShareScreen && !isAllowSharingScreen) ||
+                      (isHostRequestShareScreen &&
+                          isAllowSharingScreen &&
+                          !isHostFocus))
+                    statusScreen(
+                      "ติวเตอร์ขอดูจอคุณ",
+                      ImageAssets.shareGreen,
+                      'green',
+                    ),
+                  if (isAllowSharingScreen && isHostFocus)
+                    statusScreen(
+                      "ติวเตอร์กำลังดูจอคุณ",
+                      ImageAssets.displayBlue,
+                      'blue',
+                    ),
+                ],
+              ),
+            ),
+            AnimatedPositioned(
+              top: showHeader ? 0 : -50, // slide-down animation
+              left: 0,
+              right: 0,
+              duration: const Duration(milliseconds: 100),
+              child: GestureDetector(
+                onTap: () {},
+                child: headerLayer1Mobile(),
+              ),
+            ),
+            toolsControlMobile()
+          ],
+        ),
       ),
     );
   }
@@ -1909,104 +1920,100 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     );
   }
 
-  Future<void> headerLayer1Mobile() {
-    return showDialog(
-      useSafeArea: false,
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Column(
+  Widget headerLayer1Mobile() {
+    return Material(
+      color: Colors.transparent,
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            height: 50,
+            color: CustomColors.whitePrimary,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    width: double.infinity,
-                    height: 60,
-                    color: CustomColors.whitePrimary,
+                S.w(defaultPadding),
+                if (Responsive.isMobile(context))
+                  Expanded(
+                    flex: 4,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        S.w(defaultPadding),
-                        if (Responsive.isMobile(context))
-                          Expanded(
-                            flex: 4,
-                            child: Row(
-                              children: [
-                                GestureDetector(
-                                  onTap: () => Navigator.of(context).pop(),
-                                  child: const Icon(
-                                    Icons.close,
-                                    color: CustomColors.gray878787,
-                                    size: 18,
-                                  ),
-                                ),
-                                S.w(8),
-                                Flexible(
-                                  child: Text(
-                                    courseName,
-                                    style:
-                                        CustomStyles.bold16Black363636Overflow,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                              ],
-                            ),
+                        GestureDetector(
+                          onTap: () {
+                            showHeader = false;
+                          },
+                          child: const Icon(
+                            Icons.close,
+                            color: CustomColors.gray878787,
+                            size: 18,
                           ),
-                        Expanded(
-                          flex: 2,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              S.w(16.0),
-                              Container(
-                                height: 11,
-                                width: 11,
-                                decoration: BoxDecoration(
-                                    color: CustomColors.redF44336,
-                                    borderRadius: BorderRadius.circular(100)
-                                    //more than 50% of width makes circle
-                                    ),
-                              ),
-                              S.w(4.0),
-                              RichText(
-                                text: TextSpan(
-                                  text: 'Live Time: ',
-                                  style: CustomStyles.med14redFF4201,
-                                  children: <TextSpan>[
-                                    TextSpan(
-                                      text: _formattedElapsedTime,
-                                      style: CustomStyles.med14Gray878787,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              S.w(defaultPadding),
-                            ],
+                        ),
+                        S.w(8),
+                        Flexible(
+                          child: Text(
+                            courseName,
+                            style: CustomStyles.bold16Black363636Overflow,
+                            maxLines: 1,
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
-                ),
+                Expanded(
+                  flex: 2,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      S.w(16.0),
+                      Container(
+                        height: 11,
+                        width: 11,
+                        decoration: BoxDecoration(
+                            color: CustomColors.redF44336,
+                            borderRadius: BorderRadius.circular(100)
+                            //more than 50% of width makes circle
+                            ),
+                      ),
+                      S.w(4.0),
+                      RichText(
+                        text: TextSpan(
+                          text: 'Live Time: ',
+                          style: CustomStyles.med14redFF4201,
+                          children: <TextSpan>[
+                            TextSpan(
+                              text: _formattedElapsedTime,
+                              style: CustomStyles.med14Gray878787,
+                            ),
+                          ],
+                        ),
+                      ),
+                      S.w(defaultPadding),
+                    ],
+                  ),
+                )
               ],
-            );
-          },
-        );
-      },
+            ),
+          ),
+          const DividerLine(),
+        ],
+      ),
     );
   }
 
   Widget headerLayer2Mobile() {
     return Container(
       height: 46,
-      decoration: BoxDecoration(color: CustomColors.whitePrimary, boxShadow: [
-        BoxShadow(
+      decoration: BoxDecoration(
+        color: CustomColors.whitePrimary,
+        boxShadow: [
+          BoxShadow(
             color: CustomColors.gray878787.withOpacity(.1),
             offset: const Offset(0.0, 6),
             blurRadius: 10,
-            spreadRadius: 1)
-      ]),
+            spreadRadius: 1,
+          )
+        ],
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -2026,16 +2033,24 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  S.w(8),
                   InkWell(
-                    onTap: () => headerLayer1Mobile(),
-                    child: Image.asset(
-                      ImageAssets.iconInfoPage,
-                      height: 24,
-                      width: 24,
+                    onTap: () {
+                      showHeader = true;
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.only(
+                        left: 8,
+                        right: 8,
+                        top: 4,
+                        bottom: 4,
+                      ),
+                      child: Image.asset(
+                        ImageAssets.iconInfoPage,
+                        height: 24,
+                        width: 24,
+                      ),
                     ),
                   ),
-                  S.w(8),
                   Container(
                     width: 1,
                     height: 32,
