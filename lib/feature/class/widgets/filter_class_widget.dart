@@ -242,6 +242,13 @@ class _FilterClassWidgetState extends State<FilterClassWidget> {
                     });
                   },
                 ),
+                onTap: () {
+                  setState(() {
+                    if (isDateTimeEnum != DateTimeEnum.date) {
+                      isDateTimeEnum = DateTimeEnum.date;
+                    }
+                  });
+                },
               ),
             ),
             Expanded(
@@ -257,6 +264,13 @@ class _FilterClassWidgetState extends State<FilterClassWidget> {
                     });
                   },
                 ),
+                onTap: () {
+                  setState(() {
+                    if (isDateTimeEnum != DateTimeEnum.time) {
+                      isDateTimeEnum = DateTimeEnum.time;
+                    }
+                  });
+                },
               ),
             ),
           ],

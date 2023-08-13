@@ -10,6 +10,7 @@ import 'package:solve_student/widgets/confirm_action_widget.dart';
 import 'package:solve_student/widgets/show_my_id_widget.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import '../../live_classroom/page/live_classroom_student.dart';
 import '../components/webview.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -210,6 +211,27 @@ class _ProfilePageState extends State<ProfilePage> {
                   Center(
                     child: Column(
                       children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const StudentLiveClassroom(
+                                  meetingId: 'test',
+                                  userId: 'test',
+                                  token: 'test',
+                                  displayName: 'TEST TEST',
+                                  isHost: false,
+                                  courseId: 'test',
+                                  startTime: 0,
+                                  isMock: true,
+                                ),
+                              ),
+                            );
+                          },
+                          child: const Text('TEST'),
+                        ),
                         TextButton(
                           onPressed: () async {
                             showDialog(

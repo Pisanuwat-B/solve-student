@@ -215,15 +215,31 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
         systemNavigationBarDividerColor: Colors.black.withOpacity(0.1),
       ),
     );
-    initPagesData();
     initTimer();
     initPagingBtn();
-    initMessageHandler();
     if (!widget.isMock) {
+      initPagesData();
+      initMessageHandler();
       initConference();
     } else {
       _joined = true;
+      mockInitPageData();
     }
+  }
+
+  void mockInitPageData() {
+    setState(() {
+      _pages = [
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/test(gun)%2FexampleSheet1.jpg?alt=media&token=27676570-4031-4c6b-b6bc-4280fbbcd116',
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/test(gun)%2FexampleSheet2.jpg?alt=media&token=8ec3a135-85a6-4cac-abdd-b8d0df094ce3',
+      ];
+      for (int i = 1; i < 2; i++) {
+        _addPage();
+      }
+      courseName = 'Mockup Test';
+      micEnable = false;
+      isCourseLoaded = true;
+    });
   }
 
   Future<void> initPagesData() async {

@@ -56,8 +56,6 @@ class _FindClassPageState extends State<FindClassPage> {
       selectClassLevel = authProvider!.user!.classLevel == ""
           ? SchoolSubjectConstants.schoolFilterClassLevel.first
           : authProvider!.user!.classLevel!;
-      print('init selectClassLevel');
-      print(selectClassLevel);
       initSearchClassList();
       await checkInitFilter();
       setState(() {});
@@ -68,8 +66,8 @@ class _FindClassPageState extends State<FindClassPage> {
     if (widget.filterInit) {
       selectClass = widget.filSubject ??
           SchoolSubjectConstants.schoolSubjectFilterList.first;
-      selectClassLevel =
-          widget.filterClass ?? SchoolSubjectConstants.schoolClassLevel.first;
+      selectClassLevel = widget.filterClass ??
+          SchoolSubjectConstants.schoolFilterClassLevel.first;
       setState(() {});
     }
   }
@@ -252,8 +250,6 @@ class _FindClassPageState extends State<FindClassPage> {
                           context: context,
                           isScrollControlled: true,
                           builder: (context) {
-                            print('selectClassLevel');
-                            print(selectClassLevel);
                             return FilterClassWidget(
                               data: FilterClassModel(
                                   schoolSubject: selectClass,
