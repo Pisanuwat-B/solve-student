@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:solve_student/constants/app_constants.dart';
 import 'package:solve_student/constants/state_index.dart';
 import 'package:solve_student/constants/theme.dart';
@@ -26,6 +27,17 @@ class MyApp extends StatelessWidget {
       return MultiProvider(
         providers: stateIndex,
         child: MaterialApp(
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('th', 'TH'),
+            Locale('en', 'GB'),
+            Locale('en', 'US'),
+          ],
+          locale: const Locale('th', 'TH'),
           debugShowCheckedModeBanner: false,
           title: AppConstants.appTitle,
           theme: ThemeData(
@@ -37,7 +49,7 @@ class MyApp extends StatelessWidget {
             //   Theme.of(context).textTheme,
             // ),
           ),
-          home: SplashPage(),
+          home: const SplashPage(),
         ),
       );
     });

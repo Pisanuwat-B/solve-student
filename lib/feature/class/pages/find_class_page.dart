@@ -37,8 +37,8 @@ class _FindClassPageState extends State<FindClassPage> {
   static final _util = UtilityHelper();
   int count = 0;
   final txtSearchName = TextEditingController();
-  String selectClass = SchoolSubJectConstants.schoolSubJectFilterList.first;
-  String selectClassLevel = SchoolSubJectConstants.schoolFilterClassLevel.first;
+  String selectClass = SchoolSubjectConstants.schoolSubjectFilterList.first;
+  String selectClassLevel = SchoolSubjectConstants.schoolFilterClassLevel.first;
   String startDate = "";
   String startTime = "";
 
@@ -54,8 +54,10 @@ class _FindClassPageState extends State<FindClassPage> {
       authProvider = Provider.of<AuthProvider>(context, listen: false);
       classProvider = Provider.of<ClassProvider>(context, listen: false);
       selectClassLevel = authProvider!.user!.classLevel == ""
-          ? SchoolSubJectConstants.schoolFilterClassLevel.first
+          ? SchoolSubjectConstants.schoolFilterClassLevel.first
           : authProvider!.user!.classLevel!;
+      print('init selectClassLevel');
+      print(selectClassLevel);
       initSearchClassList();
       await checkInitFilter();
       setState(() {});
@@ -65,9 +67,9 @@ class _FindClassPageState extends State<FindClassPage> {
   checkInitFilter() {
     if (widget.filterInit) {
       selectClass = widget.filSubject ??
-          SchoolSubJectConstants.schoolSubJectFilterList.first;
+          SchoolSubjectConstants.schoolSubjectFilterList.first;
       selectClassLevel =
-          widget.filterClass ?? SchoolSubJectConstants.schoolClassLevel.first;
+          widget.filterClass ?? SchoolSubjectConstants.schoolClassLevel.first;
       setState(() {});
     }
   }
@@ -250,6 +252,8 @@ class _FindClassPageState extends State<FindClassPage> {
                           context: context,
                           isScrollControlled: true,
                           builder: (context) {
+                            print('selectClassLevel');
+                            print(selectClassLevel);
                             return FilterClassWidget(
                               data: FilterClassModel(
                                   schoolSubject: selectClass,
@@ -341,14 +345,14 @@ class _FindClassPageState extends State<FindClassPage> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: Offset(0, 3), // changes position of shadow
-                ),
-              ],
+              // boxShadow: [
+              //   BoxShadow(
+              //     color: Colors.grey.withOpacity(0.5),
+              //     spreadRadius: 2,
+              //     blurRadius: 5,
+              //     offset: const Offset(0, 3), // changes position of shadow
+              //   ),
+              // ],
             ),
             child: Builder(builder: (context) {
               if (searchClassList.isNotEmpty) {
@@ -403,9 +407,9 @@ class _FindClassPageState extends State<FindClassPage> {
   double getMaxWidth(int totalPage) {
     double result = 350;
     if (totalPage <= 1) {
-      result = 100;
+      result = 150;
     } else if (totalPage > 1 && totalPage <= 3) {
-      result = 200;
+      result = 195;
     }
     return result;
   }

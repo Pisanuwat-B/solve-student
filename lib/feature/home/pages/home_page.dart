@@ -647,7 +647,7 @@ class _HomePageState extends State<HomePage> {
                   padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
                   child: Wrap(
                     children: [
-                      ...SchoolSubJectConstants.schoolClassLevel
+                      ...SchoolSubjectConstants.schoolClassLevel
                           .map<Widget>((item) {
                         return GestureDetector(
                           onTap: () {
