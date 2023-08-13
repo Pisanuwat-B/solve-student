@@ -100,6 +100,7 @@ class _StudentScreenState extends State<StudentScreen>
         .getCalendarListForStudentById(authProvider?.uid ?? '');
     await studentController
         .getDataCalendarList(studentController.calendarClassList);
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -750,6 +751,7 @@ class _StudentScreenState extends State<StudentScreen>
         }
       }).toList();
     }
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -760,6 +762,7 @@ class _StudentScreenState extends State<StudentScreen>
         listCalendarTab.add(day);
       }
     }
+    if (!mounted) return;
     setState(() {});
   }
 
