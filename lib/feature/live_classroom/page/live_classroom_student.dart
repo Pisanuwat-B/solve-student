@@ -206,16 +206,15 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     super.initState();
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.landscapeRight, DeviceOrientation.landscapeLeft]);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
       SystemUiOverlay.bottom,
     ]);
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        systemNavigationBarColor: Colors.black.withOpacity(0.1),
-        systemNavigationBarDividerColor: Colors.black.withOpacity(0.1),
-      ),
-    );
+    SystemChrome.setSystemUIChangeCallback((systemOverlaysAreVisible) async {
+      await Future.delayed(const Duration(seconds: 3));
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
+        SystemUiOverlay.bottom,
+      ]);
+    });
     initTimer();
     initPagingBtn();
     if (!widget.isMock) {
@@ -558,8 +557,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
 
   @override
   dispose() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-        overlays: SystemUiOverlay.values);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
     _meetingTimer?.cancel();
     super.dispose();
   }
@@ -1938,14 +1942,17 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                     flex: 4,
                     child: Row(
                       children: [
-                        GestureDetector(
+                        InkWell(
                           onTap: () {
                             showHeader = false;
                           },
-                          child: const Icon(
-                            Icons.close,
-                            color: CustomColors.gray878787,
-                            size: 18,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            child: const Icon(
+                              Icons.close,
+                              color: CustomColors.gray878787,
+                              size: 24,
+                            ),
                           ),
                         ),
                         S.w(8),
