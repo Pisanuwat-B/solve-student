@@ -1944,7 +1944,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                 S.w(8),
                                 Flexible(
                                   child: Text(
-                                    "คอร์สปรับพื้นฐานคณิตศาสตร์ ก่อนขึ้น ม.4  - 01 ม.ค. 2023",
+                                    courseName,
                                     style:
                                         CustomStyles.bold16Black363636Overflow,
                                     maxLines: 1,
@@ -1975,7 +1975,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                   style: CustomStyles.med14redFF4201,
                                   children: <TextSpan>[
                                     TextSpan(
-                                      text: '01 : 59 : 59',
+                                      text: _formattedElapsedTime,
                                       style: CustomStyles.med14Gray878787,
                                     ),
                                   ],
@@ -2094,36 +2094,38 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                   width: 32,
                 ),
                 S.w(8),
-                Container(
-                  height: 32,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: CustomColors.grayCFCFCF,
-                      style: BorderStyle.solid,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                    color: CustomColors.whitePrimary,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      S.w(8),
-                      InkWell(
-                        onTap: () {
-                          showLeader(context);
-                        },
-                        child: Image.asset(
-                          ImageAssets.leaderboard,
-                          height: 24,
-                          width: 24,
-                        ),
-                      ),
-                      S.w(8),
-                    ],
-                  ),
-                ),
-                S.w(defaultPadding),
+
+                /// TODO: revise this when Quiz is ready
+                // Container(
+                //   height: 32,
+                //   decoration: BoxDecoration(
+                //     border: Border.all(
+                //       color: CustomColors.grayCFCFCF,
+                //       style: BorderStyle.solid,
+                //       width: 1.0,
+                //     ),
+                //     borderRadius: BorderRadius.circular(8),
+                //     color: CustomColors.whitePrimary,
+                //   ),
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.center,
+                //     children: <Widget>[
+                //       S.w(8),
+                //       InkWell(
+                //         onTap: () {
+                //           showLeader(context);
+                //         },
+                //         child: Image.asset(
+                //           ImageAssets.leaderboard,
+                //           height: 24,
+                //           width: 24,
+                //         ),
+                //       ),
+                //       S.w(8),
+                //     ],
+                //   ),
+                // ),
+                // S.w(defaultPadding),
                 InkWell(
                   onTap: () {
                     print('raw data to string');
@@ -2689,37 +2691,39 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               ),
             ),
             S.h(8),
-            Stack(
-              children: [
-                InkWell(
-                  onTap: () {
-                    shareQuizModal();
-                  },
-                  child: Image.asset(
-                    ImageAssets.icQaFloat,
-                    height: 44,
-                    width: 44,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 24),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                        color: CustomColors.black363636,
-                        shape: BoxShape.circle),
-                    width: 25,
-                    height: 25,
-                    child: Center(
-                      child: Text(
-                        "12",
-                        style: CustomStyles.bold11White,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            S.h(8),
+
+            /// TODO: Wait for Quiz ready
+            // Stack(
+            //   children: [
+            //     InkWell(
+            //       onTap: () {
+            //         shareQuizModal();
+            //       },
+            //       child: Image.asset(
+            //         ImageAssets.icQaFloat,
+            //         height: 44,
+            //         width: 44,
+            //       ),
+            //     ),
+            //     Padding(
+            //       padding: const EdgeInsets.only(left: 24),
+            //       child: Container(
+            //         decoration: const BoxDecoration(
+            //             color: CustomColors.black363636,
+            //             shape: BoxShape.circle),
+            //         width: 25,
+            //         height: 25,
+            //         child: Center(
+            //           child: Text(
+            //             "12",
+            //             style: CustomStyles.bold11White,
+            //           ),
+            //         ),
+            //       ),
+            //     ),
+            //   ],
+            // ),
+            // S.h(8),
             InkWell(
               onTap: () {
                 if (isHostRequestShareScreen) {
