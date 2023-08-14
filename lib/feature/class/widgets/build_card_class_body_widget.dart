@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:solve_student/feature/class/models/class_model.dart';
 import 'package:solve_student/widgets/date_time_format_util.dart';
 
@@ -121,7 +122,7 @@ class BuildCardClassBodyWidget extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'วันที่ : ${item.startDate?.date() ?? ""}',
+                            'วันที่ : ${item.startDate != null ? formatDate(item.startDate!.date()) : ""}',
                             style: const TextStyle(
                                 fontSize: 14, color: Colors.grey),
                             maxLines: 1,
@@ -150,11 +151,17 @@ class BuildCardClassBodyWidget extends StatelessWidget {
                                   fontWeight: FontWeight.bold),
                             ),
                           ),
-                          // const Text('data'),
-                          Icon(
-                            Icons.money,
-                            color: Colors.grey.shade300,
+                          Text(
+                            '฿',
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.green.shade600,
+                                fontWeight: FontWeight.bold),
                           ),
+                          // Icon(
+                          //   Icons.money,
+                          //   color: Colors.grey.shade300,
+                          // ),
                           const SizedBox(
                             width: 5,
                           ),
@@ -178,5 +185,10 @@ class BuildCardClassBodyWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String formatDate(String dateStr) {
+    DateTime parsedDate = DateTime.parse(dateStr);
+    return DateFormat('dd-MM-yyyy').format(parsedDate);
   }
 }

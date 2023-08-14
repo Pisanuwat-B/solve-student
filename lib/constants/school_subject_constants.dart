@@ -1,5 +1,5 @@
-class SchoolSubJectConstants {
-  static const List<String> schoolSubJectList = [
+class SchoolSubjectConstants {
+  static const List<String> schoolSubjectList = [
     // "การอ่าน",
     // "การเขียน",
     // "วรรณกรรม",
@@ -40,7 +40,7 @@ class SchoolSubJectConstants {
     "แนะแนว",
   ];
 
-  static const List<String> schoolSubJectFilterList = [
+  static const List<String> schoolSubjectFilterList = [
     "ทั้งหมด",
     // "การเขียน",
     // "วรรณกรรม",

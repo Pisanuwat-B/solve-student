@@ -14,8 +14,8 @@ class FilterClassWidget extends StatefulWidget {
 
 class _FilterClassWidgetState extends State<FilterClassWidget> {
   FilterClassModel? data;
-  String selectClass = SchoolSubJectConstants.schoolSubJectFilterList.first;
-  String selectClassLevel = SchoolSubJectConstants.schoolFilterClassLevel.first;
+  String selectClass = SchoolSubjectConstants.schoolSubjectFilterList.first;
+  String selectClassLevel = SchoolSubjectConstants.schoolFilterClassLevel.first;
   DateTimeEnum? isDateTimeEnum;
   final txtStartDate = TextEditingController();
   final txtStartTime = TextEditingController();
@@ -160,7 +160,7 @@ class _FilterClassWidgetState extends State<FilterClassWidget> {
                 selectClass = value!;
               });
             },
-            items: SchoolSubJectConstants.schoolSubJectFilterList
+            items: SchoolSubjectConstants.schoolSubjectFilterList
                 .map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
@@ -211,7 +211,7 @@ class _FilterClassWidgetState extends State<FilterClassWidget> {
                 selectClassLevel = value!;
               });
             },
-            items: SchoolSubJectConstants.schoolFilterClassLevel
+            items: SchoolSubjectConstants.schoolFilterClassLevel
                 .map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
@@ -242,6 +242,13 @@ class _FilterClassWidgetState extends State<FilterClassWidget> {
                     });
                   },
                 ),
+                onTap: () {
+                  setState(() {
+                    if (isDateTimeEnum != DateTimeEnum.date) {
+                      isDateTimeEnum = DateTimeEnum.date;
+                    }
+                  });
+                },
               ),
             ),
             Expanded(
@@ -257,6 +264,13 @@ class _FilterClassWidgetState extends State<FilterClassWidget> {
                     });
                   },
                 ),
+                onTap: () {
+                  setState(() {
+                    if (isDateTimeEnum != DateTimeEnum.time) {
+                      isDateTimeEnum = DateTimeEnum.time;
+                    }
+                  });
+                },
               ),
             ),
           ],

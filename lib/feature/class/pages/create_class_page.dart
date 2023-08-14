@@ -26,8 +26,8 @@ class _CreateClassPageState extends State<CreateClassPage>
   AuthProvider? authProvider;
   ClassProvider? classProvider;
 
-  String selectClass = SchoolSubJectConstants.schoolSubJectList.first;
-  String selectClassLevel = SchoolSubJectConstants.schoolClassLevel.first;
+  String selectClass = SchoolSubjectConstants.schoolSubjectList.first;
+  String selectClassLevel = SchoolSubjectConstants.schoolClassLevel.first;
 
   TextEditingController txtName = TextEditingController();
   TextEditingController txtDetail = TextEditingController();
@@ -175,13 +175,15 @@ class _CreateClassPageState extends State<CreateClassPage>
                     height: 15,
                   ),
                   topicLabel1('รายละเอียด'),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  dropdownCount(),
-                  const SizedBox(
-                    height: 22,
-                  ),
+
+                  /// TODO: Waiting for revise
+                  // const SizedBox(
+                  //   height: 10,
+                  // ),
+                  // dropdownCount(),
+                  // const SizedBox(
+                  //   height: 22,
+                  // ),
                   txtFieldBody(
                     txtCtrl: txtCount,
                     hint: "จำนวน",
@@ -537,7 +539,7 @@ class _CreateClassPageState extends State<CreateClassPage>
           selectClass = value!;
         });
       },
-      items: SchoolSubJectConstants.schoolSubJectList
+      items: SchoolSubjectConstants.schoolSubjectList
           .map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
           value: value,
@@ -594,7 +596,7 @@ class _CreateClassPageState extends State<CreateClassPage>
           selectClassLevel = value!;
         });
       },
-      items: SchoolSubJectConstants.schoolClassLevel
+      items: SchoolSubjectConstants.schoolClassLevel
           .map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
           value: value,
@@ -741,6 +743,7 @@ class _CreateClassPageState extends State<CreateClassPage>
     BuildContext context,
   ) async {
     TimeOfDay? picked = await showTimePicker(
+      initialEntryMode: TimePickerEntryMode.input,
       context: context,
       initialTime: TimeOfDay.now(),
     );

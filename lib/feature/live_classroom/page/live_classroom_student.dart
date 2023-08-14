@@ -199,31 +199,47 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   var courseController = CourseLiveController();
   late String courseName;
   bool isCourseLoaded = false;
+  bool showHeader = false;
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.landscapeRight, DeviceOrientation.landscapeLeft]);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
       SystemUiOverlay.bottom,
     ]);
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        systemNavigationBarColor: Colors.black.withOpacity(0.1),
-        systemNavigationBarDividerColor: Colors.black.withOpacity(0.1),
-      ),
-    );
-    initPagesData();
+    SystemChrome.setSystemUIChangeCallback((systemOverlaysAreVisible) async {
+      await Future.delayed(const Duration(seconds: 3));
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
+        SystemUiOverlay.bottom,
+      ]);
+    });
     initTimer();
     initPagingBtn();
-    initMessageHandler();
     if (!widget.isMock) {
+      initPagesData();
+      initMessageHandler();
       initConference();
     } else {
       _joined = true;
+      mockInitPageData();
     }
+  }
+
+  void mockInitPageData() {
+    setState(() {
+      _pages = [
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/test(gun)%2FexampleSheet1.jpg?alt=media&token=27676570-4031-4c6b-b6bc-4280fbbcd116',
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/test(gun)%2FexampleSheet2.jpg?alt=media&token=8ec3a135-85a6-4cac-abdd-b8d0df094ce3',
+      ];
+      for (int i = 1; i < 2; i++) {
+        _addPage();
+      }
+      courseName = 'Mockup Test';
+      micEnable = false;
+      isCourseLoaded = true;
+    });
   }
 
   Future<void> initPagesData() async {
@@ -307,18 +323,12 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   void initWss() {
-    if (!widget.isMock) {
-      channel = WebSocketChannel.connect(
-        Uri.parse(
-            'ws://35.240.169.164:3000/${widget.courseId}/${widget.startTime}'),
-      );
-      sendMessage(widget.userId, 'RequestSolvepadSize');
-    } else {
-      channel = WebSocketChannel.connect(
-        Uri.parse(
-            'ws://35.240.169.164:3000/${widget.courseId}/${widget.courseId}'),
-      );
-    }
+    channel = WebSocketChannel.connect(
+      Uri.parse(
+          'ws://35.240.169.164:3000/${widget.courseId}/${widget.startTime}'),
+    );
+    sendMessage(widget.userId, 'RequestSolvepadSize');
+
     channel?.stream.listen((message) {
       setState(() {
         var decodedMessage = json.decode(message);
@@ -547,8 +557,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
 
   @override
   dispose() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-        overlays: SystemUiOverlay.values);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
     _meetingTimer?.cancel();
     super.dispose();
   }
@@ -560,6 +575,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   void sendMessage(String name, dynamic data) {
+    if (widget.isMock) return;
     try {
       final message = json.encode({'uid': name, 'data': data});
       channel?.sink.add(message);
@@ -794,18 +810,16 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _onWillPopScope,
-      child: SafeArea(
-        child: _joined && isCourseLoaded
-            ? Scaffold(
-                backgroundColor: CustomColors.grayCFCFCF,
-                body: !Responsive.isMobile(context)
-                    ? _buildTablet()
-                    : fullScreen
-                        ? _buildMobileFullScreen()
-                        : _buildMobile(),
-              )
-            : const LoadingScreen(),
-      ),
+      child: _joined && isCourseLoaded
+          ? Scaffold(
+              backgroundColor: CustomColors.grayCFCFCF,
+              body: !Responsive.isMobile(context)
+                  ? _buildTablet()
+                  : fullScreen
+                      ? _buildMobileFullScreen()
+                      : _buildMobile(),
+            )
+          : const LoadingScreen(),
     );
   }
 
@@ -868,6 +882,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
           ],
         ),
       ),
+
+      /// TODO: wait for Quiz ready
       // floatingActionButton:
       //     Column(mainAxisAlignment: MainAxisAlignment.end, children: [
       //   if (tabFreestyle)
@@ -926,46 +942,61 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   Widget _buildMobile() {
     return Scaffold(
       backgroundColor: CustomColors.grayCFCFCF,
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              headerLayer2Mobile(),
-              const DividerLine(),
-              solvePad(),
-            ],
-          ),
-          if (!selectedTools) toolsUndoMobile(),
-          if (!selectedTools) toolsMobile(),
-          if (selectedTools) toolsActiveMobile(),
-          Positioned(
-            top: 55,
-            right: 15,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+      body: GestureDetector(
+        onTap: () {
+          setState(() {
+            showHeader = false;
+          });
+        },
+        child: Stack(
+          children: [
+            Column(
               children: [
-                if ((isHostRequestShareScreen && !isAllowSharingScreen) ||
-                    (isHostRequestShareScreen &&
-                        isAllowSharingScreen &&
-                        !isHostFocus))
-                  statusScreen(
-                    "ติวเตอร์ขอดูจอคุณ",
-                    ImageAssets.shareGreen,
-                    'green',
-                  ),
-                if (isAllowSharingScreen && isHostFocus)
-                  statusScreen(
-                    "ติวเตอร์กำลังดูจอคุณ",
-                    ImageAssets.displayBlue,
-                    'blue',
-                  ),
+                headerLayer2Mobile(),
+                const DividerLine(),
+                solvePad(),
               ],
             ),
-          ),
-
-          /// Control display
-          toolsControlMobile()
-        ],
+            if (!selectedTools) toolsUndoMobile(),
+            if (!selectedTools) toolsMobile(),
+            if (selectedTools) toolsActiveMobile(),
+            Positioned(
+              top: 55,
+              right: 15,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if ((isHostRequestShareScreen && !isAllowSharingScreen) ||
+                      (isHostRequestShareScreen &&
+                          isAllowSharingScreen &&
+                          !isHostFocus))
+                    statusScreen(
+                      "ติวเตอร์ขอดูจอคุณ",
+                      ImageAssets.shareGreen,
+                      'green',
+                    ),
+                  if (isAllowSharingScreen && isHostFocus)
+                    statusScreen(
+                      "ติวเตอร์กำลังดูจอคุณ",
+                      ImageAssets.displayBlue,
+                      'blue',
+                    ),
+                ],
+              ),
+            ),
+            AnimatedPositioned(
+              top: showHeader ? 0 : -50, // slide-down animation
+              left: 0,
+              right: 0,
+              duration: const Duration(milliseconds: 100),
+              child: GestureDetector(
+                onTap: () {},
+                child: headerLayer1Mobile(),
+              ),
+            ),
+            toolsControlMobile()
+          ],
+        ),
       ),
     );
   }
@@ -1893,104 +1924,103 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     );
   }
 
-  Future<void> headerLayer1Mobile() {
-    return showDialog(
-      useSafeArea: false,
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Column(
+  Widget headerLayer1Mobile() {
+    return Material(
+      color: Colors.transparent,
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            height: 50,
+            color: CustomColors.whitePrimary,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    width: double.infinity,
-                    height: 60,
-                    color: CustomColors.whitePrimary,
+                S.w(defaultPadding),
+                if (Responsive.isMobile(context))
+                  Expanded(
+                    flex: 4,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        S.w(defaultPadding),
-                        if (Responsive.isMobile(context))
-                          Expanded(
-                            flex: 4,
-                            child: Row(
-                              children: [
-                                GestureDetector(
-                                  onTap: () => Navigator.of(context).pop(),
-                                  child: const Icon(
-                                    Icons.close,
-                                    color: CustomColors.gray878787,
-                                    size: 18,
-                                  ),
-                                ),
-                                S.w(8),
-                                Flexible(
-                                  child: Text(
-                                    "คอร์สปรับพื้นฐานคณิตศาสตร์ ก่อนขึ้น ม.4  - 01 ม.ค. 2023",
-                                    style:
-                                        CustomStyles.bold16Black363636Overflow,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                              ],
+                        InkWell(
+                          onTap: () {
+                            showHeader = false;
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            child: const Icon(
+                              Icons.close,
+                              color: CustomColors.gray878787,
+                              size: 24,
                             ),
                           ),
-                        Expanded(
-                          flex: 2,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              S.w(16.0),
-                              Container(
-                                height: 11,
-                                width: 11,
-                                decoration: BoxDecoration(
-                                    color: CustomColors.redF44336,
-                                    borderRadius: BorderRadius.circular(100)
-                                    //more than 50% of width makes circle
-                                    ),
-                              ),
-                              S.w(4.0),
-                              RichText(
-                                text: TextSpan(
-                                  text: 'Live Time: ',
-                                  style: CustomStyles.med14redFF4201,
-                                  children: <TextSpan>[
-                                    TextSpan(
-                                      text: '01 : 59 : 59',
-                                      style: CustomStyles.med14Gray878787,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              S.w(defaultPadding),
-                            ],
+                        ),
+                        S.w(8),
+                        Flexible(
+                          child: Text(
+                            courseName,
+                            style: CustomStyles.bold16Black363636Overflow,
+                            maxLines: 1,
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
-                ),
+                Expanded(
+                  flex: 2,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      S.w(16.0),
+                      Container(
+                        height: 11,
+                        width: 11,
+                        decoration: BoxDecoration(
+                            color: CustomColors.redF44336,
+                            borderRadius: BorderRadius.circular(100)
+                            //more than 50% of width makes circle
+                            ),
+                      ),
+                      S.w(4.0),
+                      RichText(
+                        text: TextSpan(
+                          text: 'Live Time: ',
+                          style: CustomStyles.med14redFF4201,
+                          children: <TextSpan>[
+                            TextSpan(
+                              text: _formattedElapsedTime,
+                              style: CustomStyles.med14Gray878787,
+                            ),
+                          ],
+                        ),
+                      ),
+                      S.w(defaultPadding),
+                    ],
+                  ),
+                )
               ],
-            );
-          },
-        );
-      },
+            ),
+          ),
+          const DividerLine(),
+        ],
+      ),
     );
   }
 
   Widget headerLayer2Mobile() {
     return Container(
       height: 46,
-      decoration: BoxDecoration(color: CustomColors.whitePrimary, boxShadow: [
-        BoxShadow(
+      decoration: BoxDecoration(
+        color: CustomColors.whitePrimary,
+        boxShadow: [
+          BoxShadow(
             color: CustomColors.gray878787.withOpacity(.1),
             offset: const Offset(0.0, 6),
             blurRadius: 10,
-            spreadRadius: 1)
-      ]),
+            spreadRadius: 1,
+          )
+        ],
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -2010,16 +2040,24 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  S.w(8),
                   InkWell(
-                    onTap: () => headerLayer1Mobile(),
-                    child: Image.asset(
-                      ImageAssets.iconInfoPage,
-                      height: 24,
-                      width: 24,
+                    onTap: () {
+                      showHeader = true;
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.only(
+                        left: 8,
+                        right: 8,
+                        top: 4,
+                        bottom: 4,
+                      ),
+                      child: Image.asset(
+                        ImageAssets.iconInfoPage,
+                        height: 24,
+                        width: 24,
+                      ),
                     ),
                   ),
-                  S.w(8),
                   Container(
                     width: 1,
                     height: 32,
@@ -2078,36 +2116,38 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                   width: 32,
                 ),
                 S.w(8),
-                Container(
-                  height: 32,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: CustomColors.grayCFCFCF,
-                      style: BorderStyle.solid,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                    color: CustomColors.whitePrimary,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      S.w(8),
-                      InkWell(
-                        onTap: () {
-                          showLeader(context);
-                        },
-                        child: Image.asset(
-                          ImageAssets.leaderboard,
-                          height: 24,
-                          width: 24,
-                        ),
-                      ),
-                      S.w(8),
-                    ],
-                  ),
-                ),
-                S.w(defaultPadding),
+
+                /// TODO: revise this when Quiz is ready
+                // Container(
+                //   height: 32,
+                //   decoration: BoxDecoration(
+                //     border: Border.all(
+                //       color: CustomColors.grayCFCFCF,
+                //       style: BorderStyle.solid,
+                //       width: 1.0,
+                //     ),
+                //     borderRadius: BorderRadius.circular(8),
+                //     color: CustomColors.whitePrimary,
+                //   ),
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.center,
+                //     children: <Widget>[
+                //       S.w(8),
+                //       InkWell(
+                //         onTap: () {
+                //           showLeader(context);
+                //         },
+                //         child: Image.asset(
+                //           ImageAssets.leaderboard,
+                //           height: 24,
+                //           width: 24,
+                //         ),
+                //       ),
+                //       S.w(8),
+                //     ],
+                //   ),
+                // ),
+                // S.w(defaultPadding),
                 InkWell(
                   onTap: () {
                     print('raw data to string');
@@ -2673,37 +2713,39 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               ),
             ),
             S.h(8),
-            Stack(
-              children: [
-                InkWell(
-                  onTap: () {
-                    shareQuizModal();
-                  },
-                  child: Image.asset(
-                    ImageAssets.icQaFloat,
-                    height: 44,
-                    width: 44,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 24),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                        color: CustomColors.black363636,
-                        shape: BoxShape.circle),
-                    width: 25,
-                    height: 25,
-                    child: Center(
-                      child: Text(
-                        "12",
-                        style: CustomStyles.bold11White,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            S.h(8),
+
+            /// TODO: Wait for Quiz ready
+            // Stack(
+            //   children: [
+            //     InkWell(
+            //       onTap: () {
+            //         shareQuizModal();
+            //       },
+            //       child: Image.asset(
+            //         ImageAssets.icQaFloat,
+            //         height: 44,
+            //         width: 44,
+            //       ),
+            //     ),
+            //     Padding(
+            //       padding: const EdgeInsets.only(left: 24),
+            //       child: Container(
+            //         decoration: const BoxDecoration(
+            //             color: CustomColors.black363636,
+            //             shape: BoxShape.circle),
+            //         width: 25,
+            //         height: 25,
+            //         child: Center(
+            //           child: Text(
+            //             "12",
+            //             style: CustomStyles.bold11White,
+            //           ),
+            //         ),
+            //       ),
+            //     ),
+            //   ],
+            // ),
+            // S.h(8),
             InkWell(
               onTap: () {
                 if (isHostRequestShareScreen) {

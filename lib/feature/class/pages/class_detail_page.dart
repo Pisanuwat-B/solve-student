@@ -196,13 +196,14 @@ class _OrderDetailPageState extends State<ClassDetailPage> {
                           padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
                           child: Text(
                             widget.classDetail.schoolSubject ?? "",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 15,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        S.w(4),
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.grey.shade300,
@@ -211,7 +212,7 @@ class _OrderDetailPageState extends State<ClassDetailPage> {
                           padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
                           child: Text(
                             widget.classDetail.classLevel ?? "",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 15,
                             ),
                             maxLines: 1,
