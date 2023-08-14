@@ -26,8 +26,8 @@ class ChatRoomPage extends StatefulWidget {
     required this.chat,
     required this.order,
   });
-  ChatModel chat;
-  OrderClassModel order;
+  final ChatModel chat;
+  final OrderClassModel order;
   @override
   State<ChatRoomPage> createState() => _ChatRoomPageState();
 }
@@ -85,8 +85,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         child: Scaffold(
           appBar: PreferredSize(
             preferredSize: widget.order.fromMarketPlace
-                ? Size.fromHeight(70)
-                : Size.fromHeight(100),
+                ? const Size.fromHeight(70)
+                : const Size.fromHeight(110),
             child: SafeArea(
               child: AppBar(
                 backgroundColor: Colors.white,

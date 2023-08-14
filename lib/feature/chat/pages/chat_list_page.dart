@@ -114,14 +114,13 @@ class _ChatListPageState extends State<ChatListPage> {
                                   );
                                 }
                                 return const Center(
-                                  child: Text('Loading...',
-                                      style: TextStyle(fontSize: 20)),
+                                  child:
+                                      Text('', style: TextStyle(fontSize: 20)),
                                 );
                               });
                         }
                         return const Center(
-                          child: Text('Loading...',
-                              style: TextStyle(fontSize: 20)),
+                          child: Text('', style: TextStyle(fontSize: 20)),
                         );
                     }
                   },
