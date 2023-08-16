@@ -2800,17 +2800,19 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               ),
             ),
             S.h(8),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  fullScreen = !fullScreen;
-                });
-              },
-              child: Image.asset(
-                ImageAssets.icFullFloat,
-                width: 44,
-              ),
-            ),
+
+            /// TODO: Reconsider fullscreen option
+            // InkWell(
+            //   onTap: () {
+            //     setState(() {
+            //       fullScreen = !fullScreen;
+            //     });
+            //   },
+            //   child: Image.asset(
+            //     ImageAssets.icFullFloat,
+            //     width: 44,
+            //   ),
+            // ),
           ],
         ),
       ),
@@ -2855,7 +2857,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                   _selectedIndexColors = index;
                                   openColors = !openColors;
                                 });
-                                print('tap color');
                                 sendMessage(
                                     widget.userId, 'StrokeColor.$index');
                               },
@@ -2925,7 +2926,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               duration: const Duration(seconds: 1),
               curve: Curves.fastOutSlowIn,
               height: 65,
-              width: selectedTools ? 0 : 430,
+              // TODO: change to 430 when laser ready
+              width: selectedTools ? 0 : 380,
               decoration: BoxDecoration(
                 border: Border.all(
                   color: CustomColors.grayCFCFCF,
@@ -3104,7 +3106,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     return Align(
       alignment: Alignment.centerLeft,
       child: Padding(
-        padding: const EdgeInsets.only(left: 15),
+        padding: const EdgeInsets.only(left: 45),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

@@ -10,6 +10,7 @@ import 'package:solve_student/widgets/confirm_action_widget.dart';
 import 'package:solve_student/widgets/show_my_id_widget.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import '../../calendar/widgets/sizebox.dart';
 import '../../live_classroom/page/live_classroom_student.dart';
 import '../components/webview.dart';
 
@@ -340,13 +341,14 @@ class _ProfilePageState extends State<ProfilePage> {
                           },
                           child: const Text("ออกจากระบบ"),
                         ),
-                        const SizedBox(height: 10),
+                        S.h(10),
                         Text(
                           authProvider.user?.email ?? "",
                           style: const TextStyle(
                             color: greyColor,
                           ),
                         ),
+                        S.h(10),
                       ],
                     ),
                   ),
