@@ -2022,91 +2022,210 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
-            child: Container(
-              height: 38,
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: CustomColors.grayCFCFCF,
-                  style: BorderStyle.solid,
-                  width: 1.0,
-                ),
-                borderRadius: BorderRadius.circular(8),
-                color: CustomColors.whitePrimary,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  InkWell(
-                    onTap: () {
-                      showHeader = true;
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.only(
-                        left: 8,
-                        right: 8,
-                        top: 4,
-                        bottom: 4,
+          Expanded(
+            child: Row(
+              children: [
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  height: 38,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: CustomColors.grayCFCFCF,
+                      style: BorderStyle.solid,
+                      width: 1.0,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    color: CustomColors.whitePrimary,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      InkWell(
+                        onTap: () {
+                          showHeader = true;
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.only(
+                            left: 8,
+                            right: 8,
+                            top: 4,
+                            bottom: 4,
+                          ),
+                          child: Image.asset(
+                            ImageAssets.iconInfoPage,
+                            height: 24,
+                            width: 24,
+                          ),
+                        ),
                       ),
-                      child: Image.asset(
-                        ImageAssets.iconInfoPage,
+                      Container(
+                        width: 1,
+                        height: 32,
+                        color: CustomColors.grayCFCFCF,
+                      ),
+                      S.w(8),
+                      Image.asset(
+                        ImageAssets.allPages,
                         height: 24,
                         width: 24,
                       ),
-                    ),
+                      S.w(8),
+                      // Container(
+                      //   width: 1,
+                      //   height: 32,
+                      //   color: CustomColors.grayCFCFCF,
+                      // ),
+                      // S.w(8),
+                      // Transform.scale(
+                      //   scale: 0.6,
+                      //   child: CupertinoSwitch(
+                      //     trackColor: Colors.orange,
+                      //     value: tabFollowing,
+                      //     onChanged: (bool value) {
+                      //       setState(() {
+                      //         tabFollowing = value;
+                      //         tabFreestyle = !value;
+                      //         if (tabFollowing) {
+                      //           snapFollow();
+                      //         }
+                      //       });
+                      //     },
+                      //   ),
+                      // ),
+                      // Text(
+                      //     tabFollowing
+                      //         ? "เลื่อนหน้าตามติวเตอร์"
+                      //         : "เลื่อนหน้าอิสระ",
+                      //     style: CustomStyles.bold12gray878787),
+                      // S.w(16.0),
+                    ],
                   ),
-                  Container(
-                    width: 1,
-                    height: 32,
-                    color: CustomColors.grayCFCFCF,
-                  ),
-                  S.w(8),
-                  Image.asset(
-                    ImageAssets.allPages,
-                    height: 24,
-                    width: 24,
-                  ),
-                  S.w(8),
-                  Container(
-                    width: 1,
-                    height: 32,
-                    color: CustomColors.grayCFCFCF,
-                  ),
-                  S.w(8),
-                  Transform.scale(
-                    scale: 0.6,
-                    child: CupertinoSwitch(
-                      trackColor: Colors.orange,
-                      value: tabFollowing,
-                      onChanged: (bool value) {
-                        setState(() {
-                          tabFollowing = value;
-                          tabFreestyle = !value;
-                          if (tabFollowing) {
-                            snapFollow();
-                          }
-                        });
-                      },
-                    ),
-                  ),
-                  Text(
-                      tabFollowing
-                          ? "เลื่อนหน้าตามติวเตอร์"
-                          : "เลื่อนหน้าอิสระ",
-                      style: CustomStyles.bold12gray878787),
-                  S.w(16.0),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           Expanded(
-            child: Container(),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      if (tabFreestyle == true) {
+                        tabFollowing = !tabFollowing;
+                        tabFreestyle = false;
+                        snapFollow();
+                      }
+                    });
+                  },
+                  child: Container(
+                    height: 40,
+                    width: 110,
+                    decoration: BoxDecoration(
+                      color: tabFollowing
+                          ? CustomColors.greenE5F6EB
+                          : CustomColors.whitePrimary,
+                      shape: BoxShape.rectangle,
+                      border: Border.all(
+                        color: CustomColors.grayCFCFCF,
+                        style: BorderStyle.solid,
+                        width: 1.0,
+                      ),
+                      borderRadius: const BorderRadius.horizontal(
+                        left: Radius.circular(40.0),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Image.asset(
+                          tabFollowing
+                              ? ImageAssets.avatarMe
+                              : ImageAssets.avatarDisMe,
+                          width: 32,
+                        ),
+                        S.w(8),
+                        Text("เรียนรู้",
+                            style: tabFollowing
+                                ? CustomStyles.bold14greenPrimary
+                                : CustomStyles.bold14grayCFCFCF),
+                      ],
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      if (tabFollowing == true) {
+                        tabFreestyle = !tabFreestyle;
+                        tabFollowing = false;
+                      }
+                    });
+                  },
+                  child: Container(
+                    height: 40,
+                    width: 110,
+                    decoration: BoxDecoration(
+                      color: tabFreestyle
+                          ? CustomColors.greenE5F6EB
+                          : CustomColors.whitePrimary,
+                      shape: BoxShape.rectangle,
+                      border: Border.all(
+                        color: CustomColors.grayCFCFCF,
+                        style: BorderStyle.solid,
+                        width: 1.0,
+                      ),
+                      borderRadius: const BorderRadius.horizontal(
+                        right: Radius.circular(40.0),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Image.asset(
+                          tabFreestyle
+                              ? ImageAssets.pencilActive
+                              : ImageAssets.penDisTab,
+                          width: 32,
+                        ),
+                        S.w(8),
+                        Text("เขียนอิสระ",
+                            style: tabFreestyle
+                                ? CustomStyles.bold14greenPrimary
+                                : CustomStyles.bold14grayCFCFCF),
+                      ],
+                    ),
+                  ),
+                ),
+                // S.w(8),
+                // Container(
+                //   width: 1,
+                //   height: 32,
+                //   color: CustomColors.grayCFCFCF,
+                // ),
+                // S.w(8),
+                // InkWell(
+                //   onTap: () {},
+                //   child: Container(
+                //     padding: const EdgeInsets.symmetric(
+                //       horizontal: 6,
+                //       vertical: 10,
+                //     ),
+                //     decoration: BoxDecoration(
+                //       color: CustomColors.greenPrimary,
+                //       borderRadius: BorderRadius.circular(8.0),
+                //     ),
+                //     child:
+                //         Text("ไปหน้าที่สอน", style: CustomStyles.bold14White),
+                //   ),
+                // ),
+              ],
+            ),
           ),
           Expanded(
-            flex: 3,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -2194,10 +2313,10 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                         Text("ไปหน้าที่สอน", style: CustomStyles.bold11White),
                   ),
                 ),
+                S.w(28),
               ],
             ),
           ),
-          S.w(28),
         ],
       ),
     );
@@ -2703,7 +2822,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             InkWell(
               onTap: () {
                 showCloseDialog(context, () {
-                  meeting.leave();
+                  if (!widget.isMock) meeting.leave();
                   Navigator.of(context).pop();
                 });
               },

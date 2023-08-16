@@ -50,12 +50,6 @@ Future<void> showCloseDialog(BuildContext context, Function onConfirm) {
                             ),
                             onPressed: () {
                               Navigator.of(context).pop(); // Close the dialog
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => StudentScreen(),
-                                ),
-                              );
                               onConfirm(); // Execute the confirmation function
                             },
                             child: Text('ออกห้องเรียน',
