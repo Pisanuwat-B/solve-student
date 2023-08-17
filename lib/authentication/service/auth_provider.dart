@@ -12,7 +12,7 @@ class AuthProvider extends ChangeNotifier {
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   UserModel? user;
   String? uid;
-
+  bool isLoading = true;
   getSelfInfo() async {
     log("getSelfInfo");
     if (firebaseAuth.currentUser?.uid == null) return;
@@ -28,12 +28,16 @@ class AuthProvider extends ChangeNotifier {
         //for setting user status to active
         // updateActiveStatus(true);
         if (user?.role == null || user?.role == "") {
+          log('in Update');
           await updateRoleFirestore('student');
         }
         log('My Data: ${userFirebase.data()}');
-        notifyListeners();
       }
     });
+    notifyListeners();
+    await Future.delayed(const Duration(seconds: 2));
+    isLoading = false;
+    notifyListeners();
   }
 
   Future<bool> userExists(User userIn) async {
