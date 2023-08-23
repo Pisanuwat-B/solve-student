@@ -564,6 +564,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
+    _pageController.dispose();
     _meetingTimer?.cancel();
     super.dispose();
   }
@@ -1437,8 +1438,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 InkWell(
                   onTap: () {
                     showCloseDialog(context, () {
-                      // meeting.leave();
-                      // Navigator.of(context).pop();
+                      if (!widget.isMock) meeting.leave();
+                      Navigator.of(context).pop();
                     });
                   },
                   child: Container(
