@@ -327,7 +327,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       Uri.parse(
           'ws://35.240.169.164:3000/${widget.courseId}/${widget.startTime}'),
     );
-    sendMessage(widget.userId, 'RequestSolvepadSize');
+    sendMessage('RequestSolvepadSize');
 
     channel?.stream.listen((message) {
       setState(() {
@@ -510,8 +510,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
         }
       }).toList();
       String jsonHigh = jsonEncode(encodedHighlight);
-      sendMessage(widget.userId, _mode);
-      sendMessage(widget.userId,
+      sendMessage(_mode);
+      sendMessage(
           'InstantArt|$_currentPage|$_currentScrollZoom|$jsonPen|$jsonHigh');
     } else {
       isHostFocus = false;
@@ -575,10 +575,20 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     channel?.sink.close();
   }
 
-  void sendMessage(String name, dynamic data) {
+  void sendMessage(dynamic data) {
     if (widget.isMock) return;
     try {
-      final message = json.encode({'uid': name, 'data': data});
+      final message = json.encode({'uid': widget.userId, 'data': data});
+      channel?.sink.add(message);
+    } catch (e) {
+      print('Error sending message: $e');
+    }
+  }
+
+  void sendCatchupMessage() {
+    if (widget.isMock) return;
+    try {
+      final message = json.encode({'uid': widget.userId, 'type': 'catch_up'});
       channel?.sink.add(message);
     } catch (e) {
       print('Error sending message: $e');
@@ -703,13 +713,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       pointStack = _penPoints[_currentPage];
       removePointStack(pointStack, index);
       if (isAllowSharingScreen && isHostFocus) {
-        sendMessage(widget.userId, 'Erase.pen.$index');
+        sendMessage('Erase.pen.$index');
       }
     } else if (mode == DrawingMode.highlighter) {
       pointStack = _highlighterPoints[_currentPage];
       removePointStack(pointStack, index);
       if (isAllowSharingScreen && isHostFocus) {
-        sendMessage(widget.userId, 'Erase.high.$index');
+        sendMessage('Erase.high.$index');
       }
     }
   }
@@ -1078,7 +1088,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                       _currentScrollZoom =
                           '${originalTranslationX.toStringAsFixed(2)}|${originalTranslationY.toStringAsFixed(2)}|$scale';
                       // if (isSharingScreen && isHostFocus) {
-                      //   sendMessage(widget.userId,
+                      //   sendMessage(
                       //       'ScrollZoom:${originalTranslationX.toStringAsFixed(2)}:${originalTranslationY.toStringAsFixed(2)}:$scale');
                       // }
                     }
@@ -1101,8 +1111,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                 if (activePointerId != null) return;
                                 activePointerId = details.pointer;
                                 if (isAllowSharingScreen && isHostFocus) {
-                                  sendMessage(widget.userId,
-                                      details.localPosition.toString());
+                                  sendMessage(details.localPosition.toString());
                                 }
                                 switch (_mode) {
                                   case DrawingMode.pen:
@@ -1164,8 +1173,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                 if (activePointerId != details.pointer) return;
                                 activePointerId = details.pointer;
                                 if (isAllowSharingScreen && isHostFocus) {
-                                  sendMessage(widget.userId,
-                                      details.localPosition.toString());
+                                  sendMessage(details.localPosition.toString());
                                 }
                                 switch (_mode) {
                                   case DrawingMode.pen:
@@ -1237,7 +1245,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                 if (activePointerId != details.pointer) return;
                                 activePointerId = null;
                                 if (isAllowSharingScreen && isHostFocus) {
-                                  sendMessage(widget.userId, 'null');
+                                  sendMessage('null');
                                 }
                                 switch (_mode) {
                                   case DrawingMode.pen:
@@ -1266,7 +1274,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                 if (activePointerId != details.pointer) return;
                                 activePointerId = null;
                                 if (isAllowSharingScreen && isHostFocus) {
-                                  sendMessage(widget.userId, 'null');
+                                  sendMessage('null');
                                 }
                                 switch (_mode) {
                                   case DrawingMode.pen:
@@ -1489,147 +1497,143 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             flex: 3,
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: CustomColors.grayCFCFCF,
-                      style: BorderStyle.solid,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                    color: CustomColors.whitePrimary,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Image.asset(
-                        ImageAssets.allPages,
-                        height: 30,
-                        width: 32,
-                      ),
-                      if (Responsive.isDesktop(context)) S.w(8),
-                      if (Responsive.isDesktop(context))
-                        Container(
-                          width: 1,
-                          height: 24,
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
                           color: CustomColors.grayCFCFCF,
+                          style: BorderStyle.solid,
+                          width: 1.0,
                         ),
-                      InkWell(
-                        onTap: () {
-                          if (_pageController.hasClients &&
-                              _pageController.page!.toInt() != 0 &&
-                              !tabFollowing) {
-                            if (isAllowSharingScreen && isHostFocus) {
-                              sendMessage(widget.userId,
-                                  'ChangePage:${_currentPage - 1}');
-                            }
-                            _pageController.animateToPage(
-                              _pageController.page!.toInt() - 1,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image.asset(
-                            ImageAssets.backDis,
-                            height: 16,
-                            width: 17,
-                            color: _isPrevBtnActive
-                                ? CustomColors.activePagingBtn
-                                : CustomColors.inactivePagingBtn,
-                          ),
-                        ),
+                        borderRadius: BorderRadius.circular(8),
+                        color: CustomColors.whitePrimary,
                       ),
-                      if (Responsive.isDesktop(context)) S.w(8),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: CustomColors.grayCFCFCF,
-                            style: BorderStyle.solid,
-                            width: 1.0,
-                          ),
-                          borderRadius: BorderRadius.circular(4),
-                          color: CustomColors.whitePrimary,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text("Page ${_currentPage + 1}",
-                                style: CustomStyles.bold14greenPrimary),
-                          ],
-                        ),
-                      ),
-                      S.w(8.0),
-                      Text("/ ${_pages.length}",
-                          style: CustomStyles.med14Gray878787),
-                      InkWell(
-                        onTap: () {
-                          if (_pages.length > 1 && !tabFollowing) {
-                            if (_pageController.hasClients &&
-                                _pageController.page!.toInt() !=
-                                    _pages.length - 1) {
-                              if (isAllowSharingScreen && isHostFocus) {
-                                sendMessage(widget.userId,
-                                    'ChangePage:${_currentPage + 1}');
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          // Image.asset(
+                          //   ImageAssets.allPages,
+                          //   height: 30,
+                          //   width: 32,
+                          // ),
+                          // if (Responsive.isDesktop(context)) S.w(8),
+                          // if (Responsive.isDesktop(context))
+                          //   Container(
+                          //     width: 1,
+                          //     height: 24,
+                          //     color: CustomColors.grayCFCFCF,
+                          //   ),
+                          InkWell(
+                            onTap: () {
+                              if (_pageController.hasClients &&
+                                  _pageController.page!.toInt() != 0 &&
+                                  !tabFollowing) {
+                                if (isAllowSharingScreen && isHostFocus) {
+                                  sendMessage('ChangePage:${_currentPage - 1}');
+                                }
+                                _pageController.animateToPage(
+                                  _pageController.page!.toInt() - 1,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
                               }
-                              _pageController.animateToPage(
-                                _pageController.page!.toInt() + 1,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            }
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image.asset(
-                            ImageAssets.forward,
-                            height: 16,
-                            width: 17,
-                            color: _isNextBtnActive
-                                ? CustomColors.activePagingBtn
-                                : CustomColors.inactivePagingBtn,
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset(
+                                ImageAssets.backDis,
+                                height: 16,
+                                width: 17,
+                                color: _isPrevBtnActive
+                                    ? CustomColors.activePagingBtn
+                                    : CustomColors.inactivePagingBtn,
+                              ),
+                            ),
                           ),
-                        ),
+                          if (Responsive.isDesktop(context)) S.w(8),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: CustomColors.grayCFCFCF,
+                                style: BorderStyle.solid,
+                                width: 1.0,
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                              color: CustomColors.whitePrimary,
+                            ),
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Text("Page ${_currentPage + 1}",
+                                    style: CustomStyles.bold14greenPrimary),
+                              ],
+                            ),
+                          ),
+                          S.w(8.0),
+                          Text("/ ${_pages.length}",
+                              style: CustomStyles.med14Gray878787),
+                          InkWell(
+                            onTap: () {
+                              if (_pages.length > 1 && !tabFollowing) {
+                                if (_pageController.hasClients &&
+                                    _pageController.page!.toInt() !=
+                                        _pages.length - 1) {
+                                  if (isAllowSharingScreen && isHostFocus) {
+                                    sendMessage(
+                                        'ChangePage:${_currentPage + 1}');
+                                  }
+                                  _pageController.animateToPage(
+                                    _pageController.page!.toInt() + 1,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                }
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset(
+                                ImageAssets.forward,
+                                height: 16,
+                                width: 17,
+                                color: _isNextBtnActive
+                                    ? CustomColors.activePagingBtn
+                                    : CustomColors.inactivePagingBtn,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      // S.w(6.0),
-                      // Container(
-                      //   width: 1,
-                      //   height: 24,
-                      //   color: CustomColors.grayCFCFCF,
-                      // ),
-                      // Transform.scale(
-                      //   scale: 0.6,
-                      //   child: CupertinoSwitch(
-                      //     value: _switchValue,
-                      //     onChanged: (bool value) {
-                      //       setState(() {
-                      //         _switchValue = value;
-                      //       });
-                      //     },
-                      //   ),
-                      // ),
-                      // Column(
-                      //   mainAxisAlignment: MainAxisAlignment.center,
-                      //   crossAxisAlignment: CrossAxisAlignment.start,
-                      //   children: [
-                      //     Text("เลื่อนหน้า",
-                      //         style: CustomStyles.bold12gray878787),
-                      //     Text("ตามติวเตอร์",
-                      //         style: CustomStyles.bold12gray878787),
-                      //   ],
-                      // ),
-                      // S.w(8.0),
-                    ],
+                    ),
                   ),
-                ),
+                  S.w(defaultPadding),
+                  const DividerVer(),
+                  S.w(defaultPadding),
+                  InkWell(
+                    onTap: () {
+                      sendCatchupMessage();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: CustomColors.greenPrimary,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child:
+                          Text("ไปหน้าที่สอน", style: CustomStyles.bold14White),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -1888,16 +1892,15 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                   isAllowSharingScreen = !isAllowSharingScreen;
                                 });
                                 if (isAllowSharingScreen) {
-                                  // sendMessage(widget.userId, 'TEST_MESSAGE');
+                                  // sendMessage('TEST_MESSAGE');
                                   setState(() {
                                     tabFollowing = false;
                                     tabFreestyle = true;
                                   });
-                                  sendMessage(widget.userId,
+                                  sendMessage(
                                       'StudentShareScreen:enable:${mySolvepadSize?.width.toStringAsFixed(2)}:${mySolvepadSize?.height.toStringAsFixed(2)}');
                                 } else {
-                                  sendMessage(widget.userId,
-                                      'StudentShareScreen:disable');
+                                  sendMessage('StudentShareScreen:disable');
                                 }
                               } else {
                                 print('host not request');
@@ -2390,37 +2393,33 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                           updateDataHistory(DrawingMode.drag);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            sendMessage(widget.userId,
-                                                'DrawingMode.drag');
+                                            sendMessage('DrawingMode.drag');
                                           }
                                         } else if (index == 1) {
                                           updateDataHistory(DrawingMode.pen);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            sendMessage(widget.userId,
-                                                'DrawingMode.pen');
+                                            sendMessage('DrawingMode.pen');
                                           }
                                         } else if (index == 2) {
                                           updateDataHistory(
                                               DrawingMode.highlighter);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            sendMessage(widget.userId,
+                                            sendMessage(
                                                 'DrawingMode.highlighter');
                                           }
                                         } else if (index == 3) {
                                           updateDataHistory(DrawingMode.eraser);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            sendMessage(widget.userId,
-                                                'DrawingMode.eraser');
+                                            sendMessage('DrawingMode.eraser');
                                           }
                                         } else if (index == 4) {
                                           updateDataHistory(DrawingMode.laser);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            sendMessage(widget.userId,
-                                                'DrawingMode.laser');
+                                            sendMessage('DrawingMode.laser');
                                           }
                                         }
                                       },
@@ -2873,15 +2872,15 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                     isAllowSharingScreen = !isAllowSharingScreen;
                   });
                   if (isAllowSharingScreen) {
-                    // sendMessage(widget.userId, 'TEST_MESSAGE');
+                    // sendMessage('TEST_MESSAGE');
                     setState(() {
                       tabFollowing = false;
                       tabFreestyle = true;
                     });
-                    sendMessage(widget.userId,
+                    sendMessage(
                         'StudentShareScreen:enable:${mySolvepadSize?.width.toStringAsFixed(2)}:${mySolvepadSize?.height.toStringAsFixed(2)}');
                   } else {
-                    sendMessage(widget.userId, 'StudentShareScreen:disable');
+                    sendMessage('StudentShareScreen:disable');
                   }
                 } else {
                   print('host not request');
@@ -2977,8 +2976,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                   _selectedIndexColors = index;
                                   openColors = !openColors;
                                 });
-                                sendMessage(
-                                    widget.userId, 'StrokeColor.$index');
+                                sendMessage('StrokeColor.$index');
                               },
                               child: Image.asset(_listColors[index]['color'],
                                   width: 48),
@@ -3020,8 +3018,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                     _selectedIndexLines = index;
                                     openLines = !openLines;
                                   });
-                                  sendMessage(
-                                      widget.userId, 'StrokeWidth.$index');
+                                  sendMessage('StrokeWidth.$index');
                                 });
                               },
                               child: Row(
@@ -3103,23 +3100,21 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                                   DrawingMode.drag);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                sendMessage(widget.userId,
-                                                    'DrawingMode.drag');
+                                                sendMessage('DrawingMode.drag');
                                               }
                                             } else if (index == 1) {
                                               updateDataHistory(
                                                   DrawingMode.pen);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                sendMessage(widget.userId,
-                                                    'DrawingMode.pen');
+                                                sendMessage('DrawingMode.pen');
                                               }
                                             } else if (index == 2) {
                                               updateDataHistory(
                                                   DrawingMode.highlighter);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                sendMessage(widget.userId,
+                                                sendMessage(
                                                     'DrawingMode.highlighter');
                                               }
                                             } else if (index == 3) {
@@ -3127,7 +3122,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                                   DrawingMode.eraser);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                sendMessage(widget.userId,
+                                                sendMessage(
                                                     'DrawingMode.eraser');
                                               }
                                             } else if (index == 4) {
@@ -3135,7 +3130,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                                   DrawingMode.laser);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                sendMessage(widget.userId,
+                                                sendMessage(
                                                     'DrawingMode.laser');
                                               }
                                             }
@@ -3235,8 +3230,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 if (_pageController.hasClients &&
                     _pageController.page!.toInt() != 0) {
                   if (isAllowSharingScreen && isHostFocus) {
-                    sendMessage(
-                        widget.userId, 'ChangePage:${_currentPage - 1}');
+                    sendMessage('ChangePage:${_currentPage - 1}');
                     _currentHostPage = _currentPage - 1;
                   }
                   _pageController.animateToPage(
@@ -3271,8 +3265,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                   if (_pageController.hasClients &&
                       _pageController.page!.toInt() != _pages.length - 1) {
                     if (isAllowSharingScreen && isHostFocus) {
-                      sendMessage(
-                          widget.userId, 'ChangePage:${_currentPage + 1}');
+                      sendMessage('ChangePage:${_currentPage + 1}');
                       _currentHostPage = _currentPage + 1;
                     }
                     _pageController.animateToPage(
