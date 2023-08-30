@@ -91,6 +91,7 @@ class _CourseHistoryState extends State<CourseHistory>
     setState(() {
       reviewList = courseList;
     });
+    print('Assigning reviewList');
     print(reviewList[0].thumbnailUrl);
   }
 
@@ -210,7 +211,7 @@ class _CourseHistoryState extends State<CourseHistory>
                             SizedBox(
                               height: 48,
                               width: 85,
-                              child: reviewList[index].thumbnailUrl != null
+                              child: reviewList[index].thumbnailUrl != ''
                                   ? CachedNetworkImage(
                                       width: double.infinity,
                                       fit: BoxFit.cover,

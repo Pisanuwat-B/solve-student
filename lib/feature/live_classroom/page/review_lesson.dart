@@ -187,7 +187,23 @@ class _ReviewLessonState extends State<ReviewLesson>
     print('init data');
     print(widget.file);
     print(widget.docId);
-    if (widget.docId == '') return;
+    if (widget.docId == '') {
+      _pages = [
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+      ];
+      for (int i = 1; i < 5; i++) {
+        _addPage();
+      }
+      setState(() {
+        _isPageReady = true;
+        startInstantReplay();
+      });
+      return;
+    }
     var sheet = await getDocFiles(widget.tutorId, widget.docId);
     print(sheet.length);
     setState(() {
@@ -465,6 +481,8 @@ class _ReviewLessonState extends State<ReviewLesson>
   }
 
   void instantReplay() async {
+    print('instant replay');
+    print(downloadedSolvepad.length);
     for (int i = 0; i < downloadedSolvepad.length; i++) {
       if (downloadedSolvepad[i]['uid'] != widget.tutorId &&
           downloadedSolvepad[i]['uid'] != widget.userId) {
