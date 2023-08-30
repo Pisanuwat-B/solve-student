@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:videosdk/videosdk.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../../authentication/service/auth_provider.dart';
 import '../../calendar/constants/custom_styles.dart';
 import '../../calendar/controller/create_course_live_controller.dart';
 import '../../calendar/widgets/sizebox.dart';
@@ -196,6 +198,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   ];
   late Map<String, Function(String)> handlers;
 
+  late AuthProvider authProvider;
+
   var courseController = CourseLiveController();
   late String courseName;
   bool isCourseLoaded = false;
@@ -225,6 +229,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       _joined = true;
       mockInitPageData();
     }
+    authProvider = Provider.of<AuthProvider>(context, listen: false);
   }
 
   void mockInitPageData() {
@@ -322,27 +327,32 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     room.join();
   }
 
+  StreamSubscription? _webSocketSubscription;
   void initWss() {
     channel = WebSocketChannel.connect(
       Uri.parse(
           'ws://35.240.169.164:3000/${widget.courseId}/${widget.startTime}'),
     );
+    print('connect to WSS');
     sendMessage('RequestSolvepadSize');
 
-    channel?.stream.listen((message) {
+    _webSocketSubscription = channel?.stream.listen((message) {
+      if (!mounted) return;
       setState(() {
         var decodedMessage = json.decode(message);
         print('json message');
         print(decodedMessage);
 
-        var item = decodedMessage[0];
-        var data = item['data'];
-        var uid = item['uid'];
-        if (uid != widget.userId) {
-          for (var entry in handlers.entries) {
-            if (data.startsWith(entry.key)) {
-              entry.value(data);
-              break;
+        for (int i = 0; i < decodedMessage.length; i++) {
+          var item = decodedMessage[i];
+          var data = item['data'];
+          var uid = item['uid'];
+          if (uid != widget.userId) {
+            for (var entry in handlers.entries) {
+              if (data.startsWith(entry.key)) {
+                entry.value(data);
+                break;
+              }
             }
           }
         }
@@ -566,12 +576,16 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     ]);
     _pageController.dispose();
     _meetingTimer?.cancel();
+    print('somehow I disposed');
+    closeChanel();
+    meeting.leave();
     super.dispose();
   }
 
   // ---------- FUNCTION: WSS
   void closeChanel() {
     print('close Chanel');
+    _webSocketSubscription?.cancel();
     channel?.sink.close();
   }
 
@@ -589,6 +603,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     if (widget.isMock) return;
     try {
       final message = json.encode({'uid': widget.userId, 'type': 'catch_up'});
+      print('catch-up message');
+      print(message);
       channel?.sink.add(message);
     } catch (e) {
       print('Error sending message: $e');
@@ -684,6 +700,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   Future<bool> _onWillPopScope() async {
+    print('somehow I pop');
     if (widget.isMock) {
       Navigator.pop(context);
     }
@@ -1447,7 +1464,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                   onTap: () {
                     showCloseDialog(context, () {
                       if (!widget.isMock) meeting.leave();
-                      Navigator.of(context).pop();
                     });
                   },
                   child: Container(
@@ -2233,10 +2249,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Image.asset(
-                  ImageAssets.avatarMen,
-                  height: 32,
-                  width: 32,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(32),
+                  child: Image.network(
+                    authProvider.user!.image!,
+                    height: 32,
+                    width: 32,
+                  ),
                 ),
                 S.w(8),
 
@@ -2273,35 +2292,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 // S.w(defaultPadding),
                 InkWell(
                   onTap: () {
-                    print('raw data to string');
-                    print(_penPoints[_currentPage].toString());
-
-                    List encodedList = _penPoints[_currentPage].map((item) {
-                      if (item == null) {
-                        return null;
-                      } else {
-                        return item.toJson();
-                      }
-                    }).toList();
-                    print('encodedList');
-                    print(encodedList);
-
-                    List<SolvepadStroke?> strokes =
-                        encodedList.map<SolvepadStroke?>((item) {
-                      if (item == null) {
-                        return null;
-                      } else {
-                        print('offset');
-                        print(item['offset']);
-                        Offset scaledOffset =
-                            Offset(item['offset']['dx'], item['offset']['dy']);
-                        print(scaledOffset);
-                        return SolvepadStroke.fromJson(item);
-                      }
-                    }).toList();
-
-                    print('decodedList');
-                    print(strokes);
+                    print('tap catch-up');
+                    sendCatchupMessage();
                   },
                   child: Container(
                     height: 32,
@@ -2823,7 +2815,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               onTap: () {
                 showCloseDialog(context, () {
                   if (!widget.isMock) meeting.leave();
-                  Navigator.of(context).pop();
                 });
               },
               child: Image.asset(

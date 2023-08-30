@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../nav.dart';
 import '../../calendar/constants/custom_colors.dart';
 import '../../calendar/constants/custom_styles.dart';
 import '../../calendar/pages/student_screen.dart';
@@ -49,8 +50,13 @@ Future<void> showCloseDialog(BuildContext context, Function onConfirm) {
                               ), // NEW
                             ),
                             onPressed: () {
-                              Navigator.of(context).pop(); // Close the dialog
                               onConfirm(); // Execute the confirmation function
+                              Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Nav(),
+                                  ),
+                                  (route) => false);
                             },
                             child: Text('ออกห้องเรียน',
                                 style: CustomStyles.bold14White)),
