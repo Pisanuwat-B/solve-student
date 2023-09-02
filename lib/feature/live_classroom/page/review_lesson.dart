@@ -2129,9 +2129,7 @@ class _ReviewLessonState extends State<ReviewLesson>
             child: AnimatedContainer(
               duration: const Duration(seconds: 1),
               curve: Curves.fastOutSlowIn,
-              height: selectedTools
-                  ? 270
-                  : MediaQuery.of(context).size.height - 300,
+              height: selectedTools ? 200 : 450,
               width: 120,
               decoration: BoxDecoration(
                 border: Border.all(
