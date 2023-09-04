@@ -2755,40 +2755,41 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                           S.h(defaultPadding),
                           Expanded(
                             child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 1),
-                                child: Column(
-                                  children: [
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Image.asset(
-                                            ImageAssets.pickGreenTran,
-                                            width: 38,
-                                          ),
-                                          Image.asset(
-                                            ImageAssets.pickLineTran,
-                                            width: 38,
-                                          ),
-                                        ],
-                                      ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 1),
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Image.asset(
+                                          ImageAssets.pickGreenTran,
+                                          width: 38,
+                                        ),
+                                        Image.asset(
+                                          ImageAssets.pickLineTran,
+                                          width: 38,
+                                        ),
+                                      ],
                                     ),
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Image.asset(
-                                            'assets/images/clear_tran.png',
-                                            width: 38,
-                                          ),
-                                        ],
-                                      ),
+                                  ),
+                                  Expanded(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Image.asset(
+                                          'assets/images/clear_tran.png',
+                                          width: 38,
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                )),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                       ),

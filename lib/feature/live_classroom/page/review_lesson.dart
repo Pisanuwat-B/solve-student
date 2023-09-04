@@ -1,10 +1,14 @@
+import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:speech_balloon/speech_balloon.dart';
 
@@ -12,6 +16,7 @@ import '../../calendar/constants/assets_manager.dart';
 import '../../calendar/constants/custom_colors.dart';
 import '../../calendar/constants/custom_styles.dart';
 import '../../calendar/widgets/sizebox.dart';
+import '../components/close_dialog.dart';
 import '../components/divider.dart';
 import '../quiz/quiz_model.dart';
 import '../solvepad/solve_watch.dart';
@@ -22,6 +27,7 @@ import 'ask_tutor_live.dart';
 
 class ReviewLesson extends StatefulWidget {
   final String courseId, courseName, file, tutorId, userId, docId;
+  final int start;
   const ReviewLesson({
     Key? key,
     required this.courseId,
@@ -30,6 +36,7 @@ class ReviewLesson extends StatefulWidget {
     required this.tutorId,
     required this.userId,
     required this.docId,
+    required this.start,
   }) : super(key: key);
 
   @override
@@ -155,6 +162,7 @@ class _ReviewLessonState extends State<ReviewLesson>
   int? activePointerId;
   bool _isPageReady = false;
   bool _isSolvepadDataReady = false;
+  bool _isHasReviewNote = false;
 
   // ---------- VARIABLE: page control
   String _formattedElapsedTime = ' 00 : 00 : 00 ';
@@ -955,6 +963,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                           onPanDown: (_) {},
                           child: Listener(
                             onPointerDown: (details) {
+                              _isHasReviewNote = true;
                               showSpeechBalloon = false;
                               if (tabFollowing) return;
                               if (activePointerId != null) return;
@@ -1316,6 +1325,35 @@ class _ReviewLessonState extends State<ReviewLesson>
     );
   }
 
+  Future<void> saveReviewNote() async {
+    // 1. Save data to a text file
+    final directory = await getApplicationDocumentsDirectory();
+    final File file =
+        File('${directory.path}/${widget.courseId}-${widget.start}.txt');
+    await file.writeAsString('$_penPoints|$_laserPoints|$_highlighterPoints');
+
+    // 2. Upload the text file to Firebase Storage
+    final Reference storageReference = FirebaseStorage.instance
+        .ref()
+        .child('self_review_note/${widget.courseId}-${widget.start}.txt');
+    final UploadTask uploadTask = storageReference.putFile(file);
+    await uploadTask.whenComplete(() async {
+      // 3. Get the returned URL
+      final String downloadUrl = await storageReference.getDownloadURL();
+
+      // 4. Write to Firestore database
+      final CollectionReference reviewNotes =
+          FirebaseFirestore.instance.collection('review_note');
+      await reviewNotes.add({
+        'course_id': widget.courseId,
+        'note_file': downloadUrl,
+        'session_start': widget.start,
+        'student_id': widget.userId,
+        'update_time': FieldValue.serverTimestamp(),
+      });
+    });
+  }
+
   Widget headerLayer1() {
     return Container(
       height: 60,
@@ -1350,7 +1388,25 @@ class _ReviewLessonState extends State<ReviewLesson>
                 children: [
                   InkWell(
                     onTap: () {
-                      Navigator.of(context).pop();
+                      if (_isHasReviewNote) {
+                        showCloseDialog(
+                          context,
+                          () {
+                            saveReviewNote();
+                            Navigator.of(context).pop();
+                          },
+                          title: 'คุณกำลังจะออก โดยไม่บันทึกการเขียน',
+                          detail:
+                              'คุณต้องการบันทึกการเขียนที่เกิดขึ้นระหว่างที่คุณดูรีวิว หรือไม่ ?',
+                          confirm: 'บันทึก',
+                          cancel: 'ออกโดยไม่บันทึก',
+                          onCancel: () {
+                            Navigator.of(context).pop();
+                          },
+                        );
+                      } else {
+                        Navigator.of(context).pop();
+                      }
                     },
                     child: const Padding(
                       padding: EdgeInsets.all(8.0),

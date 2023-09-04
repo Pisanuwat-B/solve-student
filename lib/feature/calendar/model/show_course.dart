@@ -10,6 +10,7 @@ class ShowCourseStudent {
   String? detailsText;
   String? documentId;
   String? file;
+  int? rawStart;
 
   ShowCourseStudent({
     this.courseId,
@@ -28,6 +29,7 @@ class ShowCourseStudent {
   ShowCourseStudent.fromJson(Map<String, dynamic> json) {
     courseId = json['course_id'];
     courseName = json['course_name'];
+    rawStart = json['start'];
     start = DateTime.fromMillisecondsSinceEpoch(json['start']);
     end = DateTime.fromMillisecondsSinceEpoch(json['end']);
     thumbnailUrl = json['thumbnail_url'];
