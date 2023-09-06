@@ -186,6 +186,7 @@ class _ReviewLessonState extends State<ReviewLesson>
     super.initState();
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.landscapeRight, DeviceOrientation.landscapeLeft]);
+    fetchReviewNote();
     initPagesData();
     initPagingBtn();
     initDownloadSolvepad();
@@ -254,6 +255,75 @@ class _ReviewLessonState extends State<ReviewLesson>
       }
     } catch (e) {
       print('Get file URL error: $e');
+    }
+  }
+
+  Future<void> fetchReviewNote() async {
+    // Reference to Firestore
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // Query the 'review_note' collection
+    QuerySnapshot querySnapshot = await firestore
+        .collection('review_note')
+        .where('student_id', isEqualTo: widget.userId)
+        .where('course_id', isEqualTo: widget.courseId)
+        .where('session_start', isEqualTo: widget.start)
+        .get();
+
+    // Check if a document exists
+    if (querySnapshot.docs.isNotEmpty) {
+      DocumentSnapshot document = querySnapshot.docs.first;
+      String? noteFileUrl = document.get('note_file');
+
+      // If the note_file field exists and is not null
+      if (noteFileUrl != null && noteFileUrl.isNotEmpty) {
+        // Fetch the content of the text file from the URL
+        final response = await http.get(Uri.parse(noteFileUrl));
+        log('has review note');
+        // If the call to the server was successful, parse the content into a string
+        if (response.statusCode == 200) {
+          populateReviewNote(response.body);
+        } else {
+          throw Exception('Failed to load review note');
+        }
+      }
+    }
+    log('No review note');
+  }
+
+  void populateReviewNote(String jsonString) {
+    // Decode the JSON string
+    Map<String, dynamic> jsonData = jsonDecode(jsonString);
+
+    // Helper function to convert a list of maps to a list of SolvepadStroke objects
+    List<SolvepadStroke?> convertToStrokeList(List<dynamic> list) {
+      return list.map((item) {
+        if (item == null) {
+          return null;
+        }
+        return SolvepadStroke.fromJson(item as Map<String, dynamic>);
+      }).toList();
+    }
+
+    // Populate _penPoints
+    List<dynamic> penPointsData = jsonData['penPoints'];
+    _penPoints.clear();
+    for (var list in penPointsData) {
+      _penPoints.add(convertToStrokeList(list));
+    }
+
+    // Populate _laserPoints
+    List<dynamic> laserPointsData = jsonData['laserPoints'];
+    _laserPoints.clear();
+    for (var list in laserPointsData) {
+      _laserPoints.add(convertToStrokeList(list));
+    }
+
+    // Populate _highlighterPoints
+    List<dynamic> highlighterPointsData = jsonData['highlighterPoints'];
+    _highlighterPoints.clear();
+    for (var list in highlighterPointsData) {
+      _highlighterPoints.add(convertToStrokeList(list));
     }
   }
 
@@ -1326,11 +1396,25 @@ class _ReviewLessonState extends State<ReviewLesson>
   }
 
   Future<void> saveReviewNote() async {
+    // Convert the data to JSON format
+    Map<String, dynamic> data = {
+      'penPoints': _penPoints
+          .map((list) => list.map((stroke) => stroke?.toJson()).toList())
+          .toList(),
+      'laserPoints': _laserPoints
+          .map((list) => list.map((stroke) => stroke?.toJson()).toList())
+          .toList(),
+      'highlighterPoints': _highlighterPoints
+          .map((list) => list.map((stroke) => stroke?.toJson()).toList())
+          .toList(),
+    };
+    String jsonString = jsonEncode(data);
+
     // 1. Save data to a text file
     final directory = await getApplicationDocumentsDirectory();
     final File file =
         File('${directory.path}/${widget.courseId}-${widget.start}.txt');
-    await file.writeAsString('$_penPoints|$_laserPoints|$_highlighterPoints');
+    await file.writeAsString(jsonString);
 
     // 2. Upload the text file to Firebase Storage
     final Reference storageReference = FirebaseStorage.instance
