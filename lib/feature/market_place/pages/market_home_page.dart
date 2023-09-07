@@ -18,20 +18,20 @@ import 'package:solve_student/feature/class/pages/class_list_page.dart';
 import 'package:solve_student/feature/class/pages/find_class_page.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
 import 'package:solve_student/feature/market_place/pages/market_course_detail_page.dart';
-import 'package:solve_student/feature/home/service/home_provider.dart';
+import 'package:solve_student/feature/market_place/service/market_home_provider.dart';
 import 'package:solve_student/feature/profile/pages/profile_page.dart';
 import 'package:solve_student/feature/standby_study/pages/ready_study_page.dart';
 import 'package:solve_student/feature/standby_study/pages/standby_study_page.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class MarketHomePage extends StatefulWidget {
+  const MarketHomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<MarketHomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<MarketHomePage> {
   List<String> bannerList = [
     'assets/images/banner1.png',
     'assets/images/banner1.png',
@@ -51,11 +51,11 @@ class _HomePageState extends State<HomePage> {
   ];
   int currentIndex = 0;
   AuthProvider? authprovider;
-  HomeProvider? homeProvider;
+  MarketHomeProvider? homeProvider;
   @override
   Widget build(BuildContext context) {
     authprovider = Provider.of<AuthProvider>(context);
-    homeProvider = Provider.of<HomeProvider>(context);
+    homeProvider = Provider.of<MarketHomeProvider>(context);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

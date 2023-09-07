@@ -8,14 +8,15 @@ import 'package:solve_student/feature/calendar/controller/document_controller.da
 import 'package:solve_student/feature/calendar/controller/student_controller.dart';
 import 'package:solve_student/feature/chat/service/chat_provider.dart';
 import 'package:solve_student/feature/class/services/class_provider.dart';
-import 'package:solve_student/feature/home/service/home_provider.dart';
+import 'package:solve_student/feature/market_place/service/market_home_provider.dart';
 import 'package:solve_student/feature/market_place/service/market_place_provider.dart';
 import 'package:solve_student/feature/order/service/order_mock_provider.dart';
 import 'package:solve_student/feature/standby_study/service/state_study_provider.dart';
 
 final List<SingleChildWidget> stateIndex = [
   ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
-  ChangeNotifierProvider<HomeProvider>(create: (_) => HomeProvider()),
+  ChangeNotifierProvider<MarketHomeProvider>(
+      create: (_) => MarketHomeProvider()),
   ChangeNotifierProvider<ChatProvider>(create: (_) => ChatProvider()),
   ChangeNotifierProvider<OrderMockProvider>(create: (_) => OrderMockProvider()),
   Provider<SettingProvider>(create: (_) => SettingProvider()),

@@ -10,7 +10,7 @@ import 'package:solve_student/feature/calendar/widgets/format_date.dart';
 import 'package:solve_student/feature/chat/models/chat_model.dart';
 import 'package:solve_student/feature/chat/pages/chat_room_page.dart';
 import 'package:solve_student/feature/chat/service/chat_provider.dart';
-import 'package:solve_student/feature/home/service/home_provider.dart';
+import 'package:solve_student/feature/market_place/service/market_home_provider.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
 import 'package:solve_student/feature/market_place/model/lesson_market_model.dart';
 import 'package:solve_student/feature/market_place/service/market_place_provider.dart';
@@ -30,7 +30,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
   late AuthProvider auth;
   late OrderMockProvider order;
   late ChatProvider chat;
-  HomeProvider? home;
+  MarketHomeProvider? home;
   RoleType me = RoleType.student;
 
   CourseMarketModel? course;
@@ -91,7 +91,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
     auth = Provider.of<AuthProvider>(context, listen: false);
     order = Provider.of<OrderMockProvider>(context, listen: false);
     chat = Provider.of<ChatProvider>(context, listen: false);
-    home = Provider.of<HomeProvider>(context, listen: false);
+    home = Provider.of<MarketHomeProvider>(context, listen: false);
     me = auth.user!.getRoleType();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       order.init(auth: auth);

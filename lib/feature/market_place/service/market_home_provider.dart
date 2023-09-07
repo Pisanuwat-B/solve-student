@@ -9,7 +9,7 @@ import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:solve_student/feature/calendar/model/course_model.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
 
-class HomeProvider extends ChangeNotifier {
+class MarketHomeProvider extends ChangeNotifier {
   final GoogleSignIn googleSignIn = GoogleSignIn();
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
