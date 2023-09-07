@@ -1,10 +1,14 @@
+import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:speech_balloon/speech_balloon.dart';
 
@@ -12,6 +16,7 @@ import '../../calendar/constants/assets_manager.dart';
 import '../../calendar/constants/custom_colors.dart';
 import '../../calendar/constants/custom_styles.dart';
 import '../../calendar/widgets/sizebox.dart';
+import '../components/close_dialog.dart';
 import '../components/divider.dart';
 import '../quiz/quiz_model.dart';
 import '../solvepad/solve_watch.dart';
@@ -22,6 +27,7 @@ import 'ask_tutor_live.dart';
 
 class ReviewLesson extends StatefulWidget {
   final String courseId, courseName, file, tutorId, userId, docId;
+  final int start;
   const ReviewLesson({
     Key? key,
     required this.courseId,
@@ -30,6 +36,7 @@ class ReviewLesson extends StatefulWidget {
     required this.tutorId,
     required this.userId,
     required this.docId,
+    required this.start,
   }) : super(key: key);
 
   @override
@@ -155,6 +162,7 @@ class _ReviewLessonState extends State<ReviewLesson>
   int? activePointerId;
   bool _isPageReady = false;
   bool _isSolvepadDataReady = false;
+  bool _isHasReviewNote = false;
 
   // ---------- VARIABLE: page control
   String _formattedElapsedTime = ' 00 : 00 : 00 ';
@@ -178,6 +186,7 @@ class _ReviewLessonState extends State<ReviewLesson>
     super.initState();
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.landscapeRight, DeviceOrientation.landscapeLeft]);
+    fetchReviewNote();
     initPagesData();
     initPagingBtn();
     initDownloadSolvepad();
@@ -187,7 +196,23 @@ class _ReviewLessonState extends State<ReviewLesson>
     print('init data');
     print(widget.file);
     print(widget.docId);
-    if (widget.docId == '') return;
+    if (widget.docId == '') {
+      _pages = [
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+        'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
+      ];
+      for (int i = 1; i < 5; i++) {
+        _addPage();
+      }
+      setState(() {
+        _isPageReady = true;
+        startInstantReplay();
+      });
+      return;
+    }
     var sheet = await getDocFiles(widget.tutorId, widget.docId);
     print(sheet.length);
     setState(() {
@@ -230,6 +255,75 @@ class _ReviewLessonState extends State<ReviewLesson>
       }
     } catch (e) {
       print('Get file URL error: $e');
+    }
+  }
+
+  Future<void> fetchReviewNote() async {
+    // Reference to Firestore
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // Query the 'review_note' collection
+    QuerySnapshot querySnapshot = await firestore
+        .collection('review_note')
+        .where('student_id', isEqualTo: widget.userId)
+        .where('course_id', isEqualTo: widget.courseId)
+        .where('session_start', isEqualTo: widget.start)
+        .get();
+
+    // Check if a document exists
+    if (querySnapshot.docs.isNotEmpty) {
+      DocumentSnapshot document = querySnapshot.docs.first;
+      String? noteFileUrl = document.get('note_file');
+
+      // If the note_file field exists and is not null
+      if (noteFileUrl != null && noteFileUrl.isNotEmpty) {
+        // Fetch the content of the text file from the URL
+        final response = await http.get(Uri.parse(noteFileUrl));
+        log('has review note');
+        // If the call to the server was successful, parse the content into a string
+        if (response.statusCode == 200) {
+          populateReviewNote(response.body);
+        } else {
+          throw Exception('Failed to load review note');
+        }
+      }
+    }
+    log('No review note');
+  }
+
+  void populateReviewNote(String jsonString) {
+    // Decode the JSON string
+    Map<String, dynamic> jsonData = jsonDecode(jsonString);
+
+    // Helper function to convert a list of maps to a list of SolvepadStroke objects
+    List<SolvepadStroke?> convertToStrokeList(List<dynamic> list) {
+      return list.map((item) {
+        if (item == null) {
+          return null;
+        }
+        return SolvepadStroke.fromJson(item as Map<String, dynamic>);
+      }).toList();
+    }
+
+    // Populate _penPoints
+    List<dynamic> penPointsData = jsonData['penPoints'];
+    _penPoints.clear();
+    for (var list in penPointsData) {
+      _penPoints.add(convertToStrokeList(list));
+    }
+
+    // Populate _laserPoints
+    List<dynamic> laserPointsData = jsonData['laserPoints'];
+    _laserPoints.clear();
+    for (var list in laserPointsData) {
+      _laserPoints.add(convertToStrokeList(list));
+    }
+
+    // Populate _highlighterPoints
+    List<dynamic> highlighterPointsData = jsonData['highlighterPoints'];
+    _highlighterPoints.clear();
+    for (var list in highlighterPointsData) {
+      _highlighterPoints.add(convertToStrokeList(list));
     }
   }
 
@@ -465,6 +559,8 @@ class _ReviewLessonState extends State<ReviewLesson>
   }
 
   void instantReplay() async {
+    print('instant replay');
+    print(downloadedSolvepad.length);
     for (int i = 0; i < downloadedSolvepad.length; i++) {
       if (downloadedSolvepad[i]['uid'] != widget.tutorId &&
           downloadedSolvepad[i]['uid'] != widget.userId) {
@@ -937,6 +1033,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                           onPanDown: (_) {},
                           child: Listener(
                             onPointerDown: (details) {
+                              _isHasReviewNote = true;
                               showSpeechBalloon = false;
                               if (tabFollowing) return;
                               if (activePointerId != null) return;
@@ -1298,6 +1395,49 @@ class _ReviewLessonState extends State<ReviewLesson>
     );
   }
 
+  Future<void> saveReviewNote() async {
+    // Convert the data to JSON format
+    Map<String, dynamic> data = {
+      'penPoints': _penPoints
+          .map((list) => list.map((stroke) => stroke?.toJson()).toList())
+          .toList(),
+      'laserPoints': _laserPoints
+          .map((list) => list.map((stroke) => stroke?.toJson()).toList())
+          .toList(),
+      'highlighterPoints': _highlighterPoints
+          .map((list) => list.map((stroke) => stroke?.toJson()).toList())
+          .toList(),
+    };
+    String jsonString = jsonEncode(data);
+
+    // 1. Save data to a text file
+    final directory = await getApplicationDocumentsDirectory();
+    final File file =
+        File('${directory.path}/${widget.courseId}-${widget.start}.txt');
+    await file.writeAsString(jsonString);
+
+    // 2. Upload the text file to Firebase Storage
+    final Reference storageReference = FirebaseStorage.instance
+        .ref()
+        .child('self_review_note/${widget.courseId}-${widget.start}.txt');
+    final UploadTask uploadTask = storageReference.putFile(file);
+    await uploadTask.whenComplete(() async {
+      // 3. Get the returned URL
+      final String downloadUrl = await storageReference.getDownloadURL();
+
+      // 4. Write to Firestore database
+      final CollectionReference reviewNotes =
+          FirebaseFirestore.instance.collection('review_note');
+      await reviewNotes.add({
+        'course_id': widget.courseId,
+        'note_file': downloadUrl,
+        'session_start': widget.start,
+        'student_id': widget.userId,
+        'update_time': FieldValue.serverTimestamp(),
+      });
+    });
+  }
+
   Widget headerLayer1() {
     return Container(
       height: 60,
@@ -1332,7 +1472,25 @@ class _ReviewLessonState extends State<ReviewLesson>
                 children: [
                   InkWell(
                     onTap: () {
-                      Navigator.of(context).pop();
+                      if (_isHasReviewNote) {
+                        showCloseDialog(
+                          context,
+                          () {
+                            saveReviewNote();
+                            Navigator.of(context).pop();
+                          },
+                          title: 'คุณกำลังจะออก โดยไม่บันทึกการเขียน',
+                          detail:
+                              'คุณต้องการบันทึกการเขียนที่เกิดขึ้นระหว่างที่คุณดูรีวิว หรือไม่ ?',
+                          confirm: 'บันทึก',
+                          cancel: 'ออกโดยไม่บันทึก',
+                          onCancel: () {
+                            Navigator.of(context).pop();
+                          },
+                        );
+                      } else {
+                        Navigator.of(context).pop();
+                      }
                     },
                     child: const Padding(
                       padding: EdgeInsets.all(8.0),
@@ -2111,9 +2269,7 @@ class _ReviewLessonState extends State<ReviewLesson>
             child: AnimatedContainer(
               duration: const Duration(seconds: 1),
               curve: Curves.fastOutSlowIn,
-              height: selectedTools
-                  ? 270
-                  : MediaQuery.of(context).size.height - 300,
+              height: selectedTools ? 200 : 450,
               width: 120,
               decoration: BoxDecoration(
                 border: Border.all(

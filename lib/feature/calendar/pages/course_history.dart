@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -91,7 +93,8 @@ class _CourseHistoryState extends State<CourseHistory>
     setState(() {
       reviewList = courseList;
     });
-    print(reviewList[0].thumbnailUrl);
+    log('Assigning reviewList');
+    log(reviewList[0].rawStart.toString());
   }
 
   @override
@@ -185,6 +188,7 @@ class _CourseHistoryState extends State<CourseHistory>
                           tutorId: reviewList[index].tutorId!,
                           userId: authProvider!.user!.id!,
                           docId: reviewList[index].documentId!,
+                          start: reviewList[index].rawStart!,
                         ),
                       ),
                     );
@@ -210,7 +214,7 @@ class _CourseHistoryState extends State<CourseHistory>
                             SizedBox(
                               height: 48,
                               width: 85,
-                              child: reviewList[index].thumbnailUrl != null
+                              child: reviewList[index].thumbnailUrl != ''
                                   ? CachedNetworkImage(
                                       width: double.infinity,
                                       fit: BoxFit.cover,

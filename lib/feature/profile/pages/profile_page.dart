@@ -349,6 +349,12 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         S.h(10),
+                        const Text(
+                          'SOLVE v 0.1.54',
+                          style: TextStyle(
+                            color: greyColor,
+                          ),
+                        ),
                       ],
                     ),
                   ),

@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:videosdk/videosdk.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../../authentication/service/auth_provider.dart';
 import '../../calendar/constants/custom_styles.dart';
 import '../../calendar/controller/create_course_live_controller.dart';
 import '../../calendar/widgets/sizebox.dart';
@@ -196,6 +198,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   ];
   late Map<String, Function(String)> handlers;
 
+  late AuthProvider authProvider;
+
   var courseController = CourseLiveController();
   late String courseName;
   bool isCourseLoaded = false;
@@ -225,6 +229,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       _joined = true;
       mockInitPageData();
     }
+    authProvider = Provider.of<AuthProvider>(context, listen: false);
   }
 
   void mockInitPageData() {
@@ -322,27 +327,32 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     room.join();
   }
 
+  StreamSubscription? _webSocketSubscription;
   void initWss() {
     channel = WebSocketChannel.connect(
       Uri.parse(
           'ws://35.240.169.164:3000/${widget.courseId}/${widget.startTime}'),
     );
-    sendMessage(widget.userId, 'RequestSolvepadSize');
+    print('connect to WSS');
+    sendMessage('RequestSolvepadSize');
 
-    channel?.stream.listen((message) {
+    _webSocketSubscription = channel?.stream.listen((message) {
+      if (!mounted) return;
       setState(() {
         var decodedMessage = json.decode(message);
         print('json message');
         print(decodedMessage);
 
-        var item = decodedMessage[0];
-        var data = item['data'];
-        var uid = item['uid'];
-        if (uid != widget.userId) {
-          for (var entry in handlers.entries) {
-            if (data.startsWith(entry.key)) {
-              entry.value(data);
-              break;
+        for (int i = 0; i < decodedMessage.length; i++) {
+          var item = decodedMessage[i];
+          var data = item['data'];
+          var uid = item['uid'];
+          if (uid != widget.userId) {
+            for (var entry in handlers.entries) {
+              if (data.startsWith(entry.key)) {
+                entry.value(data);
+                break;
+              }
             }
           }
         }
@@ -510,8 +520,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
         }
       }).toList();
       String jsonHigh = jsonEncode(encodedHighlight);
-      sendMessage(widget.userId, _mode);
-      sendMessage(widget.userId,
+      sendMessage(_mode);
+      sendMessage(
           'InstantArt|$_currentPage|$_currentScrollZoom|$jsonPen|$jsonHigh');
     } else {
       isHostFocus = false;
@@ -564,20 +574,37 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
+    _pageController.dispose();
     _meetingTimer?.cancel();
+    print('somehow I disposed');
+    closeChanel();
+    meeting.leave();
     super.dispose();
   }
 
   // ---------- FUNCTION: WSS
   void closeChanel() {
     print('close Chanel');
+    _webSocketSubscription?.cancel();
     channel?.sink.close();
   }
 
-  void sendMessage(String name, dynamic data) {
+  void sendMessage(dynamic data) {
     if (widget.isMock) return;
     try {
-      final message = json.encode({'uid': name, 'data': data});
+      final message = json.encode({'uid': widget.userId, 'data': data});
+      channel?.sink.add(message);
+    } catch (e) {
+      print('Error sending message: $e');
+    }
+  }
+
+  void sendCatchupMessage() {
+    if (widget.isMock) return;
+    try {
+      final message = json.encode({'uid': widget.userId, 'type': 'catch_up'});
+      print('catch-up message');
+      print(message);
       channel?.sink.add(message);
     } catch (e) {
       print('Error sending message: $e');
@@ -673,6 +700,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   Future<bool> _onWillPopScope() async {
+    print('somehow I pop');
     if (widget.isMock) {
       Navigator.pop(context);
     }
@@ -702,13 +730,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       pointStack = _penPoints[_currentPage];
       removePointStack(pointStack, index);
       if (isAllowSharingScreen && isHostFocus) {
-        sendMessage(widget.userId, 'Erase.pen.$index');
+        sendMessage('Erase.pen.$index');
       }
     } else if (mode == DrawingMode.highlighter) {
       pointStack = _highlighterPoints[_currentPage];
       removePointStack(pointStack, index);
       if (isAllowSharingScreen && isHostFocus) {
-        sendMessage(widget.userId, 'Erase.high.$index');
+        sendMessage('Erase.high.$index');
       }
     }
   }
@@ -1077,7 +1105,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                       _currentScrollZoom =
                           '${originalTranslationX.toStringAsFixed(2)}|${originalTranslationY.toStringAsFixed(2)}|$scale';
                       // if (isSharingScreen && isHostFocus) {
-                      //   sendMessage(widget.userId,
+                      //   sendMessage(
                       //       'ScrollZoom:${originalTranslationX.toStringAsFixed(2)}:${originalTranslationY.toStringAsFixed(2)}:$scale');
                       // }
                     }
@@ -1100,8 +1128,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                 if (activePointerId != null) return;
                                 activePointerId = details.pointer;
                                 if (isAllowSharingScreen && isHostFocus) {
-                                  sendMessage(widget.userId,
-                                      details.localPosition.toString());
+                                  sendMessage(details.localPosition.toString());
                                 }
                                 switch (_mode) {
                                   case DrawingMode.pen:
@@ -1163,8 +1190,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                 if (activePointerId != details.pointer) return;
                                 activePointerId = details.pointer;
                                 if (isAllowSharingScreen && isHostFocus) {
-                                  sendMessage(widget.userId,
-                                      details.localPosition.toString());
+                                  sendMessage(details.localPosition.toString());
                                 }
                                 switch (_mode) {
                                   case DrawingMode.pen:
@@ -1236,7 +1262,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                 if (activePointerId != details.pointer) return;
                                 activePointerId = null;
                                 if (isAllowSharingScreen && isHostFocus) {
-                                  sendMessage(widget.userId, 'null');
+                                  sendMessage('null');
                                 }
                                 switch (_mode) {
                                   case DrawingMode.pen:
@@ -1265,7 +1291,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                 if (activePointerId != details.pointer) return;
                                 activePointerId = null;
                                 if (isAllowSharingScreen && isHostFocus) {
-                                  sendMessage(widget.userId, 'null');
+                                  sendMessage('null');
                                 }
                                 switch (_mode) {
                                   case DrawingMode.pen:
@@ -1437,8 +1463,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 InkWell(
                   onTap: () {
                     showCloseDialog(context, () {
-                      // meeting.leave();
-                      // Navigator.of(context).pop();
+                      if (!widget.isMock) meeting.leave();
                     });
                   },
                   child: Container(
@@ -1488,147 +1513,143 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             flex: 3,
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: CustomColors.grayCFCFCF,
-                      style: BorderStyle.solid,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                    color: CustomColors.whitePrimary,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Image.asset(
-                        ImageAssets.allPages,
-                        height: 30,
-                        width: 32,
-                      ),
-                      if (Responsive.isDesktop(context)) S.w(8),
-                      if (Responsive.isDesktop(context))
-                        Container(
-                          width: 1,
-                          height: 24,
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
                           color: CustomColors.grayCFCFCF,
+                          style: BorderStyle.solid,
+                          width: 1.0,
                         ),
-                      InkWell(
-                        onTap: () {
-                          if (_pageController.hasClients &&
-                              _pageController.page!.toInt() != 0 &&
-                              !tabFollowing) {
-                            if (isAllowSharingScreen && isHostFocus) {
-                              sendMessage(widget.userId,
-                                  'ChangePage:${_currentPage - 1}');
-                            }
-                            _pageController.animateToPage(
-                              _pageController.page!.toInt() - 1,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image.asset(
-                            ImageAssets.backDis,
-                            height: 16,
-                            width: 17,
-                            color: _isPrevBtnActive
-                                ? CustomColors.activePagingBtn
-                                : CustomColors.inactivePagingBtn,
-                          ),
-                        ),
+                        borderRadius: BorderRadius.circular(8),
+                        color: CustomColors.whitePrimary,
                       ),
-                      if (Responsive.isDesktop(context)) S.w(8),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: CustomColors.grayCFCFCF,
-                            style: BorderStyle.solid,
-                            width: 1.0,
-                          ),
-                          borderRadius: BorderRadius.circular(4),
-                          color: CustomColors.whitePrimary,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text("Page ${_currentPage + 1}",
-                                style: CustomStyles.bold14greenPrimary),
-                          ],
-                        ),
-                      ),
-                      S.w(8.0),
-                      Text("/ ${_pages.length}",
-                          style: CustomStyles.med14Gray878787),
-                      InkWell(
-                        onTap: () {
-                          if (_pages.length > 1 && !tabFollowing) {
-                            if (_pageController.hasClients &&
-                                _pageController.page!.toInt() !=
-                                    _pages.length - 1) {
-                              if (isAllowSharingScreen && isHostFocus) {
-                                sendMessage(widget.userId,
-                                    'ChangePage:${_currentPage + 1}');
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          // Image.asset(
+                          //   ImageAssets.allPages,
+                          //   height: 30,
+                          //   width: 32,
+                          // ),
+                          // if (Responsive.isDesktop(context)) S.w(8),
+                          // if (Responsive.isDesktop(context))
+                          //   Container(
+                          //     width: 1,
+                          //     height: 24,
+                          //     color: CustomColors.grayCFCFCF,
+                          //   ),
+                          InkWell(
+                            onTap: () {
+                              if (_pageController.hasClients &&
+                                  _pageController.page!.toInt() != 0 &&
+                                  !tabFollowing) {
+                                if (isAllowSharingScreen && isHostFocus) {
+                                  sendMessage('ChangePage:${_currentPage - 1}');
+                                }
+                                _pageController.animateToPage(
+                                  _pageController.page!.toInt() - 1,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
                               }
-                              _pageController.animateToPage(
-                                _pageController.page!.toInt() + 1,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            }
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image.asset(
-                            ImageAssets.forward,
-                            height: 16,
-                            width: 17,
-                            color: _isNextBtnActive
-                                ? CustomColors.activePagingBtn
-                                : CustomColors.inactivePagingBtn,
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset(
+                                ImageAssets.backDis,
+                                height: 16,
+                                width: 17,
+                                color: _isPrevBtnActive
+                                    ? CustomColors.activePagingBtn
+                                    : CustomColors.inactivePagingBtn,
+                              ),
+                            ),
                           ),
-                        ),
+                          if (Responsive.isDesktop(context)) S.w(8),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: CustomColors.grayCFCFCF,
+                                style: BorderStyle.solid,
+                                width: 1.0,
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                              color: CustomColors.whitePrimary,
+                            ),
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Text("Page ${_currentPage + 1}",
+                                    style: CustomStyles.bold14greenPrimary),
+                              ],
+                            ),
+                          ),
+                          S.w(8.0),
+                          Text("/ ${_pages.length}",
+                              style: CustomStyles.med14Gray878787),
+                          InkWell(
+                            onTap: () {
+                              if (_pages.length > 1 && !tabFollowing) {
+                                if (_pageController.hasClients &&
+                                    _pageController.page!.toInt() !=
+                                        _pages.length - 1) {
+                                  if (isAllowSharingScreen && isHostFocus) {
+                                    sendMessage(
+                                        'ChangePage:${_currentPage + 1}');
+                                  }
+                                  _pageController.animateToPage(
+                                    _pageController.page!.toInt() + 1,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                }
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset(
+                                ImageAssets.forward,
+                                height: 16,
+                                width: 17,
+                                color: _isNextBtnActive
+                                    ? CustomColors.activePagingBtn
+                                    : CustomColors.inactivePagingBtn,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      // S.w(6.0),
-                      // Container(
-                      //   width: 1,
-                      //   height: 24,
-                      //   color: CustomColors.grayCFCFCF,
-                      // ),
-                      // Transform.scale(
-                      //   scale: 0.6,
-                      //   child: CupertinoSwitch(
-                      //     value: _switchValue,
-                      //     onChanged: (bool value) {
-                      //       setState(() {
-                      //         _switchValue = value;
-                      //       });
-                      //     },
-                      //   ),
-                      // ),
-                      // Column(
-                      //   mainAxisAlignment: MainAxisAlignment.center,
-                      //   crossAxisAlignment: CrossAxisAlignment.start,
-                      //   children: [
-                      //     Text("เลื่อนหน้า",
-                      //         style: CustomStyles.bold12gray878787),
-                      //     Text("ตามติวเตอร์",
-                      //         style: CustomStyles.bold12gray878787),
-                      //   ],
-                      // ),
-                      // S.w(8.0),
-                    ],
+                    ),
                   ),
-                ),
+                  S.w(defaultPadding),
+                  const DividerVer(),
+                  S.w(defaultPadding),
+                  InkWell(
+                    onTap: () {
+                      sendCatchupMessage();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: CustomColors.greenPrimary,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child:
+                          Text("ไปหน้าที่สอน", style: CustomStyles.bold14White),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -1887,16 +1908,15 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                   isAllowSharingScreen = !isAllowSharingScreen;
                                 });
                                 if (isAllowSharingScreen) {
-                                  // sendMessage(widget.userId, 'TEST_MESSAGE');
+                                  // sendMessage('TEST_MESSAGE');
                                   setState(() {
                                     tabFollowing = false;
                                     tabFreestyle = true;
                                   });
-                                  sendMessage(widget.userId,
+                                  sendMessage(
                                       'StudentShareScreen:enable:${mySolvepadSize?.width.toStringAsFixed(2)}:${mySolvepadSize?.height.toStringAsFixed(2)}');
                                 } else {
-                                  sendMessage(widget.userId,
-                                      'StudentShareScreen:disable');
+                                  sendMessage('StudentShareScreen:disable');
                                 }
                               } else {
                                 print('host not request');
@@ -2229,10 +2249,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Image.asset(
-                  ImageAssets.avatarMen,
-                  height: 32,
-                  width: 32,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(32),
+                  child: Image.network(
+                    authProvider.user!.image!,
+                    height: 32,
+                    width: 32,
+                  ),
                 ),
                 S.w(8),
 
@@ -2269,35 +2292,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 // S.w(defaultPadding),
                 InkWell(
                   onTap: () {
-                    print('raw data to string');
-                    print(_penPoints[_currentPage].toString());
-
-                    List encodedList = _penPoints[_currentPage].map((item) {
-                      if (item == null) {
-                        return null;
-                      } else {
-                        return item.toJson();
-                      }
-                    }).toList();
-                    print('encodedList');
-                    print(encodedList);
-
-                    List<SolvepadStroke?> strokes =
-                        encodedList.map<SolvepadStroke?>((item) {
-                      if (item == null) {
-                        return null;
-                      } else {
-                        print('offset');
-                        print(item['offset']);
-                        Offset scaledOffset =
-                            Offset(item['offset']['dx'], item['offset']['dy']);
-                        print(scaledOffset);
-                        return SolvepadStroke.fromJson(item);
-                      }
-                    }).toList();
-
-                    print('decodedList');
-                    print(strokes);
+                    print('tap catch-up');
+                    sendCatchupMessage();
                   },
                   child: Container(
                     height: 32,
@@ -2389,37 +2385,33 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                           updateDataHistory(DrawingMode.drag);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            sendMessage(widget.userId,
-                                                'DrawingMode.drag');
+                                            sendMessage('DrawingMode.drag');
                                           }
                                         } else if (index == 1) {
                                           updateDataHistory(DrawingMode.pen);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            sendMessage(widget.userId,
-                                                'DrawingMode.pen');
+                                            sendMessage('DrawingMode.pen');
                                           }
                                         } else if (index == 2) {
                                           updateDataHistory(
                                               DrawingMode.highlighter);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            sendMessage(widget.userId,
+                                            sendMessage(
                                                 'DrawingMode.highlighter');
                                           }
                                         } else if (index == 3) {
                                           updateDataHistory(DrawingMode.eraser);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            sendMessage(widget.userId,
-                                                'DrawingMode.eraser');
+                                            sendMessage('DrawingMode.eraser');
                                           }
                                         } else if (index == 4) {
                                           updateDataHistory(DrawingMode.laser);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            sendMessage(widget.userId,
-                                                'DrawingMode.laser');
+                                            sendMessage('DrawingMode.laser');
                                           }
                                         }
                                       },
@@ -2763,40 +2755,41 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                           S.h(defaultPadding),
                           Expanded(
                             child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 1),
-                                child: Column(
-                                  children: [
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Image.asset(
-                                            ImageAssets.pickGreenTran,
-                                            width: 38,
-                                          ),
-                                          Image.asset(
-                                            ImageAssets.pickLineTran,
-                                            width: 38,
-                                          ),
-                                        ],
-                                      ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 1),
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Image.asset(
+                                          ImageAssets.pickGreenTran,
+                                          width: 38,
+                                        ),
+                                        Image.asset(
+                                          ImageAssets.pickLineTran,
+                                          width: 38,
+                                        ),
+                                      ],
                                     ),
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Image.asset(
-                                            'assets/images/clear_tran.png',
-                                            width: 38,
-                                          ),
-                                        ],
-                                      ),
+                                  ),
+                                  Expanded(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Image.asset(
+                                          'assets/images/clear_tran.png',
+                                          width: 38,
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                )),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -2823,7 +2816,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               onTap: () {
                 showCloseDialog(context, () {
                   if (!widget.isMock) meeting.leave();
-                  Navigator.of(context).pop();
                 });
               },
               child: Image.asset(
@@ -2872,15 +2864,15 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                     isAllowSharingScreen = !isAllowSharingScreen;
                   });
                   if (isAllowSharingScreen) {
-                    // sendMessage(widget.userId, 'TEST_MESSAGE');
+                    // sendMessage('TEST_MESSAGE');
                     setState(() {
                       tabFollowing = false;
                       tabFreestyle = true;
                     });
-                    sendMessage(widget.userId,
+                    sendMessage(
                         'StudentShareScreen:enable:${mySolvepadSize?.width.toStringAsFixed(2)}:${mySolvepadSize?.height.toStringAsFixed(2)}');
                   } else {
-                    sendMessage(widget.userId, 'StudentShareScreen:disable');
+                    sendMessage('StudentShareScreen:disable');
                   }
                 } else {
                   print('host not request');
@@ -2976,8 +2968,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                   _selectedIndexColors = index;
                                   openColors = !openColors;
                                 });
-                                sendMessage(
-                                    widget.userId, 'StrokeColor.$index');
+                                sendMessage('StrokeColor.$index');
                               },
                               child: Image.asset(_listColors[index]['color'],
                                   width: 48),
@@ -3019,8 +3010,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                     _selectedIndexLines = index;
                                     openLines = !openLines;
                                   });
-                                  sendMessage(
-                                      widget.userId, 'StrokeWidth.$index');
+                                  sendMessage('StrokeWidth.$index');
                                 });
                               },
                               child: Row(
@@ -3102,23 +3092,21 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                                   DrawingMode.drag);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                sendMessage(widget.userId,
-                                                    'DrawingMode.drag');
+                                                sendMessage('DrawingMode.drag');
                                               }
                                             } else if (index == 1) {
                                               updateDataHistory(
                                                   DrawingMode.pen);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                sendMessage(widget.userId,
-                                                    'DrawingMode.pen');
+                                                sendMessage('DrawingMode.pen');
                                               }
                                             } else if (index == 2) {
                                               updateDataHistory(
                                                   DrawingMode.highlighter);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                sendMessage(widget.userId,
+                                                sendMessage(
                                                     'DrawingMode.highlighter');
                                               }
                                             } else if (index == 3) {
@@ -3126,7 +3114,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                                   DrawingMode.eraser);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                sendMessage(widget.userId,
+                                                sendMessage(
                                                     'DrawingMode.eraser');
                                               }
                                             } else if (index == 4) {
@@ -3134,7 +3122,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                                   DrawingMode.laser);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                sendMessage(widget.userId,
+                                                sendMessage(
                                                     'DrawingMode.laser');
                                               }
                                             }
@@ -3234,8 +3222,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 if (_pageController.hasClients &&
                     _pageController.page!.toInt() != 0) {
                   if (isAllowSharingScreen && isHostFocus) {
-                    sendMessage(
-                        widget.userId, 'ChangePage:${_currentPage - 1}');
+                    sendMessage('ChangePage:${_currentPage - 1}');
                     _currentHostPage = _currentPage - 1;
                   }
                   _pageController.animateToPage(
@@ -3270,8 +3257,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                   if (_pageController.hasClients &&
                       _pageController.page!.toInt() != _pages.length - 1) {
                     if (isAllowSharingScreen && isHostFocus) {
-                      sendMessage(
-                          widget.userId, 'ChangePage:${_currentPage + 1}');
+                      sendMessage('ChangePage:${_currentPage + 1}');
                       _currentHostPage = _currentPage + 1;
                     }
                     _pageController.animateToPage(
