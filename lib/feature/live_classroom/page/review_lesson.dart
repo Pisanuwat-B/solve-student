@@ -650,12 +650,8 @@ class _ReviewLessonState extends State<ReviewLesson>
       } // Width
       else if (actionData.startsWith('ChangePage')) {
         var parts = actionData.split(':');
-        var pageAction = parts.last;
-        if (pageAction == 'prev') {
-          _tutorCurrentPage--;
-        } else if (pageAction == 'next') {
-          _tutorCurrentPage++;
-        }
+        var pageNumber = parts.last;
+        _tutorCurrentPage = int.parse(pageNumber);
       } // Paging
     }
   }
