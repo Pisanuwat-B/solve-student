@@ -988,6 +988,11 @@ class _ReviewLessonState extends State<ReviewLesson>
                 solvePad(),
               ],
             ),
+            Positioned(
+              top: 70,
+              right: 35,
+              child: play(),
+            ),
             if (!selectedTools) toolsMobile(),
             if (selectedTools) toolsActiveMobile(),
 
