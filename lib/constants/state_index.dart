@@ -9,19 +9,26 @@ import 'package:solve_student/feature/calendar/controller/student_controller.dar
 import 'package:solve_student/feature/chat/service/chat_provider.dart';
 import 'package:solve_student/feature/class/services/class_provider.dart';
 import 'package:solve_student/feature/market_place/service/market_home_provider.dart';
-import 'package:solve_student/feature/market_place/service/market_place_provider.dart';
+import 'package:solve_student/feature/market_place/service/market_search_provider.dart';
+import 'package:solve_student/feature/market_place/service/market_course_detail_provider.dart';
 import 'package:solve_student/feature/order/service/order_mock_provider.dart';
 import 'package:solve_student/feature/standby_study/service/state_study_provider.dart';
 
 final List<SingleChildWidget> stateIndex = [
-  ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
+  ChangeNotifierProvider<AuthProvider>(
+    create: (_) => AuthProvider(),
+  ),
   ChangeNotifierProvider<MarketHomeProvider>(
-      create: (_) => MarketHomeProvider()),
+    create: (_) => MarketHomeProvider(),
+  ),
+  ChangeNotifierProvider<MarketSearchProvider>(
+    create: (_) => MarketSearchProvider(),
+  ),
   ChangeNotifierProvider<ChatProvider>(create: (_) => ChatProvider()),
   ChangeNotifierProvider<OrderMockProvider>(create: (_) => OrderMockProvider()),
   Provider<SettingProvider>(create: (_) => SettingProvider()),
-  ChangeNotifierProvider<MarketPlaceProvider>(
-      create: (_) => MarketPlaceProvider()),
+  ChangeNotifierProvider<MarketCourseDetailProvider>(
+      create: (_) => MarketCourseDetailProvider()),
   ChangeNotifierProvider<ClassProvider>(create: (_) => ClassProvider()),
   ChangeNotifierProvider<StandbyStudyProvider>(
       create: (_) => StandbyStudyProvider()),

@@ -84,7 +84,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         },
         child: Scaffold(
           appBar: PreferredSize(
-            preferredSize: widget.order.fromMarketPlace
+            preferredSize: (!widget.order.paymentOn)
                 ? const Size.fromHeight(70)
                 : const Size.fromHeight(110),
             child: SafeArea(
@@ -98,10 +98,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   color: Colors.transparent,
                 ),
                 flexibleSpace: Builder(builder: (context) {
-                  if (widget.order.fromMarketPlace) {
-                    return _appBarMarket();
-                  }
                   return _appBar();
+                  // if (widget.order.paymentOn) {
+                  //   return _appBar();
+                  // }
+                  // return _appBarMarket();
                 }),
               ),
             ),
@@ -256,10 +257,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   ),
                   const SizedBox(width: 10),
                   Builder(builder: (context) {
-                    if (widget.order.fromMarketPlace) {
+                    if (!widget.order.paymentOn) {
                       return const SizedBox();
                     }
-                    if (orderDetail?.status == "payment") {
+                    if (orderDetail?.paymentStatus == "paid") {
                       return Container(
                         width: 100,
                         margin: const EdgeInsets.fromLTRB(0, 10, 10, 10),
@@ -311,7 +312,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 ],
               ),
               Builder(builder: (context) {
-                if (widget.order.fromMarketPlace) {
+                if (!widget.order.paymentOn) {
                   return const SizedBox();
                 }
                 return Container(
@@ -324,7 +325,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         children: [
                           Builder(builder: (context) {
                             String text = "ยังไม่ชำระเงิน";
-                            if (orderDetail?.status == "payment") {
+                            if (orderDetail?.paymentStatus == "paid") {
                               text = "ชำระเรียบร้อยแล้ว";
                             }
                             return Text("สถานะการชำระเงิน : $text");

@@ -7,7 +7,8 @@ import 'package:solve_student/feature/calendar/pages/student_screen.dart';
 import 'package:solve_student/feature/chat/pages/chat_list_page.dart';
 import 'package:solve_student/feature/class/pages/class_list_page.dart';
 import 'package:solve_student/feature/course_live/pages/course_live_page.dart';
-import 'package:solve_student/feature/home/pages/home_page.dart';
+import 'package:solve_student/feature/market_place/pages/market_home_page.dart';
+import 'package:solve_student/feature/my_course/pages/my_course_home.dart';
 import 'package:solve_student/feature/my_course/pages/my_course_page.dart';
 import 'package:solve_student/feature/notification/notification_page.dart';
 import 'package:solve_student/feature/profile/pages/profile_page.dart';
@@ -34,7 +35,9 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
     // const ChatListPage(),
     // const Center(child: Text("Notification")),
     StudentScreen(),
-    ClassListPage(),
+    const MarketHomePage(),
+    const MyCoursePage(),
+    // ClassListPage(),
     const ChatListPage(),
     const NotificationPage(),
     const ProfilePage(),
@@ -112,7 +115,11 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
             BottomNavigationBarItem(
                 activeIcon: Icon(Icons.find_in_page),
                 icon: Icon(Icons.find_in_page_outlined),
-                label: "ค้นหาติวเตอร์"),
+                label: "คอร์สแนะนำ"),
+            BottomNavigationBarItem(
+                activeIcon: Icon(Icons.find_in_page),
+                icon: Icon(Icons.find_in_page_outlined),
+                label: "คอร์สของฉัน"),
             BottomNavigationBarItem(
                 activeIcon: Icon(CupertinoIcons.chat_bubble_2),
                 icon: Icon(CupertinoIcons.chat_bubble_2),

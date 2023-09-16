@@ -183,7 +183,7 @@ class OrderMockProvider extends ChangeNotifier {
       String orderId, String status) async {
     log("updateOrderStatus");
     var orders = firebaseFirestore.collection("orders");
-    await orders.doc(orderId).update({'status': status});
+    await orders.doc(orderId).update({'paymentStatus': status});
     var result = await orders.doc(orderId).get();
     OrderClassModel? order = OrderClassModel.fromJson(result.data()!);
     return order;

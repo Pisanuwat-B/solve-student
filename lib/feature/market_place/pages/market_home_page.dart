@@ -1,27 +1,21 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:solve_student/authentication/models/user_model.dart';
 import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:solve_student/constants/school_subject_constants.dart';
 import 'package:solve_student/constants/theme.dart';
 import 'package:solve_student/feature/calendar/constants/constants.dart';
-import 'package:solve_student/feature/calendar/model/course_model.dart';
 import 'package:solve_student/feature/class/pages/class_list_page.dart';
-import 'package:solve_student/feature/class/pages/find_class_page.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
 import 'package:solve_student/feature/market_place/pages/market_course_detail_page.dart';
+import 'package:solve_student/feature/market_place/pages/market_search_page.dart';
 import 'package:solve_student/feature/market_place/service/market_home_provider.dart';
 import 'package:solve_student/feature/profile/pages/profile_page.dart';
-import 'package:solve_student/feature/standby_study/pages/ready_study_page.dart';
-import 'package:solve_student/feature/standby_study/pages/standby_study_page.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
 class MarketHomePage extends StatefulWidget {
@@ -43,7 +37,7 @@ class _HomePageState extends State<MarketHomePage> {
   List<Map<String, String>> subjectList = [
     {"ภาษาไทย": 'assets/images/s1.png'},
     {"สังคม": 'assets/images/s2.png'},
-    {"ภาษาอังกฤษ": 'assets/images/s3.png'},
+    {"อังกฤษ": 'assets/images/s3.png'},
     {"คณิตศาสตร์": 'assets/images/s4.png'},
     {"ฟิสิกส์": 'assets/images/s5.png'},
     {"เคมี": 'assets/images/s6.png'},
@@ -169,185 +163,6 @@ class _HomePageState extends State<MarketHomePage> {
                     ],
                   ),
                 ),
-                // Container(
-                //   padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
-                //   child: Column(
-                //     crossAxisAlignment: CrossAxisAlignment.start,
-                //     children: [
-                //       Row(
-                //         children: [
-                //           const Expanded(
-                //             child: Text(
-                //               "คอร์สเรียนแนะนำ",
-                //               style: TextStyle(
-                //                 fontWeight: FontWeight.bold,
-                //                 fontSize: 22,
-                //               ),
-                //             ),
-                //           ),
-                //           TextButton(
-                //             onPressed: () {},
-                //             child: const Text("ดูเพิ่มเติม"),
-                //           ),
-                //         ],
-                //       ),
-                //       const SizedBox(height: 10),
-                //     ],
-                //   ),
-                // ),
-                // Container(
-                //   height: 320,
-                //   padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
-                //   child: ListView.builder(
-                //     shrinkWrap: true,
-                //     itemCount: 5,
-                //     scrollDirection: Axis.horizontal,
-                //     itemBuilder: (context, index) {
-                //       return GestureDetector(
-                //         onTap: () {
-                //           // var route = MaterialPageRoute(
-                //           //   builder: (context) => StandbyStudyPage(
-                //           //     courseId: "$index",
-                //           //   ),
-                //           // );
-                //           // Navigator.push(context, route);
-                //           var route = MaterialPageRoute(
-                //             builder: (context) => MarketCourseDetailPage(),
-                //           );
-                //           Navigator.push(context, route);
-                //         },
-                //         child: Container(
-                //           height: 300,
-                //           width: 300,
-                //           margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                //           decoration: BoxDecoration(
-                //             color: Colors.white,
-                //             borderRadius: BorderRadius.circular(10),
-                //             boxShadow: [
-                //               BoxShadow(
-                //                 color: Colors.grey.withOpacity(0.3),
-                //                 spreadRadius: 2,
-                //                 blurRadius: 7,
-                //                 offset: const Offset(
-                //                     0, 3), // changes position of shadow
-                //               ),
-                //             ],
-                //           ),
-                //           child: ClipRRect(
-                //             borderRadius: BorderRadius.circular(10),
-                //             child: Container(
-                //               // margin: EdgeInsets.all(5),
-                //               decoration: BoxDecoration(
-                //                 borderRadius: BorderRadius.circular(10),
-                //               ),
-                //               child: Column(
-                //                 // crossAxisAlignment: CrossAxisAlignment.start,
-                //                 children: [
-                //                   Container(
-                //                     height: 180,
-                //                     width: double.infinity,
-                //                     decoration: const BoxDecoration(),
-                //                     child: Image.asset(
-                //                       'assets/images/img_not_available.jpeg',
-                //                       fit: BoxFit.fitWidth,
-                //                     ),
-                //                   ),
-                //                   Container(
-                //                     // color: Colors.green,
-                //                     padding: const EdgeInsets.all(10),
-                //                     child: Column(
-                //                       crossAxisAlignment:
-                //                           CrossAxisAlignment.start,
-                //                       mainAxisAlignment:
-                //                           MainAxisAlignment.start,
-                //                       children: [
-                //                         Text(
-                //                           'เตรียมสอบ SAT',
-                //                           style: const TextStyle(
-                //                               fontSize: 16,
-                //                               fontWeight: FontWeight.bold),
-                //                         ),
-                //                         Text(
-                //                           'Amet minim mollit non deserunt ullamco est s...',
-                //                           style: const TextStyle(
-                //                               fontSize: 14, color: Colors.grey),
-                //                           maxLines: 1,
-                //                           overflow: TextOverflow.ellipsis,
-                //                         ),
-                //                         Row(
-                //                           children: [
-                //                             Container(
-                //                               child: Text(
-                //                                 'พงศกร สรพินิจ',
-                //                                 style: const TextStyle(
-                //                                   fontWeight: FontWeight.bold,
-                //                                   fontSize: 14,
-                //                                   color: primaryColor,
-                //                                 ),
-                //                               ),
-                //                             ),
-                //                             const Spacer(),
-                //                             Container(
-                //                               padding:
-                //                                   const EdgeInsets.symmetric(
-                //                                       horizontal: 8,
-                //                                       vertical: 3),
-                //                               decoration: ShapeDecoration(
-                //                                 color: Colors.grey.shade300,
-                //                                 shape: const StadiumBorder(),
-                //                               ),
-                //                               child: Text(
-                //                                 'bb',
-                //                                 style: const TextStyle(
-                //                                     fontSize: 12),
-                //                               ),
-                //                             ),
-                //                             const SizedBox(
-                //                               width: 5,
-                //                             ),
-                //                             Container(
-                //                               padding:
-                //                                   const EdgeInsets.symmetric(
-                //                                       horizontal: 8,
-                //                                       vertical: 3),
-                //                               decoration: ShapeDecoration(
-                //                                 color: Colors.grey.shade300,
-                //                                 shape: const StadiumBorder(),
-                //                               ),
-                //                               child: Text(
-                //                                 'cc',
-                //                                 style: const TextStyle(
-                //                                     fontSize: 12),
-                //                               ),
-                //                             ),
-                //                           ],
-                //                         ),
-                //                         Row(
-                //                           mainAxisAlignment:
-                //                               MainAxisAlignment.spaceBetween,
-                //                           children: [
-                //                             Text(
-                //                               '9999 : 80',
-                //                               style: const TextStyle(
-                //                                   fontSize: 14,
-                //                                   color: Colors.grey),
-                //                               maxLines: 1,
-                //                               overflow: TextOverflow.ellipsis,
-                //                             ),
-                //                           ],
-                //                         ),
-                //                       ],
-                //                     ),
-                //                   ),
-                //                 ],
-                //               ),
-                //             ),
-                //           ),
-                //         ),
-                //       );
-                //     },
-                //   ),
-                // ),
                 Container(
                   padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
                   child: Column(
@@ -365,7 +180,11 @@ class _HomePageState extends State<MarketHomePage> {
                             ),
                           ),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              var route = MaterialPageRoute(
+                                  builder: (context) => MarketSearchPage());
+                              Navigator.push(context, route);
+                            },
                             child: const Text("ดูเพิ่มเติม"),
                           ),
                         ],
@@ -374,46 +193,27 @@ class _HomePageState extends State<MarketHomePage> {
                     ],
                   ),
                 ),
-                StreamBuilder(
-                    stream: homeProvider!.getMargetPlaceCourse(),
+                FutureBuilder(
+                    future: homeProvider!.getCourseList(),
                     builder: (context, snapshot) {
                       try {
                         if (snapshot.hasData) {
-                          List<String> idList =
-                              snapshot.data?.docs.map((e) => e.id).toList() ??
-                                  [];
-                          List<CourseMarketModel> dataSet =
-                              snapshot.data?.docs.map((e) {
-                                    try {
-                                      var source = e.data();
-                                      CourseMarketModel course =
-                                          CourseMarketModel.fromJson(source);
-                                      return course;
-                                    } catch (e) {
-                                      log("home err : $e");
-                                      return CourseMarketModel();
-                                    }
-                                  }).toList() ??
-                                  [];
+                          List<CourseMarketModel>? dataSet = snapshot.data;
                           return Container(
                             height: 320,
                             padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
                             child: ListView.builder(
                               shrinkWrap: true,
-                              itemCount: dataSet.length,
+                              itemCount: dataSet?.length ?? 0,
                               scrollDirection: Axis.horizontal,
                               itemBuilder: (context, index) {
-                                String onlyId = idList[index];
-                                CourseMarketModel only = dataSet[index];
-                                if ((only.publishing ?? false) == false) {
-                                  return const SizedBox();
-                                }
+                                CourseMarketModel only = dataSet![index];
                                 return GestureDetector(
                                   onTap: () {
                                     var route = MaterialPageRoute(
                                       builder: (context) =>
                                           MarketCourseDetailPage(
-                                        courseId: onlyId,
+                                        courseId: only.id ?? "",
                                       ),
                                     );
                                     Navigator.push(context, route);
@@ -450,19 +250,31 @@ class _HomePageState extends State<MarketHomePage> {
                                               height: 180,
                                               width: double.infinity,
                                               decoration: const BoxDecoration(),
-                                              child: Image.network(
-                                                only.thumbnailUrl ?? "",
-                                                fit: BoxFit.fitWidth,
-                                                errorBuilder: (context, error,
-                                                    stackTrace) {
+                                              child:
+                                                  Builder(builder: (context) {
+                                                if (only.thumbnailUrl == null ||
+                                                    only.thumbnailUrl == "") {
                                                   return Image.asset(
                                                     ImageAssets.emptyCourse,
                                                     height: 200,
                                                     width: double.infinity,
                                                     fit: BoxFit.fitHeight,
                                                   );
-                                                },
-                                              ),
+                                                }
+                                                return Image.network(
+                                                  only.thumbnailUrl ?? "",
+                                                  fit: BoxFit.fitWidth,
+                                                  errorBuilder: (context, error,
+                                                      stackTrace) {
+                                                    return Image.asset(
+                                                      ImageAssets.emptyCourse,
+                                                      height: 200,
+                                                      width: double.infinity,
+                                                      fit: BoxFit.fitHeight,
+                                                    );
+                                                  },
+                                                );
+                                              }),
                                             ),
                                             Container(
                                               // color: Colors.green,
@@ -573,10 +385,15 @@ class _HomePageState extends State<MarketHomePage> {
                       Map<String, String> only = subjectList[index];
                       return GestureDetector(
                         onTap: () {
+                          // var route = MaterialPageRoute(
+                          //     builder: (context) => ClassListPage(
+                          //           filterInit: true,
+                          //           filSubject: only.keys.first,
+                          //         ));
                           var route = MaterialPageRoute(
-                              builder: (context) => ClassListPage(
-                                    filterInit: true,
-                                    filSubject: only.keys.first,
+                              builder: (context) => MarketSearchPage(
+                                    filter: true,
+                                    subject: only.keys.first,
                                   ));
                           Navigator.push(context, route);
                         },
@@ -651,10 +468,16 @@ class _HomePageState extends State<MarketHomePage> {
                           .map<Widget>((item) {
                         return GestureDetector(
                           onTap: () {
+                            // var route = MaterialPageRoute(
+                            //     builder: (context) => ClassListPage(
+                            //           filterInit: true,
+                            //           filterClass: item,
+                            //         ));
+                            // Navigator.push(context, route);
                             var route = MaterialPageRoute(
-                                builder: (context) => ClassListPage(
-                                      filterInit: true,
-                                      filterClass: item,
+                                builder: (context) => MarketSearchPage(
+                                      filter: true,
+                                      level: item,
                                     ));
                             Navigator.push(context, route);
                           },

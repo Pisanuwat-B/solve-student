@@ -8,36 +8,38 @@ import 'package:solve_student/feature/calendar/constants/assets_manager.dart';
 import 'package:solve_student/feature/calendar/widgets/format_date.dart';
 import 'package:solve_student/feature/chat/models/chat_model.dart';
 import 'package:solve_student/feature/chat/pages/chat_room_page.dart';
-import 'package:solve_student/feature/market_place/pages/tutor_course_page.dart';
+import 'package:solve_student/feature/market_place/model/course_live_model.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
+import 'package:solve_student/feature/market_place/pages/market_course_detail_page.dart';
+import 'package:solve_student/feature/market_place/pages/tutor_course_page.dart';
 import 'package:solve_student/feature/market_place/model/lesson_market_model.dart';
-import 'package:solve_student/feature/market_place/service/market_course_detail_provider.dart';
+import 'package:solve_student/feature/my_course/controller/my_course_detail_controller.dart';
 import 'package:solve_student/feature/order/model/order_class_model.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
-class MarketCourseDetailPage extends StatefulWidget {
-  MarketCourseDetailPage({super.key, required this.courseId});
+class MyCourseDetailPage extends StatefulWidget {
+  MyCourseDetailPage({super.key, required this.courseId});
   String courseId;
   @override
-  State<MarketCourseDetailPage> createState() => _MarketCourseDetailPageState();
+  State<MyCourseDetailPage> createState() => _MyCourseDetailPageState();
 }
 
-class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
-  MarketCourseDetailProvider? courseDetailProvider;
+class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
+  MyCourseDetailController? controller;
 
   @override
   void initState() {
-    courseDetailProvider =
-        Provider.of<MarketCourseDetailProvider>(context, listen: false);
-    courseDetailProvider!.init(context: context, courseId: widget.courseId);
+    controller = MyCourseDetailController(context, courseId: widget.courseId);
+    controller!.init();
     super.initState();
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
-      value: courseDetailProvider,
-      child: Consumer<MarketCourseDetailProvider>(builder: (context, con, _) {
+      value: controller,
+      child: Consumer<MyCourseDetailController>(builder: (context, con, _) {
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.white,
@@ -587,9 +589,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                                       courseId: only.id ?? ""));
                                           Navigator.push(context, route)
                                               .then((value) {
-                                            con.init(
-                                                context: context,
-                                                courseId: widget.courseId);
+                                            con.init();
                                           });
                                         },
                                         child: Container(
@@ -793,6 +793,17 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                             ],
                           ),
                         ),
+                        Text(
+                          "รีวิวจากผู้เรียน",
+                          style: TextStyle(
+                            color: appTextPrimaryColor,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 10),
                       ],
                     ),
                   )
@@ -833,7 +844,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
     );
   }
 
-  Widget subjectWidget(MarketCourseDetailProvider con, CourseMarketModel only) {
+  Widget subjectWidget(MyCourseDetailController con, CourseMarketModel only) {
     return FutureBuilder(
       future: con.getSubjectInfo(only.subjectId ?? ""),
       builder: (context, snap) {
@@ -857,7 +868,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
     );
   }
 
-  Widget levelWidget(MarketCourseDetailProvider con, CourseMarketModel only) {
+  Widget levelWidget(MyCourseDetailController con, CourseMarketModel only) {
     return FutureBuilder(
       future: con.getLevelInfo(only.levelId ?? ""),
       builder: (context, snap) {
@@ -881,7 +892,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
     );
   }
 
-  Widget tutorWidget(MarketCourseDetailProvider con) {
+  Widget tutorWidget(MyCourseDetailController con) {
     return Container(
       child: Text(
         con.tutor?.name ?? "",

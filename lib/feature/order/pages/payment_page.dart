@@ -126,8 +126,8 @@ class _PaymentPageState extends State<PaymentPage> {
                   Builder(builder: (context) {
                     String text = "รอชำระค่าบริการ";
                     Color color = Colors.orange;
-                    switch (orderDetail?.status) {
-                      case "payment":
+                    switch (orderDetail?.paymentStatus) {
+                      case "paid":
                         text = "ชำระค่าบริการเรียบร้อย";
                         color = Colors.green;
                         break;
@@ -509,7 +509,7 @@ class _PaymentPageState extends State<PaymentPage> {
       floatingActionButton: GestureDetector(
         onTap: () async {
           orderDetail =
-              await order.updateOrderStatus(orderDetail?.id ?? "", "payment");
+              await order.updateOrderStatus(orderDetail?.id ?? "", "paid");
           setState(() {});
         },
         child: Container(

@@ -21,7 +21,9 @@ class OrderClassModel {
   String? chatId;
   String? path;
   String? image;
-  String? status;
+  num? rate;
+  bool paymentOn;
+  String? paymentStatus;
   bool fromMarketPlace;
   bool fromAnnounce;
 
@@ -37,7 +39,9 @@ class OrderClassModel {
     this.chatId,
     this.path,
     this.image,
-    this.status,
+    this.rate,
+    this.paymentOn = false,
+    this.paymentStatus,
     this.fromMarketPlace = false,
     this.fromAnnounce = false,
   });
@@ -55,7 +59,9 @@ class OrderClassModel {
         chatId: json["chatId"],
         path: json["path"],
         image: json["image"],
-        status: json["status"],
+        rate: json["rate"],
+        paymentOn: json["paymentOn"] ?? false,
+        paymentStatus: json["paymentStatus"],
         fromMarketPlace: json["fromMarketPlace"] ?? false,
         fromAnnounce: json["fromAnnounce"] ?? false,
       );
@@ -72,7 +78,9 @@ class OrderClassModel {
         "chatId": chatId,
         "path": path,
         "image": image,
-        "status": status,
+        "rate": rate,
+        "paymentOn": paymentOn,
+        "paymentStatus": paymentStatus,
         "fromMarketPlace": fromMarketPlace,
         "fromAnnounce": fromAnnounce,
       };

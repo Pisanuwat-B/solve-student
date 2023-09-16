@@ -1,48 +1,61 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:solve_student/authentication/models/user_model.dart';
 import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/feature/market_place/model/course_live_model.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
 
-class MarketHomeProvider extends ChangeNotifier {
-  final GoogleSignIn googleSignIn = GoogleSignIn();
-  final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+class MyCourseController extends ChangeNotifier {
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
-  final FirebaseStorage storage = FirebaseStorage.instance;
+  MyCourseController(this.context);
+  BuildContext context;
   AuthProvider? auth;
 
-  init({AuthProvider? auth}) {
-    this.auth = auth;
+  List<String> idList = [];
+  List<CourseMarketModel> myCourseList = [];
+  init() {
+    idList = [];
+    auth = Provider.of<AuthProvider>(context, listen: false);
+    getMyCourseList();
   }
 
-  Future<List<CourseMarketModel>> getCourseList() async {
-    List<CourseMarketModel> courseList = [];
-    try {
-      await firebaseFirestore
-          .collection('course')
-          .where('publishing', isEqualTo: true)
-          .get()
-          .then((data) async {
-        if (data.size != 0) {
-          for (var i = 0; i < data.docs.length; i++) {
-            // log("json : ${json.encode(data.docs[i].data())}");
-            var source = data.docs[i].data();
-            CourseMarketModel course = CourseMarketModel.fromJson(source);
-            course.id = data.docs[i].id;
-            courseList.add(course);
-          }
+  getMyCourseList() async {
+    idList = [];
+    await firebaseFirestore
+        .collection('orders')
+        .where('studentId', isEqualTo: auth?.uid ?? "")
+        .where('paymentStatus', isEqualTo: 'paid')
+        .get()
+        .then((data) async {
+      if (data.size != 0) {
+        for (var i = 0; i < data.docs.length; i++) {
+          idList.add(data.docs[i].data()['classId']);
         }
-      });
-      return courseList;
-    } catch (e) {
-      return courseList;
+      }
+    });
+    myCourseList = [];
+    for (var i = 0; i < idList.length; i++) {
+      CourseMarketModel only = await getCourseInfo(idList[i]);
+      only.id = idList[i];
+      myCourseList.add(only);
     }
+    notifyListeners();
+  }
+
+  Future<CourseMarketModel> getCourseInfo(String id) async {
+    return await firebaseFirestore
+        .collection('course')
+        .doc(id)
+        .get()
+        .then((userFirebase) async {
+      if (userFirebase.exists) {
+        return CourseMarketModel.fromJson(userFirebase.data()!);
+      } else {
+        return CourseMarketModel();
+      }
+    });
   }
 
   Future<UserModel> getTutorInfo(String id) async {
