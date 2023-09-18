@@ -343,9 +343,9 @@ class _HomePageState extends State<MarketHomePage> {
                             ),
                           );
                         }
-                        return Text("No data ");
+                        return const Text("");
                       } catch (e) {
-                        return const Text("Data Error");
+                        return const Text("error :");
                       }
                     }),
                 Container(

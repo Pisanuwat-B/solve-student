@@ -205,6 +205,7 @@ class _TutorCoursePageState extends State<TutorCoursePage> {
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                 ),
+                                                maxLines: 2,
                                               ),
                                               Text(
                                                 "${only.detailsText ?? ""}",

@@ -111,6 +111,7 @@ class _MyCoursePageState extends State<MyCoursePage> {
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
+                                      maxLines: 2,
                                     ),
                                     Text(
                                       "${only.detailsText ?? ""}",

@@ -303,6 +303,7 @@ class _MarketSearchPageState extends State<MarketSearchPage> {
                                                   style: TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                   ),
+                                                  maxLines: 2,
                                                 ),
                                                 Text(
                                                   "${only.detailsText ?? ""}",

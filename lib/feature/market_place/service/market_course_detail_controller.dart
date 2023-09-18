@@ -11,54 +11,65 @@ import 'package:solve_student/authentication/models/user_model.dart';
 import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:solve_student/feature/chat/models/chat_model.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
+import 'package:solve_student/feature/my_course/model/review_model.dart';
 import 'package:solve_student/feature/order/model/order_class_model.dart';
 import 'package:uuid/uuid.dart';
 
-class MarketCourseDetailProvider extends ChangeNotifier {
+class MarketCourseDetailController extends ChangeNotifier {
   final GoogleSignIn googleSignIn = GoogleSignIn();
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   final FirebaseStorage storage = FirebaseStorage.instance;
-
+  MarketCourseDetailController(this.context, this.courseId);
+  BuildContext context;
+  String courseId;
   AuthProvider? auth;
   CourseMarketModel? courseDetail;
+  List<CourseMarketModel> recommendCourse = [];
   UserModel? tutor;
+  List<ReviewModel> reviewList = [];
+  num avgReview = 5;
+  int totalReview = 0;
+  int rateSelected = 5;
   String subject = 'ไม่พบข้อมูล';
   String level = 'ไม่พบข้อมูล';
   bool isLoading = true;
-  init({required BuildContext context, required String courseId}) async {
+  init() async {
     auth = Provider.of<AuthProvider>(context, listen: false);
     courseDetail = null;
     tutor = null;
     subject = 'ไม่พบข้อมูล';
     level = 'ไม่พบข้อมูล';
-    courseDetail = await getCourseInfo(courseId);
-    tutor = await getTutorInfo(courseDetail?.tutorId ?? "");
+    await getCourseInfo(courseId);
+    await getRecommendCourse();
+    await getTutorInfo(courseDetail?.tutorId ?? "");
     subject = await getSubjectInfo(courseDetail?.subjectId ?? "");
     level = await getLevelInfo(courseDetail?.levelId ?? "");
+    await getCourseReview();
     isLoading = false;
     notifyListeners();
   }
 
-  Future<CourseMarketModel> getCourseInfo(String id) async {
-    log("getCourseInfo");
-    return await firebaseFirestore
+  getCourseInfo(String id) async {
+    log("getCourseInfo : $id");
+    await firebaseFirestore
         .collection('course')
         .doc(id)
         .get()
         .then((userFirebase) async {
       if (userFirebase.exists) {
-        return CourseMarketModel.fromJson(userFirebase.data()!);
+        courseDetail = CourseMarketModel.fromJson(userFirebase.data()!);
       } else {
-        return CourseMarketModel();
+        courseDetail = CourseMarketModel();
       }
     });
+    notifyListeners();
   }
 
-  Future<List<CourseMarketModel>> getRecommendCourse() async {
-    List<CourseMarketModel> courseList = [];
-    return await firebaseFirestore
-        .collection('course_live')
+  getRecommendCourse() async {
+    recommendCourse = [];
+    await firebaseFirestore
+        .collection('course')
         // .where('subject_id', isEqualTo: courseDetail?.subjectId)
         .where('level_id', isEqualTo: courseDetail?.levelId)
         .where('publishing', isEqualTo: true)
@@ -68,26 +79,39 @@ class MarketCourseDetailProvider extends ChangeNotifier {
         for (var i = 0; i < data.docs.length; i++) {
           // log("json : ${json.encode(data.docs[i].data())}");
           var only = CourseMarketModel.fromJson(data.docs[i].data());
-          courseList.add(only);
+          only.id = data.docs[i].id;
+          recommendCourse.add(only);
         }
-        return courseList;
-      } else {
-        return courseList;
       }
     });
+    recommendCourse.removeWhere((element) => element.id == courseId);
+    notifyListeners();
   }
 
-  Future<UserModel> getTutorInfo(String id) async {
-    // log("getTutorInfo");
-    return await firebaseFirestore
+  getTutorInfo(String id) async {
+    await firebaseFirestore
         .collection('users')
         .doc(id)
         .get()
         .then((userFirebase) async {
       if (userFirebase.exists) {
-        return UserModel.fromJson(userFirebase.data()!);
+        tutor = UserModel.fromJson(userFirebase.data()!);
+      }
+    });
+    notifyListeners();
+  }
+
+  Future<num> getCourseTotalTutor() async {
+    return await firebaseFirestore
+        .collection('course')
+        .where('create_user', isEqualTo: tutor?.id ?? "")
+        .where('publishing', isEqualTo: true)
+        .get()
+        .then((data) async {
+      if (data.size != 0) {
+        return data.size;
       } else {
-        return UserModel();
+        return 0;
       }
     });
   }
@@ -207,5 +231,29 @@ class MarketCourseDetailProvider extends ChangeNotifier {
       }
     });
     return chat;
+  }
+
+  getCourseReview() async {
+    reviewList = [];
+    await firebaseFirestore
+        .collection('reviews')
+        .where('course_id', isEqualTo: courseDetail?.id)
+        .get()
+        .then((data) async {
+      if (data.size != 0) {
+        for (var i = 0; i < data.docs.length; i++) {
+          var only = ReviewModel.fromJson(data.docs[i].data());
+          reviewList.add(only);
+        }
+        totalReview = data.docs.length;
+        avgReview =
+            reviewList.map((m) => (m.rate ?? 0)).reduce((a, b) => a + b) /
+                (reviewList.length);
+        return reviewList;
+      } else {
+        return reviewList;
+      }
+    });
+    notifyListeners();
   }
 }

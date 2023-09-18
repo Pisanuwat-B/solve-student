@@ -10,7 +10,6 @@ import 'package:solve_student/feature/chat/service/chat_provider.dart';
 import 'package:solve_student/feature/class/services/class_provider.dart';
 import 'package:solve_student/feature/market_place/service/market_home_provider.dart';
 import 'package:solve_student/feature/market_place/service/market_search_provider.dart';
-import 'package:solve_student/feature/market_place/service/market_course_detail_provider.dart';
 import 'package:solve_student/feature/order/service/order_mock_provider.dart';
 import 'package:solve_student/feature/standby_study/service/state_study_provider.dart';
 
@@ -27,8 +26,6 @@ final List<SingleChildWidget> stateIndex = [
   ChangeNotifierProvider<ChatProvider>(create: (_) => ChatProvider()),
   ChangeNotifierProvider<OrderMockProvider>(create: (_) => OrderMockProvider()),
   Provider<SettingProvider>(create: (_) => SettingProvider()),
-  ChangeNotifierProvider<MarketCourseDetailProvider>(
-      create: (_) => MarketCourseDetailProvider()),
   ChangeNotifierProvider<ClassProvider>(create: (_) => ClassProvider()),
   ChangeNotifierProvider<StandbyStudyProvider>(
       create: (_) => StandbyStudyProvider()),
