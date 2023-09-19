@@ -202,7 +202,7 @@ class _StudentScreenState extends State<StudentScreen>
       child: Consumer<CourseLiveController>(
         builder: (_, student, child) {
           return student.isLoading
-              ? const Column(
+              ?  Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -243,7 +243,7 @@ class _StudentScreenState extends State<StudentScreen>
                       ],
                     ),
                     studentController.isLoadingCourseToday
-                        ? const Column(
+                        ?  Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [

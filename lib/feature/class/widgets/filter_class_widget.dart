@@ -61,7 +61,7 @@ class _FilterClassWidgetState extends State<FilterClassWidget> {
                         isDateTimeEnum = null;
                         setState(() {});
                       },
-                      icon: const Row(
+                      icon:  Row(
                         children: [
                           Icon(Icons.clear),
                           SizedBox(

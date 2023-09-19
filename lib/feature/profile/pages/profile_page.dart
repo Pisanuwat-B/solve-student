@@ -218,7 +218,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           return AlertDialog(
                             content: Container(
                               width: 300,
-                              child: const SingleChildScrollView(
+                              child:  SingleChildScrollView(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: <Widget>[
@@ -270,7 +270,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     onDoubleTap: () {},
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 15, 20, 5),
-                      child: const Row(
+                      child:  Row(
                         children: [
                           SizedBox(width: 20),
                           Expanded(

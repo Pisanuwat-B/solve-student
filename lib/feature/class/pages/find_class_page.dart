@@ -271,7 +271,7 @@ class _FindClassPageState extends State<FindClassPage> {
                           //
                         });
                       },
-                      child: const Row(
+                      child:  Row(
                         children: [
                           Icon(
                             Icons.filter_list,
