@@ -2911,7 +2911,22 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               ),
             ),
             S.h(8),
-
+            InkWell(
+              onTap: () {
+                setState(() {
+                  micEnable = !micEnable;
+                });
+                if (micEnable && !widget.isMock) {
+                  meeting.unmuteMic();
+                } else {
+                  meeting.muteMic();
+                }
+              },
+              child: Image.asset(
+                micEnable ? ImageAssets.micEnable : ImageAssets.micDis,
+                width: 44,
+              ),
+            ),
             /// TODO: Reconsider fullscreen option
             // InkWell(
             //   onTap: () {
