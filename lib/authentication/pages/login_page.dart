@@ -28,10 +28,15 @@ class LoginPageState extends State<LoginPage> {
     try {
       // Dialogs.showProgressBar(context);
       var user = await _signInWithGoogle();
+      print("user _handleGoogleBtnClick: $user");
+
       if (user != null) {
         log('\nUser: ${user.user}');
         log('\nUserAdditionalInfo: ${user.additionalUserInfo}');
-        if (await authProvider!.userExists(user.user!)) {} else {
+        authProvider!.updateUserToken(user.user!.uid);
+        if (await authProvider!.userExists(user.user!)) {
+
+        } else {
           await authProvider!.createUser(
             id: user.user?.uid ?? "",
             name: user.user?.displayName ?? "",
@@ -45,6 +50,7 @@ class LoginPageState extends State<LoginPage> {
         // Navigator.pushReplacement(context, route);
       }
     } catch (e) {
+      print("error: $e");
       Dialogs.showSnackbar(context, 'Login failed');
     }
   }

@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:solve_student/authentication/models/user_model.dart';
 
+import 'fcm.dart';
+
 class AuthProvider extends ChangeNotifier {
   final GoogleSignIn googleSignIn = GoogleSignIn();
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
@@ -65,6 +67,7 @@ class AuthProvider extends ChangeNotifier {
     String? image,
   }) async {
     final time = DateTime.now().millisecondsSinceEpoch.toString();
+    final String deviceToken = await FCMServices().getDeviceToken();
     final chatUser = UserModel(
       id: id,
       name: name,
@@ -74,7 +77,7 @@ class AuthProvider extends ChangeNotifier {
       createdAt: time,
       isOnline: false,
       lastActive: time,
-      pushToken: '',
+      pushToken: deviceToken,
       role: '',
     );
     user = chatUser;
@@ -106,6 +109,7 @@ class AuthProvider extends ChangeNotifier {
       UserCredential userCrendetial = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
       userCrendetial.user!.updateDisplayName(name);
+      final String deviceToken = await FCMServices().getDeviceToken();
       final time = DateTime.now().millisecondsSinceEpoch.toString();
       final chatUser = UserModel(
         id: _auth.currentUser!.uid,
@@ -116,7 +120,7 @@ class AuthProvider extends ChangeNotifier {
         createdAt: time,
         isOnline: false,
         lastActive: time,
-        pushToken: '',
+        pushToken: deviceToken,
         role: '',
       );
       user = chatUser;
@@ -143,11 +147,28 @@ class AuthProvider extends ChangeNotifier {
           email: email, password: password);
       print("Login Successful");
       _firestore.collection('users').doc(_auth.currentUser!.uid).get().then(
-          (value) => userCredential.user!.updateDisplayName(value['name']));
+          (value) => {
+            print("value: ${value.id}"),
+            updateUserToken(value.id),
+            userCredential.user!.updateDisplayName(value['name'])
+          });
       return userCredential.user;
     } catch (e) {
       print(e);
       return null;
+    }
+  }
+
+  updateUserToken(String userId) async {
+    try {
+      final String deviceToken = await FCMServices().getDeviceToken();
+      FirebaseFirestore _firestore = FirebaseFirestore.instance;
+      print("updateUserToken: $deviceToken");
+      await _firestore.collection('users').doc(userId).update({
+        'push_token': deviceToken,
+      });
+    } catch (err) {
+      print('Error updating field: $err');
     }
   }
 
