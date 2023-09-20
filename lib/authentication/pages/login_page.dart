@@ -3,10 +3,12 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:solve_student/authentication/service/fcm.dart';
 import 'package:solve_student/widgets/dialogs.dart';
 
 import '../../feature/calendar/constants/assets_manager.dart';
@@ -29,8 +31,7 @@ class LoginPageState extends State<LoginPage> {
       if (user != null) {
         log('\nUser: ${user.user}');
         log('\nUserAdditionalInfo: ${user.additionalUserInfo}');
-        if (await authProvider!.userExists(user.user!)) {
-        } else {
+        if (await authProvider!.userExists(user.user!)) {} else {
           await authProvider!.createUser(
             id: user.user?.uid ?? "",
             name: user.user?.displayName ?? "",
@@ -52,7 +53,7 @@ class LoginPageState extends State<LoginPage> {
     await InternetAddress.lookup('google.com');
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
     final GoogleSignInAuthentication? googleAuth =
-        await googleUser?.authentication;
+    await googleUser?.authentication;
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth?.accessToken,
       idToken: googleAuth?.idToken,
@@ -65,8 +66,7 @@ class LoginPageState extends State<LoginPage> {
       var auth = await _signInWithApple();
       if (auth?.user != null) {
         log('\nUser: ${auth!.user}');
-        if (await authProvider!.userExists(auth.user!)) {
-        } else {
+        if (await authProvider!.userExists(auth.user!)) {} else {
           await authProvider!.createUser(
             id: auth.user!.uid,
             name: auth.user!.displayName ?? "",
@@ -93,7 +93,7 @@ class LoginPageState extends State<LoginPage> {
       idToken: appleCredential.identityToken,
     );
     final UserCredential userCredential =
-        await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+    await FirebaseAuth.instance.signInWithCredential(oauthCredential);
     return userCredential;
   }
 
@@ -109,7 +109,7 @@ class LoginPageState extends State<LoginPage> {
       if (textFieldFocusNode.hasPrimaryFocus)
         return; // If focus is on text field, don't unfocused
       textFieldFocusNode.canRequestFocus =
-          false; // Prevents focus if tap on eye
+      false; // Prevents focus if tap on eye
     });
   }
 
@@ -146,7 +146,6 @@ class LoginPageState extends State<LoginPage> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Login with Google
                       InkWell(
                         onTap: () {
                           _handleGoogleBtnClick();
@@ -177,31 +176,31 @@ class LoginPageState extends State<LoginPage> {
                       // Login with Apple ID
                       Platform.isIOS
                           ? InkWell(
-                              onTap: () {
-                                _handleAppleBtnClick();
-                              },
-                              child: Container(
-                                width: 200.0,
-                                height: 50.0,
-                                decoration: BoxDecoration(
-                                  color: CustomColors.grayF3F3F3,
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Image.asset(
-                                      ImageAssets.icApple,
-                                      width: 19.56,
-                                      height: 24,
-                                    ),
-                                    S.w(16.0),
-                                    Text("Apple ID",
-                                        style: CustomStyles.med14Black363636)
-                                  ],
-                                ),
+                        onTap: () {
+                          _handleAppleBtnClick();
+                        },
+                        child: Container(
+                          width: 200.0,
+                          height: 50.0,
+                          decoration: BoxDecoration(
+                            color: CustomColors.grayF3F3F3,
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                ImageAssets.icApple,
+                                width: 19.56,
+                                height: 24,
                               ),
-                            )
+                              S.w(16.0),
+                              Text("Apple ID",
+                                  style: CustomStyles.med14Black363636)
+                            ],
+                          ),
+                        ),
+                      )
                           : Container(),
                     ],
                   ),
@@ -356,125 +355,125 @@ class LoginPageState extends State<LoginPage> {
     );
   }
 
-  // Widget _buildFormWidget() {
-  //   return AutofillGroup(
-  //     child: Column(
-  //       children: [
-  //         AppTextField(
-  //           textFieldType: TextFieldType.EMAIL,
-  //           controller: _email,
-  //           // focus: emailFocus,
-  //           // nextFocus: passwordFocus,
-  //           // errorThisFieldRequired: language.requiredText,
-  //           decoration: inputDecoration(context, labelText: "Email"),
-  //           // suffix: ic_message.iconImage(size: 10).paddingAll(14),
-  //           autoFillHints: [AutofillHints.email],
-  //         ),
-  //         16.height,
-  //         AppTextField(
-  //           textFieldType: TextFieldType.PASSWORD,
-  //           controller: _password,
-  //           // focus: passwordFocus,
-  //           // suffixPasswordVisibleWidget:
-  //           //     ic_show.iconImage(size: 10).paddingAll(14),
-  //           // suffixPasswordInvisibleWidget:
-  //           //     ic_hide.iconImage(size: 10).paddingAll(14),
-  //           decoration: inputDecoration(context, labelText: "Password"),
-  //           autoFillHints: [AutofillHints.password],
-  //           onFieldSubmitted: (s) {
-  //             // loginUsers();
-  //           },
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+// Widget _buildFormWidget() {
+//   return AutofillGroup(
+//     child: Column(
+//       children: [
+//         AppTextField(
+//           textFieldType: TextFieldType.EMAIL,
+//           controller: _email,
+//           // focus: emailFocus,
+//           // nextFocus: passwordFocus,
+//           // errorThisFieldRequired: language.requiredText,
+//           decoration: inputDecoration(context, labelText: "Email"),
+//           // suffix: ic_message.iconImage(size: 10).paddingAll(14),
+//           autoFillHints: [AutofillHints.email],
+//         ),
+//         16.height,
+//         AppTextField(
+//           textFieldType: TextFieldType.PASSWORD,
+//           controller: _password,
+//           // focus: passwordFocus,
+//           // suffixPasswordVisibleWidget:
+//           //     ic_show.iconImage(size: 10).paddingAll(14),
+//           // suffixPasswordInvisibleWidget:
+//           //     ic_hide.iconImage(size: 10).paddingAll(14),
+//           decoration: inputDecoration(context, labelText: "Password"),
+//           autoFillHints: [AutofillHints.password],
+//           onFieldSubmitted: (s) {
+//             // loginUsers();
+//           },
+//         ),
+//       ],
+//     ),
+//   );
+// }
 
-  // Widget _buildRememberWidget() {
-  //   return Column(
-  //     children: [
-  //       8.height,
-  //       // Row(
-  //       //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //       //   children: [
-  //       //     RoundedCheckBox(
-  //       //       borderColor: context.primaryColor,
-  //       //       checkedColor: context.primaryColor,
-  //       //       // isChecked: isRemember,
-  //       //       text: "Remember Me",
-  //       //       textStyle: secondaryTextStyle(),
-  //       //       size: 20,
-  //       //       onTap: (value) async {
-  //       //         // await setValue(IS_REMEMBERED, isRemember);
-  //       //         // isRemember = !isRemember;
-  //       //         // setState(() {});
-  //       //       },
-  //       //     ),
-  //       //     TextButton(
-  //       //       onPressed: () {
-  //       //         // showInDialog(
-  //       //         //   context,
-  //       //         //   contentPadding: EdgeInsets.zero,
-  //       //         //   dialogAnimation: DialogAnimation.SLIDE_TOP_BOTTOM,
-  //       //         //   builder: (_) => ForgotPasswordScreen(),
-  //       //         // );
-  //       //       },
-  //       //       child: Text(
-  //       //         "Forgot Password",
-  //       //         style: boldTextStyle(
-  //       //             color: ColorConstants.primaryColor,
-  //       //             fontStyle: FontStyle.italic),
-  //       //         textAlign: TextAlign.right,
-  //       //       ),
-  //       //     ).flexible(),
-  //       //   ],
-  //       // ),
-  //       24.height,
-  //       AppButton(
-  //         text: "Sign In",
-  //         color: ColorConstants.primaryColor,
-  //         textColor: Colors.white,
-  //         width: context.width() - context.navigationBarHeight,
-  //         onTap: () {
-  //           // loginUsers();
-  //           authprovider!.logIn(_email.text, _password.text).then(
-  //             (user) {
-  //               if (user != null) {
-  //                 Navigator.pushReplacement(context,
-  //                     MaterialPageRoute(builder: (context) => Authenticate()));
-  //                 print("Account Created Sucessfull");
-  //               } else {
-  //                 print("Login Failed");
-  //               }
-  //             },
-  //           );
-  //         },
-  //       ),
-  //       16.height,
-  //       Row(
-  //         mainAxisAlignment: MainAxisAlignment.center,
-  //         children: [
-  //           Text("Don't have an account?", style: secondaryTextStyle()),
-  //           TextButton(
-  //             onPressed: () {
-  //               // hideKeyboard(context);
-  //               // SignUpScreen().launch(context);
-  //               var route =
-  //                   MaterialPageRoute(builder: (context) => RegisterPage());
-  //               Navigator.push(context, route);
-  //             },
-  //             child: Text(
-  //               "Sign Up",
-  //               style: boldTextStyle(
-  //                 color: ColorConstants.primaryColor,
-  //                 decoration: TextDecoration.underline,
-  //                 fontStyle: FontStyle.italic,
-  //               ),
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ],
-  //   );
-  // }
+// Widget _buildRememberWidget() {
+//   return Column(
+//     children: [
+//       8.height,
+//       // Row(
+//       //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//       //   children: [
+//       //     RoundedCheckBox(
+//       //       borderColor: context.primaryColor,
+//       //       checkedColor: context.primaryColor,
+//       //       // isChecked: isRemember,
+//       //       text: "Remember Me",
+//       //       textStyle: secondaryTextStyle(),
+//       //       size: 20,
+//       //       onTap: (value) async {
+//       //         // await setValue(IS_REMEMBERED, isRemember);
+//       //         // isRemember = !isRemember;
+//       //         // setState(() {});
+//       //       },
+//       //     ),
+//       //     TextButton(
+//       //       onPressed: () {
+//       //         // showInDialog(
+//       //         //   context,
+//       //         //   contentPadding: EdgeInsets.zero,
+//       //         //   dialogAnimation: DialogAnimation.SLIDE_TOP_BOTTOM,
+//       //         //   builder: (_) => ForgotPasswordScreen(),
+//       //         // );
+//       //       },
+//       //       child: Text(
+//       //         "Forgot Password",
+//       //         style: boldTextStyle(
+//       //             color: ColorConstants.primaryColor,
+//       //             fontStyle: FontStyle.italic),
+//       //         textAlign: TextAlign.right,
+//       //       ),
+//       //     ).flexible(),
+//       //   ],
+//       // ),
+//       24.height,
+//       AppButton(
+//         text: "Sign In",
+//         color: ColorConstants.primaryColor,
+//         textColor: Colors.white,
+//         width: context.width() - context.navigationBarHeight,
+//         onTap: () {
+//           // loginUsers();
+//           authprovider!.logIn(_email.text, _password.text).then(
+//             (user) {
+//               if (user != null) {
+//                 Navigator.pushReplacement(context,
+//                     MaterialPageRoute(builder: (context) => Authenticate()));
+//                 print("Account Created Sucessfull");
+//               } else {
+//                 print("Login Failed");
+//               }
+//             },
+//           );
+//         },
+//       ),
+//       16.height,
+//       Row(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           Text("Don't have an account?", style: secondaryTextStyle()),
+//           TextButton(
+//             onPressed: () {
+//               // hideKeyboard(context);
+//               // SignUpScreen().launch(context);
+//               var route =
+//                   MaterialPageRoute(builder: (context) => RegisterPage());
+//               Navigator.push(context, route);
+//             },
+//             child: Text(
+//               "Sign Up",
+//               style: boldTextStyle(
+//                 color: ColorConstants.primaryColor,
+//                 decoration: TextDecoration.underline,
+//                 fontStyle: FontStyle.italic,
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     ],
+//   );
+// }
 }
