@@ -867,17 +867,13 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
                         Column(
                           children: <Widget>[
                             Builder(builder: (context) {
-                              double percent = con.reviewList
-                                      .where((element) => element.rate == 5)
-                                      .length
-                                      .toDouble() /
-                                  con.reviewList.length;
+                              double percent = con.calculatePercent(5);
                               return Row(
                                 children: [
                                   LinearPercentIndicator(
                                     width: 200,
                                     lineHeight: 20,
-                                    percent: percent,
+                                    percent: percent / 100,
                                     padding: EdgeInsets.zero,
                                     progressColor: Colors.orange,
                                     backgroundColor: Colors.grey.shade200,
@@ -896,16 +892,13 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
                             }),
                             const SizedBox(height: 10),
                             Builder(builder: (context) {
-                              double percent = con.reviewList
-                                  .where((element) => element.rate == 4)
-                                  .length
-                                  .toDouble();
+                              double percent = con.calculatePercent(4);
                               return Row(
                                 children: [
                                   LinearPercentIndicator(
                                     width: 200,
                                     lineHeight: 20,
-                                    percent: percent,
+                                    percent: percent / 100,
                                     padding: EdgeInsets.zero,
                                     progressColor: Colors.orange,
                                     backgroundColor: Colors.grey.shade200,
@@ -924,16 +917,13 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
                             }),
                             const SizedBox(height: 10),
                             Builder(builder: (context) {
-                              double percent = con.reviewList
-                                  .where((element) => element.rate == 3)
-                                  .length
-                                  .toDouble();
+                              double percent = con.calculatePercent(3);
                               return Row(
                                 children: [
                                   LinearPercentIndicator(
                                     width: 200,
                                     lineHeight: 20,
-                                    percent: percent,
+                                    percent: percent / 100,
                                     padding: EdgeInsets.zero,
                                     progressColor: Colors.orange,
                                     backgroundColor: Colors.grey.shade200,
@@ -952,16 +942,13 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
                             }),
                             const SizedBox(height: 10),
                             Builder(builder: (context) {
-                              double percent = con.reviewList
-                                  .where((element) => element.rate == 2)
-                                  .length
-                                  .toDouble();
+                              double percent = con.calculatePercent(2);
                               return Row(
                                 children: [
                                   LinearPercentIndicator(
                                     width: 200,
                                     lineHeight: 20,
-                                    percent: percent,
+                                    percent: percent / 100,
                                     padding: EdgeInsets.zero,
                                     progressColor: Colors.orange,
                                     backgroundColor: Colors.grey.shade200,
@@ -980,16 +967,13 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
                             }),
                             const SizedBox(height: 10),
                             Builder(builder: (context) {
-                              double percent = con.reviewList
-                                  .where((element) => element.rate == 1)
-                                  .length
-                                  .toDouble();
+                              double percent = con.calculatePercent(1);
                               return Row(
                                 children: [
                                   LinearPercentIndicator(
                                     width: 200,
                                     lineHeight: 20,
-                                    percent: percent,
+                                    percent: percent / 100,
                                     padding: EdgeInsets.zero,
                                     progressColor: Colors.orange,
                                     backgroundColor: Colors.grey.shade200,
@@ -1037,18 +1021,25 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                "${con.tutor?.name ?? ""} ",
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              )
-                                            ],
+                                          FutureBuilder(
+                                            future: con
+                                                .getUserInfo(only.userId ?? ""),
+                                            builder: (context, snap) {
+                                              return Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    "${snap.data?.name ?? ""} ",
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  )
+                                                ],
+                                              );
+                                            },
                                           ),
                                           starRateFromNumWidget(only.rate ?? 0),
                                           Container(

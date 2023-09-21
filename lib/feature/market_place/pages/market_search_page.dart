@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:solve_student/constants/theme.dart';
 import 'package:solve_student/feature/calendar/constants/assets_manager.dart';
-import 'package:solve_student/feature/market_place/model/course_live_model.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
 import 'package:solve_student/feature/market_place/pages/market_course_detail_page.dart';
-import 'package:solve_student/feature/market_place/service/market_search_provider.dart';
+import 'package:solve_student/feature/market_place/service/market_search_controller.dart';
 
 class MarketSearchPage extends StatefulWidget {
   MarketSearchPage({
@@ -22,12 +21,12 @@ class MarketSearchPage extends StatefulWidget {
 }
 
 class _MarketSearchPageState extends State<MarketSearchPage> {
-  MarketSearchProvider? marketSearchProvider;
+  MarketSearchController? controller;
   @override
   void initState() {
-    marketSearchProvider = MarketSearchProvider();
+    controller = MarketSearchController(context);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await marketSearchProvider!.init(
+      await controller!.init(
           filter: widget.filter, subject: widget.subject, level: widget.level);
     });
     super.initState();
@@ -36,8 +35,8 @@ class _MarketSearchPageState extends State<MarketSearchPage> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
-      value: marketSearchProvider,
-      child: Consumer<MarketSearchProvider>(builder: (context, con, _) {
+      value: controller,
+      child: Consumer<MarketSearchController>(builder: (context, con, _) {
         return GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
@@ -110,6 +109,9 @@ class _MarketSearchPageState extends State<MarketSearchPage> {
                           ),
                         ),
                         onFieldSubmitted: (value) {
+                          con.searchCourseName(value);
+                        },
+                        onChanged: (value) {
                           con.searchCourseName(value);
                         },
                         onEditingComplete: () =>
@@ -224,137 +226,236 @@ class _MarketSearchPageState extends State<MarketSearchPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    FutureBuilder(
-                        future: con.getCourseInfo(),
-                        builder: (context, snapshot) {
-                          try {
-                            if (snapshot.hasData) {
-                              return ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: snapshot.data?.length ?? 0,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  CourseMarketModel only =
-                                      snapshot.data![index];
-                                  return GestureDetector(
-                                    onTap: () {
-                                      var route = MaterialPageRoute(
-                                          builder: (context) =>
-                                              MarketCourseDetailPage(
-                                                  courseId: only.id ?? ""));
-                                      Navigator.push(context, route);
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.fromLTRB(
-                                          0, 10, 0, 0),
-                                      alignment: Alignment.center,
-                                      child: Row(
+                    Builder(builder: (context) {
+                      if (con.courseSearch.isNotEmpty) {
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: con.courseSearch.length,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            CourseMarketModel only = con.courseSearch[index];
+                            return GestureDetector(
+                              onTap: () {
+                                var route = MaterialPageRoute(
+                                    builder: (context) =>
+                                        MarketCourseDetailPage(
+                                            courseId: only.id ?? ""));
+                                Navigator.push(context, route);
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                alignment: Alignment.center,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          color: Colors.grey.shade50,
+                                        ),
+                                        height: 150,
+                                        width: 200,
+                                        child: Builder(builder: (context) {
+                                          if (only.thumbnailUrl == null ||
+                                              only.thumbnailUrl == "") {
+                                            return Image.asset(
+                                              ImageAssets.emptyCourse,
+                                              height: 200,
+                                              width: double.infinity,
+                                              fit: BoxFit.fitHeight,
+                                            );
+                                          }
+                                          return Image.network(
+                                            only.thumbnailUrl ?? "",
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                              return Image.asset(
+                                                ImageAssets.emptyCourse,
+                                                height: 150,
+                                                width: 150,
+                                                fit: BoxFit.fitHeight,
+                                              );
+                                            },
+                                          );
+                                        }),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.center,
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                                color: Colors.grey.shade50,
-                                              ),
-                                              height: 150,
-                                              width: 200,
-                                              child:
-                                                  Builder(builder: (context) {
-                                                if (only.thumbnailUrl == null ||
-                                                    only.thumbnailUrl == "") {
-                                                  return Image.asset(
-                                                    ImageAssets.emptyCourse,
-                                                    height: 200,
-                                                    width: double.infinity,
-                                                    fit: BoxFit.fitHeight,
-                                                  );
-                                                }
-                                                return Image.network(
-                                                  only.thumbnailUrl ?? "",
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error,
-                                                      stackTrace) {
-                                                    return Image.asset(
-                                                      ImageAssets.emptyCourse,
-                                                      height: 150,
-                                                      width: 150,
-                                                      fit: BoxFit.fitHeight,
-                                                    );
-                                                  },
-                                                );
-                                              }),
+                                          Text(
+                                            "${only.courseName ?? ""} ",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
                                             ),
+                                            maxLines: 2,
                                           ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  "${only.courseName ?? ""} ",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                  maxLines: 2,
+                                          Text(
+                                            "${only.detailsText ?? ""}",
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          tutorWidget(only),
+                                          const Row(
+                                            children: [
+                                              Icon(
+                                                Icons.account_circle,
+                                                color: Colors.grey,
+                                              ),
+                                              VerticalDivider(),
+                                              Icon(
+                                                Icons.star,
+                                                color: Colors.orange,
+                                              ),
+                                              Text(
+                                                "5",
+                                                style: TextStyle(
+                                                  color: Colors.orange,
                                                 ),
-                                                Text(
-                                                  "${only.detailsText ?? ""}",
-                                                  maxLines: 2,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                                tutorWidget(only),
-                                                const Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.account_circle,
-                                                      color: Colors.grey,
-                                                    ),
-                                                    VerticalDivider(),
-                                                    Icon(
-                                                      Icons.star,
-                                                      color: Colors.orange,
-                                                    ),
-                                                    Text(
-                                                      "5",
-                                                      style: TextStyle(
-                                                        color: Colors.orange,
-                                                      ),
-                                                    ),
-                                                    SizedBox(width: 5),
-                                                    Text("(0)"),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 5),
-                                                Row(
-                                                  children: [
-                                                    subjectWidget(only),
-                                                    levelWidget(only),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
+                                              ),
+                                              SizedBox(width: 5),
+                                              Text("(0)"),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Row(
+                                            children: [
+                                              subjectWidget(only),
+                                              levelWidget(only),
+                                            ],
                                           ),
                                         ],
                                       ),
                                     ),
-                                  );
-                                },
-                              );
-                            }
-                            return Text("nodata");
-                          } catch (e) {
-                            return Text("error");
-                          }
-                        })
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: con.courseList.length,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          CourseMarketModel only = con.courseList[index];
+                          return GestureDetector(
+                            onTap: () {
+                              var route = MaterialPageRoute(
+                                  builder: (context) => MarketCourseDetailPage(
+                                      courseId: only.id ?? ""));
+                              Navigator.push(context, route);
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                              alignment: Alignment.center,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.grey.shade50,
+                                      ),
+                                      height: 150,
+                                      width: 200,
+                                      child: Builder(builder: (context) {
+                                        if (only.thumbnailUrl == null ||
+                                            only.thumbnailUrl == "") {
+                                          return Image.asset(
+                                            ImageAssets.emptyCourse,
+                                            height: 200,
+                                            width: double.infinity,
+                                            fit: BoxFit.fitHeight,
+                                          );
+                                        }
+                                        return Image.network(
+                                          only.thumbnailUrl ?? "",
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Image.asset(
+                                              ImageAssets.emptyCourse,
+                                              height: 150,
+                                              width: 150,
+                                              fit: BoxFit.fitHeight,
+                                            );
+                                          },
+                                        );
+                                      }),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          "${only.courseName ?? ""} ",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 2,
+                                        ),
+                                        Text(
+                                          "${only.detailsText ?? ""}",
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        tutorWidget(only),
+                                        const Row(
+                                          children: [
+                                            Icon(
+                                              Icons.account_circle,
+                                              color: Colors.grey,
+                                            ),
+                                            VerticalDivider(),
+                                            Icon(
+                                              Icons.star,
+                                              color: Colors.orange,
+                                            ),
+                                            Text(
+                                              "5",
+                                              style: TextStyle(
+                                                color: Colors.orange,
+                                              ),
+                                            ),
+                                            SizedBox(width: 5),
+                                            Text("(0)"),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Row(
+                                          children: [
+                                            subjectWidget(only),
+                                            levelWidget(only),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }),
                   ],
                 ),
               ),
@@ -367,7 +468,7 @@ class _MarketSearchPageState extends State<MarketSearchPage> {
 
   Widget subjectWidget(CourseMarketModel only) {
     return FutureBuilder(
-      future: marketSearchProvider!.getSubjectInfo(only.subjectId ?? ""),
+      future: controller!.getSubjectInfo(only.subjectId ?? ""),
       builder: (context, snap) {
         return Container(
           decoration: BoxDecoration(
@@ -391,7 +492,7 @@ class _MarketSearchPageState extends State<MarketSearchPage> {
 
   Widget levelWidget(CourseMarketModel only) {
     return FutureBuilder(
-      future: marketSearchProvider!.getLevelInfo(only.levelId ?? ""),
+      future: controller!.getLevelInfo(only.levelId ?? ""),
       builder: (context, snap) {
         return Container(
           decoration: BoxDecoration(
@@ -415,7 +516,7 @@ class _MarketSearchPageState extends State<MarketSearchPage> {
 
   Widget tutorWidget(CourseMarketModel only) {
     return FutureBuilder(
-      future: marketSearchProvider!.getTutorInfo(only.tutorId ?? ""),
+      future: controller!.getTutorInfo(only.tutorId ?? ""),
       builder: (context, snap) {
         return Container(
           child: Text(

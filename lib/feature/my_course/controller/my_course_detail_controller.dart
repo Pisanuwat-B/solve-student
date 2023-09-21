@@ -35,7 +35,7 @@ class MyCourseDetailController extends ChangeNotifier {
     tutor = null;
     subject = 'ไม่พบข้อมูล';
     level = 'ไม่พบข้อมูล';
-    await getCourseInfo(courseId);
+    await getCourseInfo();
     await getRecommendCourse();
     await getTutorInfo(courseDetail?.tutorId ?? "");
     subject = await getSubjectInfo(courseDetail?.subjectId ?? "");
@@ -45,15 +45,16 @@ class MyCourseDetailController extends ChangeNotifier {
     notifyListeners();
   }
 
-  getCourseInfo(String id) async {
-    log("getCourseInfo : $id");
+  getCourseInfo() async {
+    log("getCourseInfo : $courseId");
     await firebaseFirestore
         .collection('course')
-        .doc(id)
+        .doc(courseId)
         .get()
         .then((userFirebase) async {
       if (userFirebase.exists) {
         courseDetail = CourseMarketModel.fromJson(userFirebase.data()!);
+        courseDetail!.id = courseId;
       } else {
         courseDetail = CourseMarketModel();
       }
@@ -178,14 +179,18 @@ class MyCourseDetailController extends ChangeNotifier {
 
   Future<ChatModel?> createMarketChat(String orderId, String tutorId) async {
     String me = auth?.user?.id ?? "";
-
     String chatId = "${orderId}_${me}_${tutorId}";
-    await firebaseFirestore.collection('chats').doc(chatId).set({
-      'chat_id': chatId,
-      'order_id': '$orderId',
-      'customer_id': '$me',
-      'tutor_id': '$tutorId',
-    });
+    ChatModel chatCreate = ChatModel(
+      chatId: chatId,
+      orderId: orderId,
+      customerId: me,
+      tutorId: tutorId,
+      updatedAt: DateTime.now().millisecondsSinceEpoch.toString(),
+    );
+    await firebaseFirestore
+        .collection('chats')
+        .doc(chatId)
+        .set(chatCreate.toJson());
     await sendFirstMessage(chatId);
     await sendToFirstMessage(
       tutorId,
@@ -289,5 +294,29 @@ class MyCourseDetailController extends ChangeNotifier {
     await ref.doc(created.id).update({"id": created.id});
     await getCourseReview();
     notifyListeners();
+  }
+
+  double calculatePercent(double rate) {
+    double percent = 0;
+    if (reviewList.isNotEmpty) {
+      var rateLenght =
+          reviewList.where((element) => element.rate == rate).length;
+      percent = (double.parse("$rateLenght") / reviewList.length) * 100;
+    }
+    return percent;
+  }
+
+  Future<UserModel?> getUserInfo(String id) async {
+    UserModel? tutor;
+    await firebaseFirestore
+        .collection('users')
+        .doc(id)
+        .get()
+        .then((userFirebase) async {
+      if (userFirebase.exists) {
+        tutor = UserModel.fromJson(userFirebase.data()!);
+      }
+    });
+    return tutor;
   }
 }

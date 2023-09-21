@@ -24,6 +24,9 @@ class OrderClassModel {
   num? rate;
   bool paymentOn;
   String? paymentStatus;
+  String? paymentBy;
+  DateTime? paymentTime;
+  DateTime? createdTime;
   bool fromMarketPlace;
   bool fromAnnounce;
 
@@ -42,6 +45,9 @@ class OrderClassModel {
     this.rate,
     this.paymentOn = false,
     this.paymentStatus,
+    this.paymentBy,
+    this.paymentTime,
+    this.createdTime,
     this.fromMarketPlace = false,
     this.fromAnnounce = false,
   });
@@ -62,6 +68,13 @@ class OrderClassModel {
         rate: json["rate"],
         paymentOn: json["paymentOn"] ?? false,
         paymentStatus: json["paymentStatus"],
+        paymentBy: json["paymentBy"],
+        paymentTime: json["payment_time"] == null
+            ? null
+            : DateTime.fromMicrosecondsSinceEpoch(json["payment_time"]),
+        createdTime: json["created_time"] == null
+            ? null
+            : DateTime.fromMicrosecondsSinceEpoch(json["created_time"]),
         fromMarketPlace: json["fromMarketPlace"] ?? false,
         fromAnnounce: json["fromAnnounce"] ?? false,
       );
@@ -81,6 +94,9 @@ class OrderClassModel {
         "rate": rate,
         "paymentOn": paymentOn,
         "paymentStatus": paymentStatus,
+        'paymentBy': paymentBy,
+        'payment_time': paymentTime?.millisecondsSinceEpoch,
+        'created_time': createdTime?.millisecondsSinceEpoch,
         "fromMarketPlace": fromMarketPlace,
         "fromAnnounce": fromAnnounce,
       };

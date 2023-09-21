@@ -40,7 +40,7 @@ class MarketCourseDetailController extends ChangeNotifier {
     tutor = null;
     subject = 'ไม่พบข้อมูล';
     level = 'ไม่พบข้อมูล';
-    await getCourseInfo(courseId);
+    await getCourseInfo();
     await getRecommendCourse();
     await getTutorInfo(courseDetail?.tutorId ?? "");
     subject = await getSubjectInfo(courseDetail?.subjectId ?? "");
@@ -50,15 +50,16 @@ class MarketCourseDetailController extends ChangeNotifier {
     notifyListeners();
   }
 
-  getCourseInfo(String id) async {
-    log("getCourseInfo : $id");
+  getCourseInfo() async {
+    log("getCourseInfo : $courseId");
     await firebaseFirestore
         .collection('course')
-        .doc(id)
+        .doc(courseId)
         .get()
         .then((userFirebase) async {
       if (userFirebase.exists) {
         courseDetail = CourseMarketModel.fromJson(userFirebase.data()!);
+        courseDetail!.id = courseId;
       } else {
         courseDetail = CourseMarketModel();
       }
@@ -173,6 +174,7 @@ class MarketCourseDetailController extends ChangeNotifier {
         content: courseContent,
         paymentOn: true,
         paymentStatus: 'pending',
+        createdTime: DateTime.now(),
       );
       await firebaseFirestore
           .collection('orders')
@@ -255,5 +257,29 @@ class MarketCourseDetailController extends ChangeNotifier {
       }
     });
     notifyListeners();
+  }
+
+  double calculatePercent(double rate) {
+    double percent = 0;
+    if (reviewList.isNotEmpty) {
+      var rateLenght =
+          reviewList.where((element) => element.rate == rate).length;
+      percent = (double.parse("$rateLenght") / reviewList.length) * 100;
+    }
+    return percent;
+  }
+
+  Future<UserModel?> getUserInfo(String id) async {
+    UserModel? tutor;
+    await firebaseFirestore
+        .collection('users')
+        .doc(id)
+        .get()
+        .then((userFirebase) async {
+      if (userFirebase.exists) {
+        tutor = UserModel.fromJson(userFirebase.data()!);
+      }
+    });
+    return tutor;
   }
 }

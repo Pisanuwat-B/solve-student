@@ -798,83 +798,19 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                   fontSize: 15,
                                 ),
                               ),
-
-                              // Expanded(
-                              //   child: Container(
-                              //     decoration: BoxDecoration(
-                              //         // color: Colors.green,
-                              //         ),
-                              //     child: GridView.count(
-                              //       primary: false,
-                              //       shrinkWrap: true,
-                              //       physics: NeverScrollableScrollPhysics(),
-                              //       padding: EdgeInsets.all(5),
-                              //       crossAxisSpacing: 10,
-                              //       mainAxisSpacing: 10,
-                              //       crossAxisCount: 3,
-                              //       childAspectRatio: 2,
-                              //       children: <Widget>[
-                              //         GestureDetector(
-                              //           onTap: () {
-                              //             setState(() {
-                              //               rateSelected = 0;
-                              //             });
-                              //           },
-                              //           child: Container(
-                              //             alignment: Alignment.center,
-                              //             decoration: rateSelected == 0
-                              //                 ? BoxDecoration(
-                              //                     border: Border.all(
-                              //                       color: primaryColor,
-                              //                     ),
-                              //                     borderRadius:
-                              //                         BorderRadius.circular(10),
-                              //                   )
-                              //                 : BoxDecoration(
-                              //                     color: Colors.grey.shade100,
-                              //                     borderRadius:
-                              //                         BorderRadius.circular(10),
-                              //                   ),
-                              //             padding:
-                              //                 EdgeInsets.fromLTRB(5, 0, 5, 0),
-                              //             child: Text(
-                              //               "ทั้งหมด (0)",
-                              //               textScaleFactor: scaleSize,
-                              //               style: TextStyle(
-                              //                 color: rateSelected == 0
-                              //                     ? primaryColor
-                              //                     : Colors.grey,
-                              //                 fontSize: 12,
-                              //               ),
-                              //             ),
-                              //           ),
-                              //         ),
-                              //         // selectedStarRate(5),
-                              //         // selectedStarRate(4),
-                              //         // selectedStarRate(3),
-                              //         // selectedStarRate(2),
-                              //         // selectedStarRate(1),
-                              //       ],
-                              //     ),
-                              //   ),
-                              // ),
                             ],
                           ),
                         ),
                         Column(
                           children: <Widget>[
                             Builder(builder: (context) {
-                              double percent = con.reviewList
-                                      .where((element) => element.rate == 5)
-                                      .length
-                                      .toDouble() /
-                                  con.reviewList.length;
+                              double percent = con.calculatePercent(5);
                               return Row(
                                 children: [
                                   LinearPercentIndicator(
                                     width: 200,
                                     lineHeight: 20,
-                                    percent: percent,
+                                    percent: percent / 100,
                                     padding: EdgeInsets.zero,
                                     progressColor: Colors.orange,
                                     backgroundColor: Colors.grey.shade200,
@@ -893,16 +829,13 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                             }),
                             const SizedBox(height: 10),
                             Builder(builder: (context) {
-                              double percent = con.reviewList
-                                  .where((element) => element.rate == 4)
-                                  .length
-                                  .toDouble();
+                              double percent = con.calculatePercent(4);
                               return Row(
                                 children: [
                                   LinearPercentIndicator(
                                     width: 200,
                                     lineHeight: 20,
-                                    percent: percent,
+                                    percent: percent / 100,
                                     padding: EdgeInsets.zero,
                                     progressColor: Colors.orange,
                                     backgroundColor: Colors.grey.shade200,
@@ -921,16 +854,13 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                             }),
                             const SizedBox(height: 10),
                             Builder(builder: (context) {
-                              double percent = con.reviewList
-                                  .where((element) => element.rate == 3)
-                                  .length
-                                  .toDouble();
+                              double percent = con.calculatePercent(3);
                               return Row(
                                 children: [
                                   LinearPercentIndicator(
                                     width: 200,
                                     lineHeight: 20,
-                                    percent: percent,
+                                    percent: percent / 100,
                                     padding: EdgeInsets.zero,
                                     progressColor: Colors.orange,
                                     backgroundColor: Colors.grey.shade200,
@@ -949,16 +879,13 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                             }),
                             const SizedBox(height: 10),
                             Builder(builder: (context) {
-                              double percent = con.reviewList
-                                  .where((element) => element.rate == 2)
-                                  .length
-                                  .toDouble();
+                              double percent = con.calculatePercent(2);
                               return Row(
                                 children: [
                                   LinearPercentIndicator(
                                     width: 200,
                                     lineHeight: 20,
-                                    percent: percent,
+                                    percent: percent / 100,
                                     padding: EdgeInsets.zero,
                                     progressColor: Colors.orange,
                                     backgroundColor: Colors.grey.shade200,
@@ -977,16 +904,13 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                             }),
                             const SizedBox(height: 10),
                             Builder(builder: (context) {
-                              double percent = con.reviewList
-                                  .where((element) => element.rate == 1)
-                                  .length
-                                  .toDouble();
+                              double percent = con.calculatePercent(1);
                               return Row(
                                 children: [
                                   LinearPercentIndicator(
                                     width: 200,
                                     lineHeight: 20,
-                                    percent: percent,
+                                    percent: percent / 100,
                                     padding: EdgeInsets.zero,
                                     progressColor: Colors.orange,
                                     backgroundColor: Colors.grey.shade200,
@@ -1034,18 +958,25 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                "${con.tutor?.name ?? ""} ",
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              )
-                                            ],
+                                          FutureBuilder(
+                                            future: con
+                                                .getUserInfo(only.userId ?? ""),
+                                            builder: (context, snap) {
+                                              return Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    "${snap.data?.name ?? ""} ",
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  )
+                                                ],
+                                              );
+                                            },
                                           ),
                                           starRateFromNumWidget(only.rate ?? 0),
                                           Container(

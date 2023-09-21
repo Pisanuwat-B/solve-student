@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,33 +6,37 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:provider/provider.dart';
 import 'package:solve_student/authentication/models/user_model.dart';
 import 'package:solve_student/authentication/service/auth_provider.dart';
-import 'package:solve_student/feature/market_place/model/course_live_model.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
 
-class MarketSearchProvider extends ChangeNotifier {
+class MarketSearchController extends ChangeNotifier {
   final GoogleSignIn googleSignIn = GoogleSignIn();
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   final FirebaseStorage storage = FirebaseStorage.instance;
+  MarketSearchController(this.context);
+  BuildContext context;
   AuthProvider? auth;
+  List<CourseMarketModel> courseList = [];
+  List<CourseMarketModel> courseSearch = [];
   List<Map<String, String>> subjectList = [];
   List<Map<String, String>> levelList = [];
   Map<String, String>? subjectSelected;
   Map<String, String>? levelSelected;
-  TextEditingController? courseNameSearch;
+  TextEditingController courseNameSearch = TextEditingController();
 
   init({
-    AuthProvider? auth,
     required bool filter,
     String? subject,
     String? level,
   }) async {
-    this.auth = auth;
+    auth = Provider.of<AuthProvider>(context, listen: false);
+    await getCourseInfo();
     await getSubjectList();
     await getLevelList();
-    courseNameSearch = null;
+    courseNameSearch = TextEditingController();
     subjectSelected = null;
     levelSelected = null;
     if (filter) {
@@ -50,12 +53,12 @@ class MarketSearchProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<CourseMarketModel>> getCourseInfo() async {
-    List<CourseMarketModel> courseList = [];
+  getCourseInfo() async {
+    log("getCourseInfo ");
+    courseList = [];
     try {
-      return await firebaseFirestore
+      await firebaseFirestore
           .collection('course')
-          .where('course_name', isGreaterThanOrEqualTo: courseNameSearch?.text)
           .where('subject_id', isEqualTo: subjectSelected?.keys.first)
           .where('level_id', isEqualTo: levelSelected?.keys.first)
           .where('publishing', isEqualTo: true)
@@ -69,11 +72,9 @@ class MarketSearchProvider extends ChangeNotifier {
             course.id = data.docs[i].id;
             courseList.add(course);
           }
-          return courseList;
-        } else {
-          return courseList;
         }
       });
+      notifyListeners();
     } catch (e) {
       log("getCourseInfo : $e");
       return courseList;
@@ -180,13 +181,15 @@ class MarketSearchProvider extends ChangeNotifier {
   }
 
   searchCourseName(String courseName) {
-    courseNameSearch = TextEditingController(text: courseName);
+    courseSearch = courseList.where((element) {
+      return element.courseName!.contains(courseName);
+    }).toList();
     notifyListeners();
   }
 
   clearFilter() {
-    courseNameSearch?.clear();
-    courseNameSearch = null;
+    courseNameSearch.clear();
+    courseNameSearch = TextEditingController();
     subjectSelected = null;
     levelSelected = null;
     notifyListeners();

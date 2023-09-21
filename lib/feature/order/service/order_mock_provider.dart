@@ -79,12 +79,17 @@ class OrderMockProvider extends ChangeNotifier {
       OrderClassModel order, UserModel cutomer) async {
     String me = auth?.user?.id ?? "";
     String chatId = "${order.classId}_${me}_${order.tutorId}";
-    await firebaseFirestore.collection('chats').doc(chatId).set({
-      'chat_id': chatId,
-      'order_id': '${order.classId}',
-      'customer_id': '${me}',
-      'tutor_id': '${order.tutorId}',
-    });
+    ChatModel chatCreate = ChatModel(
+      chatId: chatId,
+      orderId: order.classId,
+      customerId: me,
+      tutorId: order.tutorId,
+      updatedAt: DateTime.now().millisecondsSinceEpoch.toString(),
+    );
+    await firebaseFirestore
+        .collection('chats')
+        .doc(chatId)
+        .set(chatCreate.toJson());
     await sendFirstMessage(chatId);
     await sendToFirstMessage(
       order.tutorId ?? "",
@@ -180,10 +185,17 @@ class OrderMockProvider extends ChangeNotifier {
   }
 
   Future<OrderClassModel> updateOrderStatus(
-      String orderId, String status) async {
-    log("updateOrderStatus");
+    String orderId,
+    String status,
+    String paymentSelected,
+  ) async {
+    log("updateOrderStatus :$paymentSelected");
     var orders = firebaseFirestore.collection("orders");
-    await orders.doc(orderId).update({'paymentStatus': status});
+    await orders.doc(orderId).update({
+      'paymentStatus': status,
+      'payment_time': DateTime.now().millisecondsSinceEpoch,
+      'paymentBy': paymentSelected
+    });
     var result = await orders.doc(orderId).get();
     OrderClassModel? order = OrderClassModel.fromJson(result.data()!);
     return order;

@@ -13,12 +13,14 @@ class ChatModel {
   String? customerId;
   String? orderId;
   String? tutorId;
+  String? updatedAt;
 
   ChatModel({
     this.chatId,
     this.customerId,
     this.orderId,
     this.tutorId,
+    this.updatedAt,
   });
 
   factory ChatModel.fromJson(Map<String, dynamic> json) => ChatModel(
@@ -26,6 +28,7 @@ class ChatModel {
         customerId: json["customer_id"] ?? "",
         orderId: json["order_id"] ?? "",
         tutorId: json["tutor_id"] ?? "",
+        updatedAt: json["updated_at"] ?? "",
       );
 
   Map<String, dynamic> toJson() => {
@@ -33,5 +36,6 @@ class ChatModel {
         "customer_id": customerId,
         "order_id": orderId,
         "tutor_id": tutorId,
+        "updated_at": updatedAt,
       };
 }
