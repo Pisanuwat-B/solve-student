@@ -10,6 +10,7 @@ class ShowCourseStudent {
   String? detailsText;
   String? documentId;
   String? file;
+  String? audio;
   int? rawStart;
 
   ShowCourseStudent({
@@ -24,6 +25,7 @@ class ShowCourseStudent {
     this.detailsText,
     this.documentId,
     this.file,
+    this.audio,
   });
 
   ShowCourseStudent.fromJson(Map<String, dynamic> json) {
@@ -39,6 +41,7 @@ class ShowCourseStudent {
     detailsText = json['details_text'];
     documentId = json['document_id'];
     file = json['review_file'] ?? '';
+    audio = json['audio_file']?.first;
   }
 
   Map<String, dynamic> toJson() {
@@ -54,6 +57,7 @@ class ShowCourseStudent {
     data['details_text'] = detailsText;
     data['document_id'] = documentId;
     data['review_file'] = file;
+    data['audio_file'] = audio;
     return data;
   }
 }

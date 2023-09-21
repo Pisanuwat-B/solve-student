@@ -75,6 +75,10 @@ class _CourseHistoryState extends State<CourseHistory>
             (item as Map<String, dynamic>)
                 .map((key, value) => MapEntry(key, value));
 
+        if (itemWithAdditionalFields['audio_file'] == null ||
+            itemWithAdditionalFields['audio_file'].isEmpty) {
+          itemWithAdditionalFields['audio_file'] = null;
+        }
         // Adding additional fields
         itemWithAdditionalFields['thumbnail_url'] = thumbnailUrl;
         itemWithAdditionalFields['tutor_id'] = tutorId;
@@ -184,6 +188,7 @@ class _CourseHistoryState extends State<CourseHistory>
                         builder: (_) => ReviewLesson(
                           courseId: reviewList[index].courseId!,
                           courseName: reviewList[index].courseName!,
+                          audio: reviewList[index].audio,
                           file: reviewList[index].file!,
                           tutorId: reviewList[index].tutorId!,
                           userId: authProvider!.user!.id!,

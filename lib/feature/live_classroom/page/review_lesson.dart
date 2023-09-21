@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_sound/flutter_sound.dart';
 import 'package:speech_balloon/speech_balloon.dart';
 
 import '../../calendar/constants/assets_manager.dart';
@@ -27,12 +28,14 @@ import 'ask_tutor_live.dart';
 
 class ReviewLesson extends StatefulWidget {
   final String courseId, courseName, file, tutorId, userId, docId;
+  final String? audio;
   final int start;
   const ReviewLesson({
     Key? key,
     required this.courseId,
     required this.courseName,
     required this.file,
+    required this.audio,
     required this.tutorId,
     required this.userId,
     required this.docId,
@@ -142,7 +145,7 @@ class _ReviewLessonState extends State<ReviewLesson>
   DrawingMode _mode = DrawingMode.drag;
   DrawingMode _tutorMode = DrawingMode.drag;
   String _tutorCurrentScrollZoom = '';
-  final SolveStopwatch stopwatch = SolveStopwatch();
+  final SolveStopwatch solvepadStopwatch = SolveStopwatch();
   Size studentSolvepadSize = const Size(1059.0, 547.0);
   Size? mySolvepadSize;
   double sheetImageRatio = 0.7373;
@@ -166,10 +169,10 @@ class _ReviewLessonState extends State<ReviewLesson>
   int replayIndex = 0;
 
   // ---------- VARIABLE: page control
-  String _formattedElapsedTime = ' 00 : 00 : 00 ';
+  // String _formattedElapsedTime = ' 00 : 00 : 00 ';
   Timer? _laserTimer;
   Timer? _tutorLaserTimer;
-  Timer? _replayTimer;
+  // Timer? _replayTimer;
   int _currentPage = 0;
   int _tutorCurrentPage = 0;
   final PageController _pageController = PageController();
@@ -182,6 +185,15 @@ class _ReviewLessonState extends State<ReviewLesson>
   late AnimationController progressController;
   late Animation<double> animation;
 
+  // ---------- VARIABLE: sound
+  final FlutterSoundPlayer _audioPlayer = FlutterSoundPlayer();
+  bool _isPlayerReady = false;
+  bool _isAudioReady = false;
+  Uint8List? audioBuffer;
+  int initialAudioTime = 0;
+  int audioIndex = 0;
+  int audioDelay = 0;
+
   @override
   void initState() {
     super.initState();
@@ -191,9 +203,44 @@ class _ReviewLessonState extends State<ReviewLesson>
     initPagesData();
     initPagingBtn();
     initDownloadSolvepad();
+    initAudioBuffer();
+    initAudioPlayer();
   }
 
-  Future<void> initPagesData() async {
+  void fetchReviewNote() async {
+    // Reference to Firestore
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // Query the 'review_note' collection
+    QuerySnapshot querySnapshot = await firestore
+        .collection('review_note')
+        .where('student_id', isEqualTo: widget.userId)
+        .where('course_id', isEqualTo: widget.courseId)
+        .where('session_start', isEqualTo: widget.start)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      DocumentSnapshot document = querySnapshot.docs.first;
+      String? noteFileUrl = document.get('note_file');
+      if (noteFileUrl != null && noteFileUrl.isNotEmpty) {
+        final response = await http.get(Uri.parse(noteFileUrl));
+        log('load review note complete');
+        if (response.statusCode == 200) {
+          populateReviewNote(response.body);
+        } else {
+          throw Exception('Failed to load review note');
+        }
+      } // note_file exists
+      else {
+        log('No review note');
+      } // Note note exist
+    } // Check if a document exists
+    else {
+      log('No review note');
+    } // Note not exist
+  }
+
+  void initPagesData() async {
     if (widget.docId == '') {
       _pages = [
         'https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/default_image%2Fa4.png?alt=media&token=01e0d9ac-15ed-4a62-886d-288c60ec1ee6',
@@ -215,11 +262,12 @@ class _ReviewLessonState extends State<ReviewLesson>
     setState(() {
       _pages = sheet;
       _isPageReady = true;
-      startInstantReplay();
     });
     for (int i = 1; i < _pages.length; i++) {
       _addPage();
     }
+    log('load sheet complete');
+    if (widget.audio == null) startInstantReplay();
   }
 
   void initPagingBtn() {
@@ -235,7 +283,7 @@ class _ReviewLessonState extends State<ReviewLesson>
     }
   }
 
-  Future<void> initDownloadSolvepad() async {
+  void initDownloadSolvepad() async {
     try {
       String url = widget.file;
       final response = await http.get(Uri.parse(url));
@@ -245,47 +293,35 @@ class _ReviewLessonState extends State<ReviewLesson>
           downloadedSolvepad = jsonDecode(response.body);
           _isSolvepadDataReady = true;
         });
-        print('load solvepad complete');
-        startInstantReplay();
+        log('load solvepad complete');
+        if (widget.audio == null) {
+          startInstantReplay();
+        } else {
+          audioIndex = findReplayIndex('RECORDING_STARTED:0');
+          initialAudioTime = downloadedSolvepad[audioIndex]['time'];
+          audioDelay = 2000;
+          log('initialAudioTime $initialAudioTime');
+        }
       } else {
-        print('Failed to download file');
+        log('Failed to download file');
       }
     } catch (e) {
-      print('Get file URL error: $e');
+      log('Get file URL error: $e');
     }
   }
 
-  Future<void> fetchReviewNote() async {
-    // Reference to Firestore
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
+  void initAudioBuffer() async {
+    if (widget.audio == null) return;
+    audioBuffer = await downloadAudio(widget.audio!);
+    _isAudioReady = true;
+  }
 
-    // Query the 'review_note' collection
-    QuerySnapshot querySnapshot = await firestore
-        .collection('review_note')
-        .where('student_id', isEqualTo: widget.userId)
-        .where('course_id', isEqualTo: widget.courseId)
-        .where('session_start', isEqualTo: widget.start)
-        .get();
-
-    // Check if a document exists
-    if (querySnapshot.docs.isNotEmpty) {
-      DocumentSnapshot document = querySnapshot.docs.first;
-      String? noteFileUrl = document.get('note_file');
-
-      // If the note_file field exists and is not null
-      if (noteFileUrl != null && noteFileUrl.isNotEmpty) {
-        // Fetch the content of the text file from the URL
-        final response = await http.get(Uri.parse(noteFileUrl));
-        log('has review note');
-        // If the call to the server was successful, parse the content into a string
-        if (response.statusCode == 200) {
-          populateReviewNote(response.body);
-        } else {
-          throw Exception('Failed to load review note');
-        }
-      }
-    }
-    log('No review note');
+  void initAudioPlayer() async {
+    if (widget.audio == null) return;
+    _audioPlayer.openPlayer().then((e) {
+      _isPlayerReady = true;
+      log('load player complete');
+    });
   }
 
   void populateReviewNote(String jsonString) {
@@ -327,7 +363,7 @@ class _ReviewLessonState extends State<ReviewLesson>
   void startInstantReplay() {
     if (_isPageReady && _isSolvepadDataReady) {
       log('function: startInstantReplay()');
-      // instantReplay();
+      instantReplay();
     }
   }
 
@@ -372,6 +408,21 @@ class _ReviewLessonState extends State<ReviewLesson>
   double scaleScrollX(double scrollX) => scrollX * scaleX;
   double scaleScrollY(double scrollY) => scrollY * scaleY;
 
+  Future<Uint8List?> downloadAudio(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        log('load audio complete');
+        return response.bodyBytes;
+      } else {
+        log('Failed to load audio from $url');
+      }
+    } catch (e) {
+      log('Error: $e');
+    }
+    return null;
+  }
+
   @override
   dispose() {
     SystemChrome.setPreferredOrientations([
@@ -380,7 +431,8 @@ class _ReviewLessonState extends State<ReviewLesson>
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
-    _replayTimer?.cancel();
+    // _replayTimer?.cancel();
+    _audioPlayer.closePlayer();
     super.dispose();
   }
 
@@ -403,25 +455,28 @@ class _ReviewLessonState extends State<ReviewLesson>
   }
 
   void startReplayLoop({int startIndex = 0}) async {
-    log('start replay loop');
+    log('function: startReplayLoop()');
     log('start index: ${startIndex.toString()}');
     _isReplaying = true;
-    _replayTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
-        setState(() {
-          _formattedElapsedTime = _formatElapsedTime(stopwatch.elapsed);
-        });
-      } else {
-        timer.cancel();
-      }
-    });
+    // _replayTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    //   if (mounted) {
+    //     setState(() {
+    //       _formattedElapsedTime = _formatElapsedTime(solvepadStopwatch.elapsed);
+    //     });
+    //   } else {
+    //     timer.cancel();
+    //   }
+    // });
     for (int i = startIndex; i < downloadedSolvepad.length; i++) {
       if (downloadedSolvepad[i]['uid'] != widget.tutorId) {
         continue;
       }
       int actionTime = downloadedSolvepad[i]['time'];
       String actionData = downloadedSolvepad[i]['data'];
-      while (stopwatch.elapsed.inMilliseconds < actionTime) {
+      while (solvepadStopwatch.elapsed.inMilliseconds +
+              initialAudioTime +
+              audioDelay <
+          actionTime) {
         if (_isPause) {
           replayIndex = i;
           log('end replay loop due to pause');
@@ -565,14 +620,18 @@ class _ReviewLessonState extends State<ReviewLesson>
     });
   }
 
-  int findReplayIndex() {
+  int findReplayIndex(String keyword) {
+    if (_currentPage == 0) return 0;
     for (int i = 0; i < downloadedSolvepad.length; i++) {
-      if (downloadedSolvepad[i]['data'] == 'ChangePage:$_currentPage') {
+      if (downloadedSolvepad[i]['data'] == keyword) {
         setModeAfterSkip(i);
         setColorAfterSkip(i);
         setWidthAfterSkip(i);
-        Duration indexTime = convertToDuration(downloadedSolvepad[i]['time']);
-        stopwatch.skip(indexTime);
+        Duration indexTime = convertToDuration(
+            downloadedSolvepad[i]['time'] - initialAudioTime - audioDelay);
+        solvepadStopwatch.skip(indexTime);
+        _audioPlayer.seekToPlayer(convertToDuration(
+            downloadedSolvepad[i]['time'] - initialAudioTime - audioDelay));
         return i;
       }
     }
@@ -741,11 +800,12 @@ class _ReviewLessonState extends State<ReviewLesson>
                 ),
               ],
             ),
-            Positioned(
-              top: 80,
-              right: 40,
-              child: play(),
-            ),
+            if (widget.audio != null)
+              Positioned(
+                top: 80,
+                right: 40,
+                child: play(),
+              ),
             if (openColors)
               Positioned(
                 left: 150,
@@ -1407,19 +1467,23 @@ class _ReviewLessonState extends State<ReviewLesson>
         height: 45,
         child: GestureDetector(
           onTap: () {
+            if (!_isPlayerReady && !_isAudioReady) return;
             if (_isPause) {
               setState(() {
                 _isPause = !_isPause;
               });
               if (!_isReplaying) {
-                stopwatch.reset();
-                stopwatch.start();
-                startReplayLoop(startIndex: findReplayIndex());
+                solvepadStopwatch.reset();
+                solvepadStopwatch.start();
+                _audioPlayer.startPlayer(fromDataBuffer: audioBuffer);
+                startReplayLoop(
+                    startIndex: findReplayIndex('ChangePage:$_currentPage'));
               } // case: before start
               else {
-                stopwatch.start();
+                solvepadStopwatch.start();
+                _audioPlayer.resumePlayer();
                 log('time at resume');
-                log(stopwatch.elapsed.inMilliseconds.toString());
+                log(solvepadStopwatch.elapsed.inMilliseconds.toString());
                 startReplayLoop(startIndex: replayIndex);
               } // case: pausing
             } // press while pausing or before start
@@ -1427,9 +1491,10 @@ class _ReviewLessonState extends State<ReviewLesson>
               setState(() {
                 _isPause = !_isPause;
               });
-              stopwatch.stop();
+              _audioPlayer.pausePlayer();
+              solvepadStopwatch.stop();
               log('time at pausing');
-              log(stopwatch.elapsed.inMilliseconds.toString());
+              log(solvepadStopwatch.elapsed.inMilliseconds.toString());
             } // press while playing
           },
           child: Container(
