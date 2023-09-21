@@ -252,10 +252,8 @@ class _ReviewLessonState extends State<ReviewLesson>
       for (int i = 1; i < 5; i++) {
         _addPage();
       }
-      setState(() {
-        _isPageReady = true;
-        startInstantReplay();
-      });
+      _isPageReady = true;
+      startInstantReplay();
       return;
     }
     var sheet = await getDocFiles(widget.tutorId, widget.docId);
@@ -289,10 +287,8 @@ class _ReviewLessonState extends State<ReviewLesson>
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        setState(() {
-          downloadedSolvepad = jsonDecode(response.body);
-          _isSolvepadDataReady = true;
-        });
+        downloadedSolvepad = jsonDecode(response.body);
+        _isSolvepadDataReady = true;
         log('load solvepad complete');
         if (widget.audio == null) {
           startInstantReplay();
@@ -449,7 +445,7 @@ class _ReviewLessonState extends State<ReviewLesson>
       List<dynamic> docFiles = dataMap?['doc_files'] ?? [];
       return docFiles.cast<String>(); // Casting to List<String>
     } catch (e) {
-      print('An error occurred while fetching doc_files: $e');
+      log('An error occurred while fetching doc_files: $e');
       return [];
     }
   }
@@ -599,25 +595,19 @@ class _ReviewLessonState extends State<ReviewLesson>
     DrawingMode drawingMode = DrawingMode.values.firstWhere(
         (e) => e.toString() == 'DrawingMode.$modeString',
         orElse: () => DrawingMode.drag);
-    setState(() {
-      _tutorMode = drawingMode;
-    });
+    _tutorMode = drawingMode;
   }
 
   void setStrokeColor(String actionData) {
     var parts = actionData.split('.');
     var index = int.parse(parts.last);
-    setState(() {
-      _tutorColorIndex = index;
-    });
+    _tutorColorIndex = index;
   }
 
   void setStrokeWidth(String actionData) {
     var parts = actionData.split('.');
     var index = int.parse(parts.last);
-    setState(() {
-      _tutorStrokeWidthIndex = index;
-    });
+    _tutorStrokeWidthIndex = index;
   }
 
   int findReplayIndex(String keyword) {
@@ -731,9 +721,7 @@ class _ReviewLessonState extends State<ReviewLesson>
         DrawingMode drawingMode = DrawingMode.values.firstWhere(
             (e) => e.toString() == 'DrawingMode.$modeString',
             orElse: () => DrawingMode.drag);
-        setState(() {
-          _tutorMode = drawingMode;
-        });
+        _tutorMode = drawingMode;
       } // Mode
       else if (actionData.startsWith('Erase')) {
         var parts = actionData.split('.');
@@ -747,16 +735,12 @@ class _ReviewLessonState extends State<ReviewLesson>
       else if (actionData.startsWith('StrokeColor')) {
         var parts = actionData.split('.');
         var index = int.parse(parts.last);
-        setState(() {
-          _tutorColorIndex = index;
-        });
+        _tutorColorIndex = index;
       } // Color
       else if (actionData.startsWith('StrokeWidth')) {
         var parts = actionData.split('.');
         var index = int.parse(parts.last);
-        setState(() {
-          _tutorStrokeWidthIndex = index;
-        });
+        _tutorStrokeWidthIndex = index;
       } // Width
       else if (actionData.startsWith('ChangePage')) {
         var parts = actionData.split(':');
@@ -881,10 +865,8 @@ class _ReviewLessonState extends State<ReviewLesson>
                             return InkWell(
                               onTap: () {
                                 setState(() {
-                                  setState(() {
-                                    _selectedIndexLines = index;
-                                    openLines = !openLines;
-                                  });
+                                  _selectedIndexLines = index;
+                                  openLines = !openLines;
                                 });
                               },
                               child: Column(
@@ -917,7 +899,6 @@ class _ReviewLessonState extends State<ReviewLesson>
       //       if (showSpeechBalloon)
       //         InkWell(
       //           onTap: () {
-      //             print('bolloon tap');
       //             setState(() {
       //               showSpeechBalloon = false;
       //             });
@@ -942,7 +923,6 @@ class _ReviewLessonState extends State<ReviewLesson>
       //           InkWell(
       //             onTap: () {
       //               showSpeechBalloon = false;
-      //               print('List searh found');
       //               // Navigator.push(
       //               //   context,
       //               //   MaterialPageRoute(
@@ -1015,7 +995,6 @@ class _ReviewLessonState extends State<ReviewLesson>
       //       InkWell(
       //         onTap: () {
       //           showSpeechBalloon = false;
-      //           print('ask tutor');
       //           Navigator.push(
       //             context,
       //             MaterialPageRoute(builder: (context) => const AskTutor()),
@@ -1293,7 +1272,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                                 case DrawingMode.eraser:
                                   setState(() {
                                     _eraserPoints[_currentPage] =
-                                        Offset(-100, -100);
+                                        const Offset(-100, -100);
                                   });
                                   break;
                                 default:
@@ -1320,7 +1299,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                                 case DrawingMode.eraser:
                                   setState(() {
                                     _eraserPoints[_currentPage] =
-                                        Offset(-100, -100);
+                                        const Offset(-100, -100);
                                   });
                                   break;
                                 default:
@@ -1940,7 +1919,6 @@ class _ReviewLessonState extends State<ReviewLesson>
           //       child: InkWell(
           //         onTap: () {
           //           // showLeaderboard(context);
-          //           print('yahoo');
           //         },
           //         child: Container(
           //           decoration: BoxDecoration(
@@ -2309,7 +2287,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                           setState(() {
                             _switchValue = value;
                           });
-                          print(value);
+                          log(value.toString());
                         },
                       ),
                     ),
@@ -2347,7 +2325,6 @@ class _ReviewLessonState extends State<ReviewLesson>
           //             S.w(8),
           //             InkWell(
           //               onTap: () {
-          //                 print('leader');
           //                 // showLeader(context);
           //               },
           //               child: Image.asset(
@@ -2427,7 +2404,6 @@ class _ReviewLessonState extends State<ReviewLesson>
                   //       children: [
                   //         InkWell(
                   //           onTap: () {
-                  //             print("Undo");
                   //           },
                   //           child: Image.asset(
                   //             ImageAssets.undo,
@@ -2436,7 +2412,6 @@ class _ReviewLessonState extends State<ReviewLesson>
                   //         ),
                   //         InkWell(
                   //           onTap: () {
-                  //             print("Redo");
                   //           },
                   //           child: Image.asset(
                   //             ImageAssets.redo,
@@ -2568,7 +2543,6 @@ class _ReviewLessonState extends State<ReviewLesson>
                                   //     children: [
                                   //       InkWell(
                                   //         onTap: () {
-                                  //           print("Clear");
                                   //         },
                                   //         child: Image.asset(
                                   //           ImageAssets.bin,
@@ -2577,8 +2551,6 @@ class _ReviewLessonState extends State<ReviewLesson>
                                   //       ),
                                   //       InkWell(
                                   //         onTap: () {
-                                  //           print("More");
-                                  //
                                   //           setState(() {
                                   //             if (openColors ||
                                   //                 openLines == true) {
@@ -2813,7 +2785,7 @@ class _ReviewLessonState extends State<ReviewLesson>
               children: [
                 InkWell(
                   onTap: () {
-                    print('search found');
+                    log('search found');
                     // Navigator.push(
                     //   context,
                     //   MaterialPageRoute(
@@ -2855,14 +2827,14 @@ class _ReviewLessonState extends State<ReviewLesson>
             InkWell(
               onTap: () {
                 if (Responsive.isMobile(context)) {
-                  print('screenshot');
+                  log('screenshot');
                   // Navigator.push(
                   //   context,
                   //   MaterialPageRoute(
                   //       builder: (context) => const ScreenShotModalMobile()),
                   // );
                 } else {
-                  print('ask tutor');
+                  log('ask tutor');
                   // Navigator.push(
                   //   context,
                   //   MaterialPageRoute(builder: (context) => const AskTutor()),
@@ -2935,9 +2907,6 @@ class _ReviewLessonState extends State<ReviewLesson>
                                       // Close popup
                                       openColors = !openColors;
                                     });
-                                    print('Tap : index $index');
-                                    print(
-                                        'Tap : _selectIndex $_selectedIndexColors');
                                   },
                                   child: Image.asset(
                                       _listColors[index]['color'],
@@ -2975,12 +2944,10 @@ class _ReviewLessonState extends State<ReviewLesson>
                                 InkWell(
                                     onTap: () {
                                       setState(() {
-                                        setState(() {
-                                          _selectedIndexLines = index;
+                                        _selectedIndexLines = index;
 
-                                          // Close popup
-                                          openLines = !openLines;
-                                        });
+                                        // Close popup
+                                        openLines = !openLines;
                                       });
                                     },
                                     child: Row(
@@ -3055,9 +3022,6 @@ class _ReviewLessonState extends State<ReviewLesson>
                                             setState(() {
                                               _selectedIndexTools = index;
                                             });
-                                            print('Tap : index $index');
-                                            print(
-                                                'Tap : _selectIndex $_selectedIndexTools');
                                           },
                                           child: Image.asset(
                                             _selectedIndexTools == index
@@ -3090,8 +3054,6 @@ class _ReviewLessonState extends State<ReviewLesson>
                               S.w(defaultPadding),
                               InkWell(
                                 onTap: () {
-                                  print("Pick Line");
-
                                   setState(() {
                                     if (openColors || openMore == true) {
                                       openColors = false;
@@ -3108,7 +3070,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                               S.w(defaultPadding),
                               InkWell(
                                 onTap: () {
-                                  print("Clear");
+                                  log("Clear");
                                 },
                                 child: Image.asset(
                                   ImageAssets.bin,
@@ -3217,35 +3179,36 @@ class _ReviewLessonState extends State<ReviewLesson>
 
   Widget toolsActiveMobile() {
     return Positioned(
-        child: Align(
-            alignment: Alignment.bottomLeft,
-            child: Stack(
-              children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: const BoxDecoration(
-                    color: CustomColors.greenPrimary,
-                    borderRadius:
-                        BorderRadius.only(topRight: Radius.circular(90)),
-                  ),
+      child: Align(
+        alignment: Alignment.bottomLeft,
+        child: Stack(
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: const BoxDecoration(
+                color: CustomColors.greenPrimary,
+                borderRadius: BorderRadius.only(topRight: Radius.circular(90)),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 15),
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedTools = !selectedTools;
+                  });
+                },
+                child: Image.asset(
+                  _listTools[_selectedIndexTools]['image_active'],
+                  height: 70,
+                  width: 70,
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 15),
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedTools = !selectedTools;
-                      });
-                    },
-                    child: Image.asset(
-                      _listTools[_selectedIndexTools]['image_active'],
-                      height: 70,
-                      width: 70,
-                    ),
-                  ),
-                ),
-              ],
-            )));
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
