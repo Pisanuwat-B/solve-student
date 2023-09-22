@@ -561,23 +561,21 @@ class _ReviewLessonState extends State<ReviewLesson>
         setStrokeWidth(actionData);
       } // Width
       else if (actionData.startsWith('ScrollZoom')) {
-        if (tabFreestyle) continue;
         var parts = actionData.split(':');
         var scrollX = double.parse(parts[1]);
         var scrollY = double.parse(parts[2]);
         var zoom = double.parse(parts.last);
         _tutorCurrentScrollZoom = '${parts[1]}:${parts[2]}:${parts[3]}';
-        // if (tabFreestyle) continue;
+        if (tabFreestyle) continue;
         _transformationController[_tutorCurrentPage].value = Matrix4.identity()
           ..translate(scaleScrollX(scrollX), scaleScrollY(scrollY))
           ..scale(zoom);
       } // ScrollZoom
       else if (actionData.startsWith('ChangePage')) {
-        if (tabFreestyle) continue;
         var parts = actionData.split(':');
         var pageNumber = parts.last;
         _tutorCurrentPage = int.parse(pageNumber);
-        // if (tabFreestyle) continue;
+        if (tabFreestyle) continue;
         _pageController.animateToPage(
           _tutorCurrentPage,
           duration: const Duration(milliseconds: 300),
@@ -790,7 +788,15 @@ class _ReviewLessonState extends State<ReviewLesson>
               Positioned(
                 top: 80,
                 right: 40,
-                child: play(),
+                child: Column(
+                  children: [
+                    pagePlay(),
+                    S.h(12),
+                    play(),
+                    S.h(12),
+                    forward(),
+                  ],
+                ),
               ),
             if (openColors)
               Positioned(
@@ -1441,6 +1447,50 @@ class _ReviewLessonState extends State<ReviewLesson>
     }
   }
 
+  Widget pagePlay() {
+    return Center(
+      child: GestureDetector(
+        onTap: () {
+          log('page play');
+          if (!_isPlayerReady && !_isAudioReady) return;
+          setState(() {
+            _isPause = false;
+          });
+          solvepadStopwatch.reset();
+          solvepadStopwatch.start();
+          _audioPlayer.startPlayer(fromDataBuffer: audioBuffer);
+          startReplayLoop(
+              startIndex: findReplayIndex('ChangePage:$_currentPage'));
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+          decoration: BoxDecoration(
+            color: CustomColors.redFF4201,
+            border: Border.all(
+              color: CustomColors.gray363636,
+              style: BorderStyle.solid,
+              width: 2.0,
+            ),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Row(
+            children: [
+              Text(
+                'เริ่มเล่นที่หน้า ${_currentPage + 1}',
+                style: const TextStyle(color: Colors.white),
+              ),
+              const Icon(
+                Icons.play_arrow,
+                size: 25,
+                color: CustomColors.white,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget play() {
     return Center(
       child: SizedBox(
@@ -1457,8 +1507,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                 solvepadStopwatch.reset();
                 solvepadStopwatch.start();
                 _audioPlayer.startPlayer(fromDataBuffer: audioBuffer);
-                startReplayLoop(
-                    startIndex: findReplayIndex('ChangePage:$_currentPage'));
+                startReplayLoop(startIndex: findReplayIndex('ChangePage:0'));
               } // case: before start
               else {
                 solvepadStopwatch.start();
@@ -1506,6 +1555,43 @@ class _ReviewLessonState extends State<ReviewLesson>
         ),
       ),
     );
+  }
+
+  Widget forward() {
+    return Center(
+      child: SizedBox(
+        width: 45,
+        height: 45,
+        child: GestureDetector(
+          onTap: () {
+            forwardPlayer(const Duration(seconds: 5));
+            solvepadStopwatch.skip(const Duration(seconds: 5));
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: CustomColors.redFF4201,
+              border: Border.all(
+                color: CustomColors.gray363636,
+                style: BorderStyle.solid,
+                width: 2.0,
+              ),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: const Icon(
+              Icons.fast_forward,
+              size: 25,
+              color: CustomColors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void forwardPlayer(Duration duration) async {
+    var progress = await _audioPlayer.getProgress();
+    Duration newLocation = progress['progress']! + duration;
+    _audioPlayer.seekToPlayer(newLocation);
   }
 
   Future<void> saveReviewNote() async {
