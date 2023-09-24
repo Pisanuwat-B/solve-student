@@ -1036,9 +1036,17 @@ class _ReviewLessonState extends State<ReviewLesson>
               ],
             ),
             Positioned(
-              top: 70,
-              right: 35,
-              child: play(),
+              top: 80,
+              right: 40,
+              child: Column(
+                children: [
+                  pagePlay(),
+                  S.h(12),
+                  play(),
+                  S.h(12),
+                  forward(),
+                ],
+              ),
             ),
             if (!selectedTools) toolsMobile(),
             if (selectedTools) toolsActiveMobile(),
@@ -2408,7 +2416,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        flex: 4,
+                        flex: 3,
                         child: Row(
                           children: [
                             InkWell(
@@ -2430,6 +2438,144 @@ class _ReviewLessonState extends State<ReviewLesson>
                               style: CustomStyles.bold16Black363636Overflow,
                               maxLines: 1,
                             ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  if (tabFreestyle == true) {
+                                    tabFollowing = !tabFollowing;
+                                    tabFreestyle = false;
+                                    var parts =
+                                        _tutorCurrentScrollZoom.split(':');
+                                    var scrollX = double.parse(parts[0]);
+                                    var scrollY = double.parse(parts[1]);
+                                    var zoom = double.parse(parts.last);
+                                    if (_currentPage != _tutorCurrentPage) {
+                                      _pageController.animateToPage(
+                                        _tutorCurrentPage,
+                                        duration:
+                                            const Duration(milliseconds: 300),
+                                        curve: Curves.easeInOut,
+                                      );
+                                    } // re-correct page
+                                    _transformationController[_tutorCurrentPage]
+                                        .value = Matrix4.identity()
+                                      ..translate(scaleScrollX(scrollX),
+                                          scaleScrollY(scrollY))
+                                      ..scale(zoom);
+                                  }
+                                });
+                              },
+                              child: Container(
+                                height: 50,
+                                width: 120,
+                                decoration: BoxDecoration(
+                                  color: tabFollowing
+                                      ? CustomColors.greenE5F6EB
+                                      : CustomColors.whitePrimary,
+                                  shape: BoxShape.rectangle,
+                                  border: Border.all(
+                                    color: CustomColors.grayCFCFCF,
+                                    style: BorderStyle.solid,
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: const BorderRadius.horizontal(
+                                    left: Radius.circular(50.0),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Image.asset(
+                                      tabFollowing
+                                          ? ImageAssets.avatarMe
+                                          : ImageAssets.avatarDisMen,
+                                      width: 32,
+                                    ),
+                                    S.w(8),
+                                    Text("เรียนรู้",
+                                        style: tabFollowing
+                                            ? CustomStyles.bold14greenPrimary
+                                            : CustomStyles.bold14grayCFCFCF),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  if (tabFollowing == true) {
+                                    tabFreestyle = !tabFreestyle;
+                                    tabFollowing = false;
+                                  }
+                                });
+                              },
+                              child: Container(
+                                height: 50,
+                                width: 120,
+                                decoration: BoxDecoration(
+                                  color: tabFreestyle
+                                      ? CustomColors.greenE5F6EB
+                                      : CustomColors.whitePrimary,
+                                  shape: BoxShape.rectangle,
+                                  border: Border.all(
+                                    color: CustomColors.grayCFCFCF,
+                                    style: BorderStyle.solid,
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: const BorderRadius.horizontal(
+                                    right: Radius.circular(50.0),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Image.asset(
+                                      tabFreestyle
+                                          ? ImageAssets.pencilActive
+                                          : ImageAssets.penDisTab,
+                                      width: 32,
+                                    ),
+                                    S.w(8),
+                                    Text("เขียนอิสระ",
+                                        style: tabFreestyle
+                                            ? CustomStyles.bold14greenPrimary
+                                            : CustomStyles.bold14grayCFCFCF),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            S.w(12),
+                            // Container(
+                            //   width: 1,
+                            //   height: 32,
+                            //   color: CustomColors.grayCFCFCF,
+                            // ),
+                            S.w(12),
+                            // InkWell(
+                            //   onTap: () {},
+                            //   child: Container(
+                            //     padding: const EdgeInsets.symmetric(
+                            //       horizontal: 6,
+                            //       vertical: 10,
+                            //     ),
+                            //     decoration: BoxDecoration(
+                            //       color: CustomColors.greenPrimary,
+                            //       borderRadius: BorderRadius.circular(8.0),
+                            //     ),
+                            //     child:
+                            //         Text("ไปหน้าที่สอน", style: CustomStyles.bold14White),
+                            //   ),
+                            // ),
+                            // S.w(12),
                           ],
                         ),
                       ),
