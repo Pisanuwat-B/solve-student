@@ -16,6 +16,7 @@ import 'package:solve_student/feature/market_place/model/lesson_market_model.dar
 import 'package:solve_student/feature/market_place/service/market_course_detail_controller.dart';
 import 'package:solve_student/feature/my_course/model/review_model.dart';
 import 'package:solve_student/feature/order/model/order_class_model.dart';
+import 'package:solve_student/feature/order/pages/payment_page.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
 class MarketCourseDetailPage extends StatefulWidget {
@@ -349,19 +350,21 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                     const SizedBox(height: 10),
                                     GestureDetector(
                                       onTap: () async {
-                                        // OrderClassModel orderNew =
-                                        //     await order.createMarketOrder(
-                                        //   widget.courseId,
-                                        //   con.courseName ?? "",
-                                        //   con.detailsText ?? "",
-                                        //   con.tutorId ?? "",
-                                        // );
-                                        // var route = MaterialPageRoute(
-                                        //   builder: (_) => PaymentPage(
-                                        //     orderDetailId: orderNew.id ?? "",
-                                        //   ),
-                                        // );
-                                        // Navigator.push(context, route);
+                                        if (!con.isLoading) {
+                                          OrderClassModel orderNew =
+                                              await con.createMarketOrder(
+                                            widget.courseId,
+                                            con.courseDetail?.courseName ?? "",
+                                            con.courseDetail?.detailsText ?? "",
+                                            con.courseDetail?.createUser ?? "",
+                                          );
+                                          var route = MaterialPageRoute(
+                                            builder: (_) => PaymentPage(
+                                              orderDetailId: orderNew.id ?? "",
+                                            ),
+                                          );
+                                          Navigator.push(context, route);
+                                        }
                                       },
                                       child: Container(
                                         height: 40,

@@ -186,217 +186,71 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
                                 ],
                               ),
                             ),
-                            // GestureDetector(
-                            //   onTap: () async {
-                            //     // OrderClassModel orderNew =
-                            //     //     await order.createOrder(widget.classDetail);
-                            //     // //-----
-                            //     // ChatModel? data =
-                            //     //     await order.createChat(orderNew, widget.user);
-                            //     // var route = MaterialPageRoute(
-                            //     //   builder: (_) => ChatRoomPage(
-                            //     //     chat: data!,
-                            //     //     order: orderNew,
-                            //     //   ),
-                            //     // );
-                            //     // Navigator.push(context, route);
-                            //   },
-                            //   child: Container(
-                            //     width: Sizer(context).w * 0.3,
-                            //     padding: EdgeInsets.all(10),
-                            //     decoration: BoxDecoration(
-                            //       color: greyColor2,
-                            //       borderRadius: BorderRadius.circular(10),
-                            //     ),
-                            //     child: Wrap(
-                            //       spacing: 2,
-                            //       children: [
-                            //         Row(
-                            //           children: [
-                            //             Expanded(
-                            //               child: Text(
-                            //                 "10,000 บาท",
-                            //                 style: TextStyle(
-                            //                   fontSize: 20,
-                            //                   fontWeight: FontWeight.bold,
-                            //                 ),
-                            //                 maxLines: 1,
-                            //               ),
-                            //             ),
-                            //             Container(
-                            //               width: 100,
-                            //               padding: const EdgeInsets.fromLTRB(
-                            //                   5, 0, 5, 0),
-                            //               decoration: BoxDecoration(
-                            //                 color: Colors.white,
-                            //                 borderRadius:
-                            //                     BorderRadius.circular(50),
-                            //                 border:
-                            //                     Border.all(color: primaryColor),
-                            //               ),
-                            //               child: Row(
-                            //                 mainAxisAlignment:
-                            //                     MainAxisAlignment.center,
-                            //                 children: [
-                            //                   Icon(
-                            //                     Icons.list,
-                            //                     color: primaryColor,
-                            //                   ),
-                            //                   SizedBox(width: 5),
-                            //                   const Text(
-                            //                     "แบ่งชำระ",
-                            //                     style: TextStyle(
-                            //                       color: primaryColor,
-                            //                     ),
-                            //                   ),
-                            //                 ],
-                            //               ),
-                            //             ),
-                            //           ],
-                            //         ),
-
-                            //         // Row(
-                            //         //   children: [
-                            //         //     Expanded(
-                            //         //       child: Text(
-                            //         //         "10,000 บาท",
-                            //         //         style: TextStyle(
-                            //         //           fontSize: 20,
-                            //         //           fontWeight: FontWeight.bold,
-                            //         //         ),
-                            //         //       ),
-                            //         //     ),
-                            //         //     Container(
-                            //         //       padding:
-                            //         //           const EdgeInsets.fromLTRB(5, 0, 5, 0),
-                            //         //       decoration: BoxDecoration(
-                            //         //         color: Colors.white,
-                            //         //         borderRadius: BorderRadius.circular(50),
-                            //         //         border: Border.all(color: primaryColor),
-                            //         //       ),
-                            //         //       child: Row(
-                            //         //         mainAxisAlignment:
-                            //         //             MainAxisAlignment.center,
-                            //         //         children: [
-                            //         //           Icon(
-                            //         //             Icons.list,
-                            //         //             color: primaryColor,
-                            //         //           ),
-                            //         //           SizedBox(width: 5),
-                            //         //           const Text(
-                            //         //             "แบ่งชำระ",
-                            //         //             style: TextStyle(
-                            //         //               color: primaryColor,
-                            //         //             ),
-                            //         //           ),
-                            //         //         ],
-                            //         //       ),
-                            //         //     )
-                            //         //   ],
-                            //         // ),
-                            //         const SizedBox(height: 10),
-                            //         GestureDetector(
-                            //           onTap: () async {
-                            //             if (!con.isLoading) {
-                            //               OrderClassModel orderNew =
-                            //                   await con.createMarketOrder(
-                            //                 widget.courseId,
-                            //                 con.courseDetail?.courseName ?? "",
-                            //                 con.courseDetail?.detailsText ?? "",
-                            //                 con.courseDetail?.createUser ?? "",
-                            //               );
-                            //               ChatModel? data =
-                            //                   await con.createMarketChat(
-                            //                 widget.courseId,
-                            //                 con.courseDetail?.createUser ?? "",
-                            //               );
-                            //               var route = MaterialPageRoute(
-                            //                 builder: (_) => ChatRoomPage(
-                            //                   chat: data!,
-                            //                   order: orderNew,
-                            //                 ),
-                            //               );
-                            //               Navigator.push(context, route);
-                            //             }
-                            //           },
-                            //           onDoubleTap: () {},
-                            //           child: Container(
-                            //             height: 40,
-                            //             decoration: BoxDecoration(
-                            //               color: primaryColor,
-                            //               borderRadius:
-                            //                   BorderRadius.circular(10),
-                            //             ),
-                            //             alignment: Alignment.center,
-                            //             child: Row(
-                            //               mainAxisAlignment:
-                            //                   MainAxisAlignment.center,
-                            //               children: [
-                            //                 Icon(
-                            //                   Icons.chat,
-                            //                   color: Colors.white,
-                            //                 ),
-                            //                 SizedBox(width: 5),
-                            //                 Text(
-                            //                   "แชท",
-                            //                   style: TextStyle(
-                            //                     color: Colors.white,
-                            //                     fontSize: 15,
-                            //                   ),
-                            //                 ),
-                            //               ],
-                            //             ),
-                            //           ),
-                            //         ),
-                            //         const SizedBox(height: 10),
-                            //         GestureDetector(
-                            //           onTap: () async {
-                            //             // OrderClassModel orderNew =
-                            //             //     await order.createMarketOrder(
-                            //             //   widget.courseId,
-                            //             //   con.courseName ?? "",
-                            //             //   con.detailsText ?? "",
-                            //             //   con.tutorId ?? "",
-                            //             // );
-                            //             // var route = MaterialPageRoute(
-                            //             //   builder: (_) => PaymentPage(
-                            //             //     orderDetailId: orderNew.id ?? "",
-                            //             //   ),
-                            //             // );
-                            //             // Navigator.push(context, route);
-                            //           },
-                            //           child: Container(
-                            //             height: 40,
-                            //             decoration: BoxDecoration(
-                            //               color: Colors.white,
-                            //               borderRadius:
-                            //                   BorderRadius.circular(10),
-                            //             ),
-                            //             alignment: Alignment.center,
-                            //             child: Row(
-                            //               mainAxisAlignment:
-                            //                   MainAxisAlignment.center,
-                            //               children: [
-                            //                 Icon(
-                            //                   Icons.shopping_cart,
-                            //                   color: primaryColor,
-                            //                 ),
-                            //                 SizedBox(width: 5),
-                            //                 Text(
-                            //                   "ซื้อเลย",
-                            //                   style: TextStyle(
-                            //                     color: primaryColor,
-                            //                     fontSize: 15,
-                            //                   ),
-                            //                 ),
-                            //               ],
-                            //             ),
-                            //           ),
-                            //         ),
-                            //       ],
-                            //     ),
-                            //   ),
-                            // ),
+                            Container(
+                              width: Sizer(context).w * 0.3,
+                              padding: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: greyColor2,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Wrap(
+                                spacing: 2,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () async {
+                                      if (!con.isLoading) {
+                                        OrderClassModel orderNew =
+                                            await con.createMarketOrder(
+                                          widget.courseId,
+                                          con.courseDetail?.courseName ?? "",
+                                          con.courseDetail?.detailsText ?? "",
+                                          con.courseDetail?.createUser ?? "",
+                                        );
+                                        ChatModel? data =
+                                            await con.createMarketChat(
+                                          widget.courseId,
+                                          con.courseDetail?.createUser ?? "",
+                                        );
+                                        var route = MaterialPageRoute(
+                                          builder: (_) => ChatRoomPage(
+                                            chat: data!,
+                                            order: orderNew,
+                                          ),
+                                        );
+                                        Navigator.push(context, route);
+                                      }
+                                    },
+                                    onDoubleTap: () {},
+                                    child: Container(
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: primaryColor,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.chat,
+                                            color: Colors.white,
+                                          ),
+                                          SizedBox(width: 5),
+                                          Text(
+                                            "แชท",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
                           ],
                         ),
                         const SizedBox(height: 10),
