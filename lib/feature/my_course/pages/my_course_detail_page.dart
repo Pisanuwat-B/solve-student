@@ -3,45 +3,46 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:solve_student/constants/theme.dart';
 import 'package:solve_student/feature/calendar/constants/assets_manager.dart';
 import 'package:solve_student/feature/calendar/widgets/format_date.dart';
 import 'package:solve_student/feature/chat/models/chat_model.dart';
 import 'package:solve_student/feature/chat/pages/chat_room_page.dart';
-import 'package:solve_student/feature/market_place/pages/tutor_course_page.dart';
+import 'package:solve_student/feature/market_place/model/course_live_model.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
+import 'package:solve_student/feature/market_place/pages/market_course_detail_page.dart';
+import 'package:solve_student/feature/market_place/pages/tutor_course_page.dart';
 import 'package:solve_student/feature/market_place/model/lesson_market_model.dart';
-import 'package:solve_student/feature/market_place/service/market_course_detail_controller.dart';
+import 'package:solve_student/feature/my_course/controller/my_course_detail_controller.dart';
 import 'package:solve_student/feature/my_course/model/review_model.dart';
 import 'package:solve_student/feature/order/model/order_class_model.dart';
-import 'package:solve_student/feature/order/pages/payment_page.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
-class MarketCourseDetailPage extends StatefulWidget {
-  MarketCourseDetailPage({super.key, required this.courseId});
+class MyCourseDetailPage extends StatefulWidget {
+  MyCourseDetailPage({super.key, required this.courseId});
   String courseId;
   @override
-  State<MarketCourseDetailPage> createState() => _MarketCourseDetailPageState();
+  State<MyCourseDetailPage> createState() => _MyCourseDetailPageState();
 }
 
-class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
-  MarketCourseDetailController? courseDetailProvider;
+class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
+  MyCourseDetailController? controller;
 
   @override
   void initState() {
-    courseDetailProvider =
-        MarketCourseDetailController(context, widget.courseId);
-    courseDetailProvider!.init();
+    controller = MyCourseDetailController(context, courseId: widget.courseId);
+    controller!.init();
     super.initState();
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
-      value: courseDetailProvider,
-      child: Consumer<MarketCourseDetailController>(builder: (context, con, _) {
+      value: controller,
+      child: Consumer<MyCourseDetailController>(builder: (context, con, _) {
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.white,
@@ -185,219 +186,71 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                 ],
                               ),
                             ),
-                            GestureDetector(
-                              onTap: () async {
-                                // OrderClassModel orderNew =
-                                //     await order.createOrder(widget.classDetail);
-                                // //-----
-                                // ChatModel? data =
-                                //     await order.createChat(orderNew, widget.user);
-                                // var route = MaterialPageRoute(
-                                //   builder: (_) => ChatRoomPage(
-                                //     chat: data!,
-                                //     order: orderNew,
-                                //   ),
-                                // );
-                                // Navigator.push(context, route);
-                              },
-                              child: Container(
-                                width: Sizer(context).w * 0.3,
-                                padding: EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: greyColor2,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Wrap(
-                                  spacing: 2,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            "10,000 บาท",
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            maxLines: 1,
-                                          ),
-                                        ),
-                                        Container(
-                                          width: 100,
-                                          padding: const EdgeInsets.fromLTRB(
-                                              5, 0, 5, 0),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(50),
-                                            border:
-                                                Border.all(color: primaryColor),
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.list,
-                                                color: primaryColor,
-                                              ),
-                                              SizedBox(width: 5),
-                                              const Text(
-                                                "แบ่งชำระ",
-                                                style: TextStyle(
-                                                  color: primaryColor,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-
-                                    // Row(
-                                    //   children: [
-                                    //     Expanded(
-                                    //       child: Text(
-                                    //         "10,000 บาท",
-                                    //         style: TextStyle(
-                                    //           fontSize: 20,
-                                    //           fontWeight: FontWeight.bold,
-                                    //         ),
-                                    //       ),
-                                    //     ),
-                                    //     Container(
-                                    //       padding:
-                                    //           const EdgeInsets.fromLTRB(5, 0, 5, 0),
-                                    //       decoration: BoxDecoration(
-                                    //         color: Colors.white,
-                                    //         borderRadius: BorderRadius.circular(50),
-                                    //         border: Border.all(color: primaryColor),
-                                    //       ),
-                                    //       child: Row(
-                                    //         mainAxisAlignment:
-                                    //             MainAxisAlignment.center,
-                                    //         children: [
-                                    //           Icon(
-                                    //             Icons.list,
-                                    //             color: primaryColor,
-                                    //           ),
-                                    //           SizedBox(width: 5),
-                                    //           const Text(
-                                    //             "แบ่งชำระ",
-                                    //             style: TextStyle(
-                                    //               color: primaryColor,
-                                    //             ),
-                                    //           ),
-                                    //         ],
-                                    //       ),
-                                    //     )
-                                    //   ],
-                                    // ),
-                                    const SizedBox(height: 10),
-                                    GestureDetector(
-                                      onTap: () async {
-                                        if (!con.isLoading) {
-                                          OrderClassModel orderNew =
-                                              await con.createMarketOrder(
-                                            widget.courseId,
-                                            con.courseDetail?.courseName ?? "",
-                                            con.courseDetail?.detailsText ?? "",
-                                            con.courseDetail?.createUser ?? "",
-                                          );
-                                          ChatModel? data =
-                                              await con.createMarketChat(
-                                            widget.courseId,
-                                            con.courseDetail?.createUser ?? "",
-                                          );
-                                          var route = MaterialPageRoute(
-                                            builder: (_) => ChatRoomPage(
-                                              chat: data!,
-                                              order: orderNew,
-                                            ),
-                                          );
-                                          Navigator.push(context, route);
-                                        }
-                                      },
-                                      onDoubleTap: () {},
-                                      child: Container(
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: primaryColor,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.chat,
-                                              color: Colors.white,
-                                            ),
-                                            SizedBox(width: 5),
-                                            Text(
-                                              "แชท",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 15,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    GestureDetector(
-                                      onTap: () async {
-                                        if (!con.isLoading) {
-                                          OrderClassModel orderNew =
-                                              await con.createMarketOrder(
-                                            widget.courseId,
-                                            con.courseDetail?.courseName ?? "",
-                                            con.courseDetail?.detailsText ?? "",
-                                            con.courseDetail?.createUser ?? "",
-                                          );
-                                          var route = MaterialPageRoute(
-                                            builder: (_) => PaymentPage(
-                                              orderDetailId: orderNew.id ?? "",
-                                            ),
-                                          );
-                                          Navigator.push(context, route);
-                                        }
-                                      },
-                                      child: Container(
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.shopping_cart,
-                                              color: primaryColor,
-                                            ),
-                                            SizedBox(width: 5),
-                                            Text(
-                                              "ซื้อเลย",
-                                              style: TextStyle(
-                                                color: primaryColor,
-                                                fontSize: 15,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                            Container(
+                              width: Sizer(context).w * 0.3,
+                              padding: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: greyColor2,
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                            ),
+                              child: Wrap(
+                                spacing: 2,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () async {
+                                      if (!con.isLoading) {
+                                        OrderClassModel orderNew =
+                                            await con.createMarketOrder(
+                                          widget.courseId,
+                                          con.courseDetail?.courseName ?? "",
+                                          con.courseDetail?.detailsText ?? "",
+                                          con.courseDetail?.createUser ?? "",
+                                        );
+                                        ChatModel? data =
+                                            await con.createMarketChat(
+                                          widget.courseId,
+                                          con.courseDetail?.createUser ?? "",
+                                        );
+                                        var route = MaterialPageRoute(
+                                          builder: (_) => ChatRoomPage(
+                                            chat: data!,
+                                            order: orderNew,
+                                          ),
+                                        );
+                                        Navigator.push(context, route);
+                                      }
+                                    },
+                                    onDoubleTap: () {},
+                                    child: Container(
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: primaryColor,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.chat,
+                                            color: Colors.white,
+                                          ),
+                                          SizedBox(width: 5),
+                                          Text(
+                                            "แชท",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
                           ],
                         ),
                         const SizedBox(height: 10),
@@ -420,6 +273,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                         //     ),
                         //   ],
                         // ),
+                        const SizedBox(height: 10),
                         Row(
                           children: [
                             Text(
@@ -801,6 +655,66 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                   fontSize: 15,
                                 ),
                               ),
+
+                              // Expanded(
+                              //   child: Container(
+                              //     decoration: BoxDecoration(
+                              //         // color: Colors.green,
+                              //         ),
+                              //     child: GridView.count(
+                              //       primary: false,
+                              //       shrinkWrap: true,
+                              //       physics: NeverScrollableScrollPhysics(),
+                              //       padding: EdgeInsets.all(5),
+                              //       crossAxisSpacing: 10,
+                              //       mainAxisSpacing: 10,
+                              //       crossAxisCount: 3,
+                              //       childAspectRatio: 2,
+                              //       children: <Widget>[
+                              //         GestureDetector(
+                              //           onTap: () {
+                              //             setState(() {
+                              //               rateSelected = 0;
+                              //             });
+                              //           },
+                              //           child: Container(
+                              //             alignment: Alignment.center,
+                              //             decoration: rateSelected == 0
+                              //                 ? BoxDecoration(
+                              //                     border: Border.all(
+                              //                       color: primaryColor,
+                              //                     ),
+                              //                     borderRadius:
+                              //                         BorderRadius.circular(10),
+                              //                   )
+                              //                 : BoxDecoration(
+                              //                     color: Colors.grey.shade100,
+                              //                     borderRadius:
+                              //                         BorderRadius.circular(10),
+                              //                   ),
+                              //             padding:
+                              //                 EdgeInsets.fromLTRB(5, 0, 5, 0),
+                              //             child: Text(
+                              //               "ทั้งหมด (0)",
+                              //               textScaleFactor: scaleSize,
+                              //               style: TextStyle(
+                              //                 color: rateSelected == 0
+                              //                     ? primaryColor
+                              //                     : Colors.grey,
+                              //                 fontSize: 12,
+                              //               ),
+                              //             ),
+                              //           ),
+                              //         ),
+                              //         // selectedStarRate(5),
+                              //         // selectedStarRate(4),
+                              //         // selectedStarRate(3),
+                              //         // selectedStarRate(2),
+                              //         // selectedStarRate(1),
+                              //       ],
+                              //     ),
+                              //   ),
+                              // ),
                             ],
                           ),
                         ),
@@ -1048,15 +962,203 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                             ],
                           ),
                         ),
+                        const Divider(),
+                        const SizedBox(height: 10),
+                        FutureBuilder(
+                            future: con.checkMeReviewed(),
+                            builder: (context, snap) {
+                              if (snap.data ?? false) {
+                                return const SizedBox();
+                              }
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "ให้คะแนนรีวิว",
+                                    style: TextStyle(
+                                      color: appTextPrimaryColor,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      starSelectWidget(1, con),
+                                      starSelectWidget(2, con),
+                                      starSelectWidget(3, con),
+                                      starSelectWidget(4, con),
+                                      starSelectWidget(5, con),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    // height: 50,
+                                    child: TextFormField(
+                                      controller: con.reviewMessage,
+                                      keyboardType: TextInputType.text,
+                                      decoration: InputDecoration(
+                                        fillColor: Colors.white,
+                                        filled: true,
+                                        hintText: "ข้อความ",
+                                        contentPadding:
+                                            EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          borderSide: BorderSide(
+                                            color: primaryColor,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          borderSide: const BorderSide(
+                                            color: Colors.grey,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        focusedErrorBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          borderSide: const BorderSide(
+                                            color: Colors.red,
+                                            width: 2.0,
+                                          ),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          borderSide: const BorderSide(
+                                            color: Colors.red,
+                                            width: 2.0,
+                                          ),
+                                        ),
+                                      ),
+                                      onFieldSubmitted: (value) {
+                                        con.updateReviewMessage(value);
+                                      },
+                                      onEditingComplete: () {
+                                        FocusScope.of(context).unfocus();
+                                      },
+                                      validator: (String? value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "กรุณาระบุ";
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      con.createReview();
+                                    },
+                                    style: ButtonStyle(
+                                      backgroundColor:
+                                          MaterialStateProperty.all(
+                                              Colors.white),
+                                      elevation: MaterialStateProperty.all(0),
+                                      shape: MaterialStateProperty.all(
+                                        RoundedRectangleBorder(
+                                          side: BorderSide(
+                                            color: primaryColor,
+                                            width: 2,
+                                            style: BorderStyle.solid,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                        ),
+                                      ),
+                                    ),
+                                    child: Container(
+                                      width: Sizer(context).w,
+                                      height: 45,
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        "รีวิวคอร์สนี้",
+                                        style: TextStyle(
+                                          color: primaryColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }),
                       ],
                     ),
-                  ),
+                  )
                 ],
               ),
             ),
           ),
         );
       }),
+    );
+  }
+
+  Widget subjectWidget(MyCourseDetailController con, CourseMarketModel only) {
+    return FutureBuilder(
+      future: con.getSubjectInfo(only.subjectId ?? ""),
+      builder: (context, snap) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.grey.shade300,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+          padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+          child: Text(
+            snap.data ?? "",
+            style: TextStyle(
+              fontSize: 15,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget levelWidget(MyCourseDetailController con, CourseMarketModel only) {
+    return FutureBuilder(
+      future: con.getLevelInfo(only.levelId ?? ""),
+      builder: (context, snap) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.grey.shade300,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+          padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+          child: Text(
+            snap.data ?? "",
+            style: TextStyle(
+              fontSize: 15,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget tutorWidget(MyCourseDetailController con) {
+    return Container(
+      child: Text(
+        con.tutor?.name ?? "",
+        style: const TextStyle(
+          fontSize: 14,
+          color: primaryColor,
+        ),
+      ),
     );
   }
 
@@ -1111,64 +1213,22 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
     );
   }
 
-  Widget subjectWidget(
-      MarketCourseDetailController con, CourseMarketModel only) {
-    return FutureBuilder(
-      future: con.getSubjectInfo(only.subjectId ?? ""),
-      builder: (context, snap) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.grey.shade300,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          margin: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-          padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-          child: Text(
-            snap.data ?? "",
-            style: TextStyle(
-              fontSize: 15,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
+  Widget starSelectWidget(int selectedStar, MyCourseDetailController con) {
+    return GestureDetector(
+      onTap: () {
+        con.updateRateSelected(selectedStar);
       },
-    );
-  }
-
-  Widget levelWidget(MarketCourseDetailController con, CourseMarketModel only) {
-    return FutureBuilder(
-      future: con.getLevelInfo(only.levelId ?? ""),
-      builder: (context, snap) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.grey.shade300,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          margin: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-          padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-          child: Text(
-            snap.data ?? "",
-            style: TextStyle(
-              fontSize: 15,
+      child: con.rateSelected >= selectedStar
+          ? const Icon(
+              Icons.star_sharp,
+              color: Colors.orange,
+              size: 30.0,
+            )
+          : const Icon(
+              Icons.star_border,
+              color: Colors.grey,
+              size: 30.0,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
-      },
-    );
-  }
-
-  Widget tutorWidget(MarketCourseDetailController con) {
-    return Container(
-      child: Text(
-        con.tutor?.name ?? "",
-        style: const TextStyle(
-          fontSize: 14,
-          color: primaryColor,
-        ),
-      ),
     );
   }
 }

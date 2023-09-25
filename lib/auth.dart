@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:solve_student/authentication/pages/login_page.dart';
@@ -32,10 +34,25 @@ class _AuthenticateState extends State<Authenticate> {
     return Consumer<AuthProvider>(
       builder: (context, con, child) {
         if (con.firebaseAuth.currentUser != null) {
-          if (con.user?.role != role || con.user?.isDeleted == true) {
-            return const NoPermissionPage();
+          if (!con.isLoading) {
+            if (con.user?.role == role && con.user?.isDeleted != true) {
+              return Nav();
+            } else {
+              return const NoPermissionPage();
+            }
           } else {
-            return Nav();
+            return const Material(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 10),
+                    Text("กำลังโหลด..."),
+                  ],
+                ),
+              ),
+            );
           }
         } else {
           return const LoginPage();

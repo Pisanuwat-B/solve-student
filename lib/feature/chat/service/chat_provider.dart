@@ -76,8 +76,16 @@ class ChatProvider extends ChangeNotifier {
 
     final ref = firebaseFirestore.collection('chats/$chatId/messages/');
     await ref.doc(time).set(message.toJson());
-    // await ref.doc(time).set(message.toJson()).then((value) =>
-    //     sendPushNotification(chatUser, type == Type.text ? msg : 'image'));
+    await updateRoomTime(chatId);
+  }
+
+  updateRoomTime(String chatId) async {
+    final time = DateTime.now().millisecondsSinceEpoch.toString();
+    await firebaseFirestore
+        .collection('chats')
+        .doc(chatId)
+        .update({'updated_at': time});
+    notifyListeners();
   }
 
   Future<void> updateMessageReadStatus(
@@ -178,6 +186,7 @@ class ChatProvider extends ChangeNotifier {
         });
       }
       log('chatList: ${chatList.length}');
+      chatList.sort((a, b) => b.updatedAt!.compareTo(a.updatedAt!));
       return chatList;
     } catch (e) {
       log('error: $e');

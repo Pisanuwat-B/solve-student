@@ -4,6 +4,7 @@
 
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:solve_student/feature/market_place/model/lesson_market_model.dart';
 
 CourseMarketModel courseMarketModelFromJson(String str) =>
@@ -13,8 +14,9 @@ String courseMarketModelToJson(CourseMarketModel data) =>
     json.encode(data.toJson());
 
 class CourseMarketModel {
+  String? id;
   String? subjectId;
-  List<dynamic>? calendar;
+  // List<dynamic>? calendar;
   String? tutorId;
   String? recommendText;
   String? courseName;
@@ -33,8 +35,9 @@ class CourseMarketModel {
   List<Lesson>? lessons;
 
   CourseMarketModel({
+    this.id,
     this.subjectId,
-    this.calendar,
+    // this.calendar,
     this.tutorId,
     this.recommendText,
     this.courseName,
@@ -53,37 +56,47 @@ class CourseMarketModel {
     this.lessons,
   });
 
-  factory CourseMarketModel.fromJson(Map<String, dynamic> json) =>
-      CourseMarketModel(
-        subjectId: json["subject_id"],
-        calendar: json["calendar"] == null
-            ? []
-            : List<dynamic>.from(json["calendar"]!.map((x) => x)),
-        tutorId: json["tutor_id"],
-        recommendText: json["recommend_text"],
-        courseName: json["course_name"],
-        levelId: json["level_id"],
-        documentId: json["document_id"],
-        thumbnailUrl: json["thumbnail_url"],
-        updateUser: json["update_user"],
-        courseType: json["course_type"],
-        detailsText: json["details_text"],
-        createUser: json["create_user"],
-        publishing: json["publishing"],
-        firstDay: DateTime.fromMicrosecondsSinceEpoch(json["first_day"]),
-        lastDay: DateTime.fromMicrosecondsSinceEpoch(json["last_day"]),
-        createTime: DateTime.fromMicrosecondsSinceEpoch(json["create_time"]),
-        updateTime: DateTime.fromMicrosecondsSinceEpoch(json["update_time"]),
-        lessons: json["lessons"] == null
-            ? []
-            : List<Lesson>.from(
-                json["lessons"]!.map((x) => Lesson.fromJson(x))),
-      );
+  factory CourseMarketModel.fromJson(Map<String, dynamic> json) {
+    return CourseMarketModel(
+      id: json["id"],
+      subjectId: json["subject_id"],
+      // calendar: json["calendar"] == null
+      //     ? []
+      //     : List<dynamic>.from(json["calendar"]!.map((x) => x)),
+      tutorId: json["tutor_id"],
+      recommendText: json["recommend_text"],
+      courseName: json["course_name"],
+      levelId: json["level_id"],
+      documentId: json["document_id"],
+      thumbnailUrl: json["thumbnail_url"],
+      updateUser: json["update_user"],
+      courseType: json["course_type"],
+      detailsText: json["details_text"],
+      createUser: json["create_user"],
+      publishing: json["publishing"],
+      firstDay: json["first_day"] == null
+          ? null
+          : DateTime.fromMicrosecondsSinceEpoch(json["first_day"]),
+      lastDay: json["first_day"] == null
+          ? null
+          : DateTime.fromMicrosecondsSinceEpoch(json["last_day"]),
+      createTime: json["create_time"] == null
+          ? null
+          : dateTimeFromTimeStamp(json["create_time"]),
+      updateTime: json["update_time"] == null
+          ? null
+          : dateTimeFromTimeStamp(json['update_time']),
+      lessons: json["lessons"] == null
+          ? []
+          : List<Lesson>.from(json["lessons"]!.map((x) => Lesson.fromJson(x))),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
+        "id": id,
         "subject_id": subjectId,
-        "calendar":
-            calendar == null ? [] : List<dynamic>.from(calendar!.map((x) => x)),
+        // "calendar":
+        //     calendar == null ? [] : List<dynamic>.from(calendar!.map((x) => x)),
         "tutor_id": tutorId,
         "recommend_text": recommendText,
         "course_name": courseName,
@@ -103,4 +116,15 @@ class CourseMarketModel {
             ? []
             : List<dynamic>.from(lessons!.map((x) => x.toJson())),
       };
+}
+
+DateTime? dateTimeFromTimeStamp(dynamic data) {
+  Timestamp? timestamp;
+
+  if (data is Timestamp) {
+    timestamp = data;
+  } else if (data is Map) {
+    timestamp = Timestamp(data['_seconds'], data['_nanoseconds']);
+  }
+  return timestamp?.toDate();
 }

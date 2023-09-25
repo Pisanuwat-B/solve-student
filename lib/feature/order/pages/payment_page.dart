@@ -28,6 +28,7 @@ class _PaymentPageState extends State<PaymentPage> {
     Bank("พร้อมเพย์", 'assets/images/promptpay.png'),
     Bank("TrueMoney Wallet", 'assets/images/truemoney.png'),
   ];
+  Bank? paymentSelected;
   ClassModel? classInOrder;
   getClass() async {
     try {
@@ -126,8 +127,8 @@ class _PaymentPageState extends State<PaymentPage> {
                   Builder(builder: (context) {
                     String text = "รอชำระค่าบริการ";
                     Color color = Colors.orange;
-                    switch (orderDetail?.status) {
-                      case "payment":
+                    switch (orderDetail?.paymentStatus) {
+                      case "paid":
                         text = "ชำระค่าบริการเรียบร้อย";
                         color = Colors.green;
                         break;
@@ -474,27 +475,38 @@ class _PaymentPageState extends State<PaymentPage> {
                   itemCount: bankImageList.length,
                   scrollDirection: Axis.horizontal,
                   itemBuilder: (context, index) {
-                    return Container(
-                      height: 200,
-                      width: 200,
-                      alignment: Alignment.center,
-                      margin: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: Colors.grey,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            bankImageList[index].image ?? "",
-                            width: 100,
-                            height: 100,
+                    return GestureDetector(
+                      onTap: () {
+                        paymentSelected = bankImageList[index];
+                        setState(() {});
+                      },
+                      child: Container(
+                        height: 200,
+                        width: 200,
+                        alignment: Alignment.center,
+                        margin: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: paymentSelected == bankImageList[index]
+                              ? primaryColor.withOpacity(0.2)
+                              : Colors.white,
+                          border: Border.all(
+                            color: paymentSelected == bankImageList[index]
+                                ? primaryColor
+                                : Colors.grey,
                           ),
-                          Text("${bankImageList[index].name}"),
-                        ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              bankImageList[index].image ?? "",
+                              width: 100,
+                              height: 100,
+                            ),
+                            Text("${bankImageList[index].name}"),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -508,9 +520,14 @@ class _PaymentPageState extends State<PaymentPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: GestureDetector(
         onTap: () async {
-          orderDetail =
-              await order.updateOrderStatus(orderDetail?.id ?? "", "payment");
-          setState(() {});
+          if (paymentSelected != null) {
+            orderDetail = await order.updateOrderStatus(
+              orderDetail?.id ?? "",
+              "paid",
+              paymentSelected?.name ?? "",
+            );
+            setState(() {});
+          }
         },
         child: Container(
           width: Sizer(context).w,
