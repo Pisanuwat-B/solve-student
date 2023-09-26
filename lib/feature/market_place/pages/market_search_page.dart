@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:solve_student/constants/theme.dart';
@@ -5,6 +6,7 @@ import 'package:solve_student/feature/calendar/constants/assets_manager.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
 import 'package:solve_student/feature/market_place/pages/market_course_detail_page.dart';
 import 'package:solve_student/feature/market_place/service/market_search_controller.dart';
+import 'package:solve_student/widgets/sizer.dart';
 
 class MarketSearchPage extends StatefulWidget {
   MarketSearchPage({
@@ -219,6 +221,7 @@ class _MarketSearchPageState extends State<MarketSearchPage> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 10),
                     Text(
                       "คอร์สเรียน",
                       style: TextStyle(
@@ -227,7 +230,40 @@ class _MarketSearchPageState extends State<MarketSearchPage> {
                       ),
                     ),
                     Builder(builder: (context) {
-                      if (con.courseSearch.isNotEmpty) {
+                      if (con.isLoading) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 10),
+                              Text("กำลังโหลด..."),
+                            ],
+                          ),
+                        );
+                      } else if (con.courseSearch.isEmpty &&
+                          con.courseList.isEmpty) {
+                        return Container(
+                          width: Sizer(context).w,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                height: Sizer(context).h * 0.2,
+                              ),
+                              Icon(
+                                CupertinoIcons.cube_box,
+                                size: 100,
+                                color: Colors.grey.shade400,
+                              ),
+                              Text(
+                                "ไม่พบข้อมูล",
+                                style: TextStyle(color: Colors.grey.shade400),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else if (con.courseSearch.isNotEmpty) {
                         return ListView.builder(
                           shrinkWrap: true,
                           itemCount: con.courseSearch.length,

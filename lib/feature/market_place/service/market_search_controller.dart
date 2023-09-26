@@ -26,7 +26,7 @@ class MarketSearchController extends ChangeNotifier {
   Map<String, String>? subjectSelected;
   Map<String, String>? levelSelected;
   TextEditingController courseNameSearch = TextEditingController();
-
+  bool isLoading = true;
   init({
     required bool filter,
     String? subject,
@@ -40,6 +40,8 @@ class MarketSearchController extends ChangeNotifier {
     subjectSelected = null;
     levelSelected = null;
     if (filter) {
+      // log("subject : $subject");
+      // log("level : $level");
       if (subject != null) {
         subjectSelected = subjectList
             .where((element) => element.values.first == subject)
@@ -49,12 +51,15 @@ class MarketSearchController extends ChangeNotifier {
         levelSelected =
             levelList.where((element) => element.values.first == level).first;
       }
+      await getCourseInfo();
     }
+
     notifyListeners();
   }
 
   getCourseInfo() async {
-    log("getCourseInfo ");
+    isLoading = true;
+    log("getCourseInfo : ${subjectSelected?.keys.first} , ${levelSelected?.keys.first}");
     courseList = [];
     try {
       await firebaseFirestore
@@ -74,11 +79,14 @@ class MarketSearchController extends ChangeNotifier {
           }
         }
       });
-      notifyListeners();
+      if (courseNameSearch.text.isNotEmpty) {
+        await searchCourseName(courseNameSearch.text);
+      }
     } catch (e) {
-      log("getCourseInfo : $e");
-      return courseList;
+      log("catch info : $e");
     }
+    isLoading = false;
+    notifyListeners();
   }
 
   Future<UserModel> getTutorInfo(String id) async {
@@ -170,28 +178,36 @@ class MarketSearchController extends ChangeNotifier {
     });
   }
 
-  setSubjectSelected(Map<String, String>? data) {
+  setSubjectSelected(Map<String, String>? data) async {
     subjectSelected = data;
     notifyListeners();
+    await getCourseInfo();
   }
 
-  setLevelSelected(Map<String, String>? data) {
+  setLevelSelected(Map<String, String>? data) async {
     levelSelected = data;
     notifyListeners();
+    await getCourseInfo();
   }
 
-  searchCourseName(String courseName) {
+  searchCourseName(String courseName) async {
+    courseSearch = [];
     courseSearch = courseList.where((element) {
       return element.courseName!.contains(courseName);
     }).toList();
+    if (courseNameSearch.text.isEmpty) {
+      courseNameSearch.clear();
+    }
     notifyListeners();
   }
 
   clearFilter() {
     courseNameSearch.clear();
     courseNameSearch = TextEditingController();
+    courseSearch = [];
     subjectSelected = null;
     levelSelected = null;
     notifyListeners();
+    getCourseInfo();
   }
 }
