@@ -35,9 +35,9 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
     // const ChatListPage(),
     // const Center(child: Text("Notification")),
     StudentScreen(),
-    // const MarketHomePage(),
-    // const MyCoursePage(),
-    ClassListPage(),
+    const MarketHomePage(),
+    const MyCoursePage(),
+    // ClassListPage(),
     const ChatListPage(),
     const NotificationPage(),
     const ProfilePage(),
@@ -115,7 +115,11 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
             BottomNavigationBarItem(
                 activeIcon: Icon(Icons.find_in_page),
                 icon: Icon(Icons.find_in_page_outlined),
-                label: "ค้นหาติวเตอร์"),
+                label: "คอร์สแนะนำ"),
+            BottomNavigationBarItem(
+                activeIcon: Icon(Icons.find_in_page),
+                icon: Icon(Icons.find_in_page_outlined),
+                label: "คอร์สของฉัน"),
             // BottomNavigationBarItem(
             //     activeIcon: Icon(Icons.find_in_page),
             //     icon: Icon(Icons.find_in_page_outlined),

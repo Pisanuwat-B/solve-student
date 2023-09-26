@@ -33,7 +33,7 @@ class MarketSearchController extends ChangeNotifier {
     String? level,
   }) async {
     auth = Provider.of<AuthProvider>(context, listen: false);
-    await getCourseInfo();
+    // await getCourseInfo();
     await getSubjectList();
     await getLevelList();
     courseNameSearch = TextEditingController();
@@ -51,9 +51,8 @@ class MarketSearchController extends ChangeNotifier {
         levelSelected =
             levelList.where((element) => element.values.first == level).first;
       }
-      await getCourseInfo();
     }
-
+    await getCourseInfo();
     notifyListeners();
   }
 
