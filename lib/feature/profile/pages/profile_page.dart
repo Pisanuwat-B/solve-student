@@ -355,6 +355,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             color: greyColor,
                           ),
                         ),
+                        S.h(10),
                       ],
                     ),
                   ),

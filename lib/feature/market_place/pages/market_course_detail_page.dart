@@ -19,6 +19,8 @@ import 'package:solve_student/feature/order/model/order_class_model.dart';
 import 'package:solve_student/feature/order/pages/payment_page.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import 'learning_page.dart';
+
 class MarketCourseDetailPage extends StatefulWidget {
   MarketCourseDetailPage({super.key, required this.courseId});
   String courseId;
@@ -474,7 +476,17 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                       con.courseDetail!.lessons![index];
                                   return GestureDetector(
                                     onTap: () {
-                                      log("click");
+                                      log(con.courseDetail!.id.toString());
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => LearningPage(
+                                            lesson: con
+                                                .courseDetail!.lessons![index],
+                                            course: con.courseDetail!,
+                                          ),
+                                        ),
+                                      );
                                     },
                                     child: Container(
                                       width: Sizer(context).w,

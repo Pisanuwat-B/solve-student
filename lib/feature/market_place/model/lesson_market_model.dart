@@ -1,23 +1,23 @@
 class Lesson {
   String? lessonName;
-  String? videoFiles;
+  String? media;
   int? lessonId;
 
   Lesson({
     this.lessonName,
-    this.videoFiles,
+    this.media,
     this.lessonId,
   });
 
   factory Lesson.fromJson(Map<String, dynamic> json) => Lesson(
         lessonName: json["lesson_name"],
-        videoFiles: json["video_files"],
+        media: json["media"],
         lessonId: json["lesson_id"],
       );
 
   Map<String, dynamic> toJson() => {
         "lesson_name": lessonName,
-        "video_files": videoFiles,
+        "media": media,
         "lesson_id": lessonId,
       };
 }

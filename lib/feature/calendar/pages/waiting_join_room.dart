@@ -38,7 +38,7 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
   late AuthProvider authProvider;
   late AnimationController _controller;
   late StreamSubscription<DocumentSnapshot>? listener;
-  DatabaseService dbService = DatabaseService();
+  FirebaseService dbService = FirebaseService();
   String tutorName = 'ติวเตอร์';
   String tutorImage = '';
   late String meetingCode;

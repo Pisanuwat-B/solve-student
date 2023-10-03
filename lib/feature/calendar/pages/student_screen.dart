@@ -83,8 +83,6 @@ class _StudentScreenState extends State<StudentScreen>
   }
 
   Future<void> getCalendarList() async {
-    // print('getCalendarList');
-    // print(authProvider?.user?.id);
     await studentController.getCourseToday(authProvider?.user?.id ?? '');
     if (_util.isTablet()) {
       getDateAll();
@@ -92,7 +90,6 @@ class _StudentScreenState extends State<StudentScreen>
     } else {
       getDate(7);
     }
-    // setState(() {});
   }
 
   Future<void> getTableCalendarList() async {

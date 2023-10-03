@@ -35,9 +35,9 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
     // const ChatListPage(),
     // const Center(child: Text("Notification")),
     StudentScreen(),
-    // const MarketHomePage(),
-    // const MyCoursePage(),
-    ClassListPage(),
+    const MarketHomePage(),
+    const MyCoursePage(),
+    // ClassListPage(),
     const ChatListPage(),
     const NotificationPage(),
     const ProfilePage(),
@@ -112,18 +112,18 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
                 activeIcon: Icon(Icons.calendar_month),
                 icon: Icon(Icons.calendar_month_outlined),
                 label: "ตารางเรียน"),
+            // BottomNavigationBarItem(
+            //     activeIcon: Icon(Icons.find_in_page),
+            //     icon: Icon(Icons.find_in_page_outlined),
+            //     label: "ค้นหาติวเตอร์"),
             BottomNavigationBarItem(
                 activeIcon: Icon(Icons.find_in_page),
                 icon: Icon(Icons.find_in_page_outlined),
-                label: "ค้นหาติวเตอร์"),
-            // BottomNavigationBarItem(
-            //     activeIcon: Icon(Icons.find_in_page),
-            //     icon: Icon(Icons.find_in_page_outlined),
-            //     label: "คอร์สแนะนำ"),
-            // BottomNavigationBarItem(
-            //     activeIcon: Icon(Icons.find_in_page),
-            //     icon: Icon(Icons.find_in_page_outlined),
-            //     label: "คอร์สของฉัน"),
+                label: "คอร์สแนะนำ"),
+            BottomNavigationBarItem(
+                activeIcon: Icon(Icons.find_in_page),
+                icon: Icon(Icons.find_in_page_outlined),
+                label: "คอร์สของฉัน"),
             BottomNavigationBarItem(
                 activeIcon: Icon(CupertinoIcons.chat_bubble_2),
                 icon: Icon(CupertinoIcons.chat_bubble_2),
