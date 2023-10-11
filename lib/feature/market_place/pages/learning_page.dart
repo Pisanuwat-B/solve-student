@@ -397,7 +397,6 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   void _initReplay() {
-    log('init replay');
     setState(() {
       isReplaying = true;
       isReplayEnd = false;
@@ -408,7 +407,6 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   Future<void> _replay() async {
-    log('_replay()');
     solveStopwatch.start();
     _sliderTimer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
       setState(() {
@@ -442,7 +440,6 @@ class _LearningPageState extends State<LearningPage> {
     _sliderTimer?.cancel();
     solveStopwatch.reset();
     currentReplayIndex = 0;
-    log(' --------- end loop ----------');
   }
 
   Future<void> executeReplayAction(Map<String, dynamic> action) async {
@@ -506,6 +503,44 @@ class _LearningPageState extends State<LearningPage> {
         }
         currentReplayPointIndex = 0;
         drawReplayNull(action['data']['tool']);
+        break;
+      case 'erasing':
+        for (var eraseAction in action['data']) {
+          if (eraseAction['action'] == 'moves') {
+            int movingIndex = 0;
+            while (movingIndex < eraseAction['points'].length) {
+              await Future.delayed(const Duration(milliseconds: 0), () {
+                if (solveStopwatch.elapsed.inMilliseconds >=
+                    eraseAction['points'][movingIndex]['time']) {
+                  setState(() {
+                    _replayEraserPoints[_currentPage] = Offset(
+                        eraseAction['points'][movingIndex]['x'],
+                        eraseAction['points'][movingIndex]['y']);
+                  });
+                  movingIndex++;
+                }
+              });
+            }
+          } // move
+          else if (eraseAction['action'] == 'erase') {
+            while (
+                solveStopwatch.elapsed.inMilliseconds < eraseAction['time']) {
+              await Future.delayed(const Duration(milliseconds: 0), () {});
+            }
+            List<SolvepadStroke?> pointStack = _penPoints[_currentPage];
+            if (eraseAction['mode'] == "DrawingMode.pen") {
+              pointStack = _replayPenPoints[_currentPage];
+            } else if (eraseAction['mode'] == "DrawingMode.highlighter") {
+              pointStack = _replayHighlighterPoints[_currentPage];
+            }
+            setState(() {
+              pointStack.removeRange(eraseAction['prev'], eraseAction['next']);
+            });
+          } // erase
+        }
+        setState(() {
+          _replayEraserPoints[_currentPage] = const Offset(-100, -100);
+        });
         break;
     }
   }
