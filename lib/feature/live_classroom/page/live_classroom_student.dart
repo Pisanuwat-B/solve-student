@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -332,15 +333,15 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       Uri.parse(
           'ws://35.240.169.164:3000/${widget.courseId}/${widget.startTime}'),
     );
-    print('connect to WSS');
+    log('connect to WSS');
     sendMessage('RequestSolvepadSize');
 
     _webSocketSubscription = channel?.stream.listen((message) {
       if (!mounted) return;
       setState(() {
         var decodedMessage = json.decode(message);
-        print('json message');
-        print(decodedMessage);
+        log('json message');
+        log(decodedMessage);
 
         for (int i = 0; i < decodedMessage.length; i++) {
           var item = decodedMessage[i];
@@ -410,9 +411,10 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     var index = int.parse(parts.last);
     if (data.startsWith('Erase.pen')) {
       removePointStack(_hostPenPoints[_currentHostPage], index);
-    } else if (data.startsWith('Erase.high')) {
+    } // pen
+    else if (data.startsWith('Erase.high')) {
       removePointStack(_hostHighlighterPoints[_currentHostPage], index);
-    }
+    } // highlighter
   }
 
   void handleMessageNull(String data) {
@@ -575,7 +577,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     ]);
     _pageController.dispose();
     _meetingTimer?.cancel();
-    print('somehow I disposed');
+    log('somehow I disposed');
     closeChanel();
     meeting.leave();
     super.dispose();
@@ -583,7 +585,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
 
   // ---------- FUNCTION: WSS
   void closeChanel() {
-    print('close Chanel');
+    log('close Chanel');
     _webSocketSubscription?.cancel();
     channel?.sink.close();
   }
@@ -594,7 +596,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       final message = json.encode({'uid': widget.userId, 'data': data});
       channel?.sink.add(message);
     } catch (e) {
-      print('Error sending message: $e');
+      log('Error sending message: $e');
     }
   }
 
@@ -602,11 +604,11 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     if (widget.isMock) return;
     try {
       final message = json.encode({'uid': widget.userId, 'type': 'catch_up'});
-      print('catch-up message');
-      print(message);
+      log('catch-up message');
+      log(message);
       channel?.sink.add(message);
     } catch (e) {
-      print('Error sending message: $e');
+      log('Error sending message: $e');
     }
   }
 
@@ -627,7 +629,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     // Called when meeting is ended
     _meeting.on(Events.roomLeft, (String? errorMsg) {
       if (errorMsg != null) {
-        print("Meeting left due to $errorMsg !!");
+        log("Meeting left due to $errorMsg !!");
       }
       // Navigator.pushAndRemoveUntil(
       //     context,
@@ -637,7 +639,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
 
     // Called when recording is started
     _meeting.on(Events.recordingStateChanged, (String status) {
-      print('Conference Recording start');
+      log('Conference Recording start');
 
       setState(() {
         recordingState = status;
@@ -692,14 +694,12 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
 
     _meeting.on(
         Events.error,
-        (error) => {
-              print(error['name'].toString()),
-              print(error['message'].toString())
-            });
+        (error) =>
+            {log(error['name'].toString()), log(error['message'].toString())});
   }
 
   Future<bool> _onWillPopScope() async {
-    print('somehow I pop');
+    log('somehow I pop');
     if (widget.isMock) {
       Navigator.pop(context);
     }
@@ -1252,7 +1252,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                     }
                                     break;
                                   default:
-                                    print('default');
                                     break;
                                 }
                               },
@@ -1441,7 +1440,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 S.w(4.0),
                 InkWell(
                   onTap: () {
-                    print(hostSolvepadSize.toString());
+                    log(hostSolvepadSize.toString());
                   },
                   child: RichText(
                     text: TextSpan(
@@ -1631,7 +1630,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                   S.w(defaultPadding),
                   InkWell(
                     onTap: () {
-                      sendCatchupMessage();
+                      // sendCatchupMessage();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -1778,7 +1777,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
           //     alignment: Alignment.centerRight,
           //     child: InkWell(
           //       onTap: () {
-          //         print('Go to Statistics');
+          //         log('Go to Statistics');
           //         showLeader(context);
           //       },
           //       child: Container(
@@ -1916,7 +1915,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                   sendMessage('StudentShareScreen:disable');
                                 }
                               } else {
-                                print('host not request');
+                                log('host not request');
                               }
                             },
                           ),
@@ -2289,8 +2288,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 // S.w(defaultPadding),
                 InkWell(
                   onTap: () {
-                    print('tap catch-up');
-                    sendCatchupMessage();
+                    log('tap catch-up');
+                    // sendCatchupMessage();
                   },
                   child: Container(
                     height: 32,
@@ -2444,7 +2443,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                       children: [
                                         InkWell(
                                           onTap: () {
-                                            print("Choose Color");
+                                            log("Choose Color");
                                             setState(() {
                                               if (openLines ||
                                                   openMore == true) {
@@ -2462,7 +2461,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                         ),
                                         InkWell(
                                           onTap: () {
-                                            print("Pick Line");
+                                            log("Pick Line");
 
                                             setState(() {
                                               if (openColors ||
@@ -2488,7 +2487,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                   //     children: [
                                   //       InkWell(
                                   //         onTap: () {
-                                  //           print("Clear");
+                                  //           log("Clear");
                                   //         },
                                   //         child: Image.asset(
                                   //           ImageAssets.bin,
@@ -2497,7 +2496,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                   //       ),
                                   //       InkWell(
                                   //         onTap: () {
-                                  //           print("More");
+                                  //           log("More");
                                   //
                                   //           setState(() {
                                   //             if (openColors ||
@@ -2590,8 +2589,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                 // Close popup
                                 openColors = !openColors;
                               });
-                              print('Tap : index $index');
-                              print('Tap : _selectIndex $_selectedIndexColors');
+                              log('Tap : index $index');
+                              log('Tap : _selectIndex $_selectedIndexColors');
                             },
                             child: Image.asset(
                               _listColors[index]['color'],
@@ -2872,7 +2871,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                     sendMessage('StudentShareScreen:disable');
                   }
                 } else {
-                  print('host not request');
+                  log('host not request');
                 }
               },
               child: ColorFiltered(
@@ -2924,6 +2923,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 width: 44,
               ),
             ),
+
             /// TODO: Reconsider fullscreen option
             // InkWell(
             //   onTap: () {
@@ -3187,7 +3187,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                               // S.w(defaultPadding),
                               // InkWell(
                               //   onTap: () {
-                              //     print("Clear");
+                              //     log("Clear");
                               //   },
                               //   child: Image.asset(
                               //     ImageAssets.bin,
@@ -3576,7 +3576,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                 S.w(16.0),
                                 InkWell(
                                   onTap: () {
-                                    print('close something');
+                                    log('close something');
                                     // modalCloseClass(context);
                                   },
                                   child: Container(
@@ -3671,7 +3671,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                       if (Responsive.isDesktop(context)) S.w(8),
                                       InkWell(
                                         onTap: () {
-                                          print('Back page');
+                                          log('Back page');
                                         },
                                         child: Image.asset(
                                           ImageAssets.backDis,
@@ -3709,7 +3709,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                         S.w(defaultPadding),
                                       InkWell(
                                         onTap: () {
-                                          print("next page");
+                                          log("next page");
                                         },
                                         child: Image.asset(
                                           ImageAssets.forward,
@@ -3731,7 +3731,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                             setState(() {
                                               _switchValue = value;
                                             });
-                                            print(value);
+                                            log(value.toString());
                                           },
                                         ),
                                       ),
@@ -3891,7 +3891,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                               alignment: Alignment.centerRight,
                               child: InkWell(
                                 onTap: () {
-                                  print('Go to Statistics');
+                                  log('Go to Statistics');
                                   showLeader(context);
                                 },
                                 child: Container(
