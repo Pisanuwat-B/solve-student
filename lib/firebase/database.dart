@@ -45,27 +45,24 @@ class FirebaseService {
     }
   }
 
-  Future<List> getSolvepadData(String solvepadId) async {
+  Future<dynamic> getSolvepadData(String solvepadId) async {
     final collectionRef = db.collection('solvepad');
     String voiceUrl = '';
-    late List<dynamic> timeHistory;
-    late List<Map<String, dynamic>> actionHistory;
+    Map<String, dynamic> solvepadData;
+
     final directory = await getTemporaryDirectory();
     final file = File('${directory.path}/downloadedSolvepad.txt');
 
-    await collectionRef.doc(solvepadId).get().then((event) async {
-      voiceUrl = (event.data() as Map)['voice'];
-      var solvepadUrl = (event.data() as Map)['solvepad'];
-      final url = Uri.parse(solvepadUrl);
-      final response = await http.get(url);
-      await file.writeAsBytes(response.bodyBytes);
-      var fileContent = await file.readAsString();
-      var jsonList = json.decode(fileContent);
-      timeHistory = convertStringTime(jsonList['time']);
-      actionHistory = _convertStringAction(jsonList['action']);
-    });
+    final event = await collectionRef.doc(solvepadId).get();
+    voiceUrl = (event.data() as Map)['voice'];
+    var solvepadUrl = (event.data() as Map)['solvepad'];
+    final url = Uri.parse(solvepadUrl);
+    final response = await http.get(url);
+    await file.writeAsBytes(response.bodyBytes);
+    var fileContent = await file.readAsString();
+    solvepadData = json.decode(fileContent);
 
-    return [timeHistory, actionHistory, voiceUrl];
+    return [solvepadData, voiceUrl];
   }
 
   List<Map<String, dynamic>> _convertStringAction(String actionHistoryString) {

@@ -67,6 +67,7 @@ dependencies:
   flutter_sound: ^9.2.13
   permission_handler: ^10.2.0
   audio_session: ^0.1.6
+  flutter_xlider: ^3.5.0
 
 dev_dependencies:
   flutter_test:

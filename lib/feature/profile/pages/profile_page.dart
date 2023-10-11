@@ -350,7 +350,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         S.h(10),
                         const Text(
-                          'SOLVE v 0.1.6',
+                          'SOLVE v 0.1.66',
                           style: TextStyle(
                             color: greyColor,
                           ),
