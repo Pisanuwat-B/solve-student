@@ -3,34 +3,23 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:sizer/sizer.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:permission_handler/permission_handler.dart';
-import 'package:audio_session/audio_session.dart';
-import 'package:flutter_sound_platform_interface/flutter_sound_recorder_platform_interface.dart';
 
 import '../../../firebase/database.dart';
 import '../../calendar/constants/custom_styles.dart';
 import '../../calendar/controller/create_course_controller.dart';
-import '../../calendar/model/course_model.dart';
-import '../../calendar/widgets/alert_overlay.dart';
 import '../../calendar/widgets/sizebox.dart';
 
 import '../../calendar/constants/assets_manager.dart';
 import '../../calendar/constants/custom_colors.dart';
-import '../../live_classroom/components/close_dialog.dart';
 import '../../live_classroom/components/divider.dart';
 import '../../live_classroom/components/divider_vertical.dart';
-import '../../live_classroom/components/leaderboard.dart';
 import '../../live_classroom/components/room_loading_screen.dart';
-import '../../live_classroom/quiz/quiz_model.dart';
 import '../../live_classroom/solvepad/solve_watch.dart';
 import '../../live_classroom/solvepad/solvepad_drawer.dart';
 import '../../live_classroom/solvepad/solvepad_stroke_model.dart';
@@ -53,8 +42,6 @@ class LearningPage extends StatefulWidget {
 
 class _LearningPageState extends State<LearningPage> {
   // Screen and tools
-  bool _switchValue = true;
-  bool _switchShareValue = true;
   bool micEnable = false;
   bool displayEnable = false;
   bool showStudent = false;
@@ -119,30 +106,6 @@ class _LearningPageState extends State<LearningPage> {
     // }
   ];
 
-  List<SelectQuizModel> quizList = [
-    SelectQuizModel("ชุดที่#1 สมการเชิงเส้นตัวแปรเดียว", "1 ข้อ", false),
-    SelectQuizModel("ชุดที่#2 สมการเชิงเส้น 2 ตัวแปร", "10 ข้อ", false),
-    SelectQuizModel("ชุดที่#3  สมการจำนวนเชิงซ้อน", "5 ข้อ", false),
-    SelectQuizModel("ชุดที่#4 สมการเชิงเส้นตัวแปรเดียว", "5 ข้อ", false),
-    SelectQuizModel("ชุดที่#5 สมการเชิงเส้นตัวแปรเดียว", "5 ข้อ", false),
-  ];
-  QuizSet quizSetData = QuizSet(
-    quizSetName: 'Thai Geology',
-    quizQuestions: [
-      QuizQuestion(
-        questionText: "What's the name of Thailand's capital?",
-        choices: ['Vientiane', 'Bangkok', 'Hanoi', 'Yangon'],
-        correctChoice: 'Bangkok',
-      ),
-      QuizQuestion(
-        questionText: "How many provinces are there in Thailand?",
-        choices: ['70', '75', '76', '77'],
-        correctChoice: '77',
-      )
-    ],
-  );
-  int focusQuestion = 0;
-  int radioTest = 0;
   FirebaseService firebaseService = FirebaseService();
 
   // ---------- VARIABLE: Solve Pad data
@@ -152,9 +115,6 @@ class _LearningPageState extends State<LearningPage> {
   final List<List<SolvepadStroke?>> _highlighterPoints = [[]];
   final List<Offset> _eraserPoints = [const Offset(-100, -100)];
   final List<List<Offset?>> _replayPoints = [[]];
-  List<Offset?> _currentActionData = [];
-  final List<String?> _currentScrollData = [];
-  List<int> _currentActionTimestamp = [];
   DrawingMode _mode = DrawingMode.drag;
   final SolveStopwatch solveStopwatch = SolveStopwatch();
 
@@ -170,31 +130,26 @@ class _LearningPageState extends State<LearningPage> {
   double scaleY = 0;
 
   // ---------- VARIABLE: Solve Pad features
-  String _formattedElapsedTime = 'Recording 00:00:00';
-  List<List<int>> _timeHistory = [];
-  List<Map<String, dynamic>> _actionHistory = [];
   bool _isPrevBtnActive = false;
   bool _isNextBtnActive = true;
   int? activePointerId;
-  bool _isForwarding = false;
-  bool _isBackwarding = false;
-  int _replayOuterIndex = 0;
-  int _replayInnerIndex = 0;
 
   // ---------- VARIABLE: page control
   Timer? _laserTimer;
   Timer? _recordTimer;
   int _currentPage = 0;
-  int _currentReplayPage = 0;
+  int _tutorCurrentPage = 0;
+  String _tutorCurrentScrollZoom = '';
   final PageController _pageController = PageController();
   final List<TransformationController> _transformationController = [];
   var courseController = CourseController();
   late String courseName;
   bool isCourseLoaded = false;
-  bool isRecording = false;
-  bool isRecordEnd = false;
   bool isReplaying = false;
   bool isReplayEnd = true;
+
+  bool tabFollowing = true;
+  bool tabFreestyle = false;
 
   // ---------- VARIABLE: recorder
   String _mPath = 'tau_file.mp4';
@@ -205,7 +160,6 @@ class _LearningPageState extends State<LearningPage> {
   // ---------- VARIABLE: new format
   late Map<String, dynamic> _data;
   String jsonData = '';
-  late List<Map<String, dynamic>> _actions;
   List<StrokeStamp> currentStroke = [];
   List<ScrollZoomStamp> currentScrollZoom = [];
   int currentReplayIndex = 0;
@@ -348,18 +302,6 @@ class _LearningPageState extends State<LearningPage> {
       _currentPage = page;
       _penPoints[_currentPage].add(null);
     });
-    if (isRecording) {
-      _timeHistory.add([solveStopwatch.elapsed.inMilliseconds]);
-      _actionHistory.add({'action': 'change_page', 'data': page});
-    }
-  }
-
-  String _formatElapsedTime(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    String hours = twoDigits(duration.inHours);
-    String minutes = twoDigits(duration.inMinutes.remainder(60));
-    String seconds = twoDigits(duration.inSeconds.remainder(60));
-    return 'Recording $hours:$minutes:$seconds';
   }
 
   String _formatReplayElapsedTime(Duration duration) {
@@ -513,9 +455,12 @@ class _LearningPageState extends State<LearningPage> {
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
+        _tutorCurrentPage = page;
         _transformationController[page].value = Matrix4.identity()
           ..translate(action['scrollX'] / 2, action['scrollY'])
           ..scale(action['scale']);
+        _tutorCurrentScrollZoom =
+            '${action['scrollX']}|${action['scrollY']}|${action['scale']}';
         break;
       case 'change-page':
         _pageController.animateToPage(
@@ -523,6 +468,7 @@ class _LearningPageState extends State<LearningPage> {
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
+        _tutorCurrentPage = action['data'];
         break;
       case 'stop-recording':
         break;
@@ -536,6 +482,8 @@ class _LearningPageState extends State<LearningPage> {
                 ..translate(scrollAction[currentReplayScrollIndex]['x'],
                     scrollAction[currentReplayScrollIndex]['y'])
                 ..scale(scrollAction[currentReplayScrollIndex]['scale']);
+              _tutorCurrentScrollZoom =
+                  '${scrollAction[currentReplayScrollIndex]['x']}|${scrollAction[currentReplayScrollIndex]['y']}|${scrollAction[currentReplayScrollIndex]['scale']}';
               currentReplayScrollIndex++;
             }
           });
@@ -865,313 +813,221 @@ class _LearningPageState extends State<LearningPage> {
                   ..scale(2.0)
                   ..translate(-1 * solvepadWidth / 4, 0);
               }
-              return InteractiveViewer(
-                transformationController: _transformationController[index],
-                alignment: const Alignment(-1, -1),
-                minScale: 1.0,
-                maxScale: 4.0,
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Image.network(
-                        _pages[index],
-                        fit: BoxFit.contain,
+              return IgnorePointer(
+                ignoring: tabFollowing,
+                child: InteractiveViewer(
+                  transformationController: _transformationController[index],
+                  alignment: const Alignment(-1, -1),
+                  minScale: 1.0,
+                  maxScale: 4.0,
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: Image.network(
+                          _pages[index],
+                          fit: BoxFit.contain,
+                        ),
                       ),
-                    ),
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        ignoring: _mode == DrawingMode.drag,
-                        child: GestureDetector(
-                          onPanDown: (_) {},
-                          child: Listener(
-                            onPointerDown: (details) {
-                              if (activePointerId != null) return;
-                              if (!isRecording) return;
-                              activePointerId = details.pointer;
-                              switch (_mode) {
-                                case DrawingMode.pen:
-                                  _penPoints[_currentPage].add(
-                                    SolvepadStroke(
-                                        details.localPosition,
-                                        _strokeColors[_selectedIndexColors],
-                                        _strokeWidths[_selectedIndexLines]),
-                                  );
-                                  _currentActionData =
-                                      List.from(_currentActionData)
-                                        ..add(details.localPosition);
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  break;
-                                case DrawingMode.laser:
-                                  _laserPoints[_currentPage].add(
-                                    SolvepadStroke(
-                                        details.localPosition,
-                                        _strokeColors[_selectedIndexColors],
-                                        _strokeWidths[_selectedIndexLines]),
-                                  );
-                                  _currentActionData =
-                                      List.from(_currentActionData)
-                                        ..add(details.localPosition);
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  _laserDrawing();
-                                  break;
-                                case DrawingMode.highlighter:
-                                  _highlighterPoints[_currentPage].add(
-                                    SolvepadStroke(
-                                        details.localPosition,
-                                        _strokeColors[_selectedIndexColors],
-                                        _strokeWidths[_selectedIndexLines]),
-                                  );
-                                  _currentActionData =
-                                      List.from(_currentActionData)
-                                        ..add(details.localPosition);
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  break;
-                                case DrawingMode.eraser:
-                                  _eraserPoints[_currentPage] =
-                                      details.localPosition;
-                                  _currentActionData.add(details.localPosition);
-                                  _currentActionTimestamp.add(
-                                      solveStopwatch.elapsed.inMilliseconds);
-                                  int penHit = _penPoints[_currentPage]
-                                      .indexWhere((point) =>
-                                          (point?.offset != null) &&
-                                          sqrDistanceBetween(point!.offset,
-                                                  details.localPosition) <=
-                                              100);
-                                  int highlightHit =
-                                      _highlighterPoints[_currentPage]
-                                          .indexWhere((point) =>
-                                              (point?.offset != null) &&
-                                              sqrDistanceBetween(point!.offset,
-                                                      details.localPosition) <=
-                                                  100);
-                                  if (penHit != -1) {
-                                    doErase(penHit, DrawingMode.pen);
-                                  }
-                                  if (highlightHit != -1) {
-                                    doErase(
-                                        highlightHit, DrawingMode.highlighter);
-                                  }
-                                  break;
-                                default:
-                                  break;
-                              }
-                            },
-                            onPointerMove: (details) {
-                              if (activePointerId != details.pointer) return;
-                              if (!isRecording) return;
-                              activePointerId = details.pointer;
-                              switch (_mode) {
-                                case DrawingMode.pen:
-                                  setState(() {
-                                    _penPoints[_currentPage].add(SolvepadStroke(
-                                        details.localPosition,
-                                        _strokeColors[_selectedIndexColors],
-                                        _strokeWidths[_selectedIndexLines]));
-                                  });
-                                  _currentActionData =
-                                      List.from(_currentActionData)
-                                        ..add(details.localPosition);
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  break;
-                                case DrawingMode.laser:
-                                  setState(() {
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          ignoring: _mode == DrawingMode.drag,
+                          child: GestureDetector(
+                            onPanDown: (_) {},
+                            child: Listener(
+                              onPointerDown: (details) {
+                                if (activePointerId != null) return;
+                                activePointerId = details.pointer;
+                                switch (_mode) {
+                                  case DrawingMode.pen:
+                                    _penPoints[_currentPage].add(
+                                      SolvepadStroke(
+                                          details.localPosition,
+                                          _strokeColors[_selectedIndexColors],
+                                          _strokeWidths[_selectedIndexLines]),
+                                    );
+                                    break;
+                                  case DrawingMode.laser:
                                     _laserPoints[_currentPage].add(
                                       SolvepadStroke(
                                           details.localPosition,
                                           _strokeColors[_selectedIndexColors],
                                           _strokeWidths[_selectedIndexLines]),
                                     );
-                                  });
-                                  _currentActionData =
-                                      List.from(_currentActionData)
-                                        ..add(details.localPosition);
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  _laserDrawing();
-                                  break;
-                                case DrawingMode.highlighter:
-                                  setState(() {
+                                    _laserDrawing();
+                                    break;
+                                  case DrawingMode.highlighter:
                                     _highlighterPoints[_currentPage].add(
                                       SolvepadStroke(
                                           details.localPosition,
                                           _strokeColors[_selectedIndexColors],
                                           _strokeWidths[_selectedIndexLines]),
                                     );
-                                  });
-                                  _currentActionData =
-                                      List.from(_currentActionData)
-                                        ..add(details.localPosition);
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  break;
-                                case DrawingMode.eraser:
-                                  setState(() {
+                                    break;
+                                  case DrawingMode.eraser:
                                     _eraserPoints[_currentPage] =
                                         details.localPosition;
-                                  });
-                                  _currentActionData.add(details.localPosition);
-                                  _currentActionTimestamp.add(
-                                      solveStopwatch.elapsed.inMilliseconds);
-                                  int penHit = _penPoints[_currentPage]
-                                      .indexWhere((point) =>
-                                          (point?.offset != null) &&
-                                          sqrDistanceBetween(point!.offset,
-                                                  details.localPosition) <=
-                                              100);
-                                  int highlightHit =
-                                      _highlighterPoints[_currentPage]
-                                          .indexWhere((point) =>
-                                              (point?.offset != null) &&
-                                              sqrDistanceBetween(point!.offset,
-                                                      details.localPosition) <=
-                                                  500);
-                                  if (penHit != -1) {
-                                    doErase(penHit, DrawingMode.pen);
-                                  }
-                                  if (highlightHit != -1) {
-                                    doErase(
-                                        highlightHit, DrawingMode.highlighter);
-                                  }
-                                  break;
-                                default:
-                                  break;
-                              }
-                            },
-                            onPointerUp: (details) {
-                              if (activePointerId != details.pointer) return;
-                              if (!isRecording) return;
-                              activePointerId = null;
-                              switch (_mode) {
-                                case DrawingMode.pen:
-                                  _penPoints[_currentPage].add(null);
-                                  _currentActionData =
-                                      List.from(_currentActionData)..add(null);
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  break;
-                                case DrawingMode.laser:
-                                  _laserPoints[_currentPage].add(null);
-                                  _currentActionData =
-                                      List.from(_currentActionData)..add(null);
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  _laserTimer = Timer(
-                                      const Duration(milliseconds: 1500),
-                                      _stopLaserDrawing);
-                                  break;
-                                case DrawingMode.highlighter:
-                                  _highlighterPoints[_currentPage].add(null);
-                                  _currentActionData =
-                                      List.from(_currentActionData)..add(null);
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  break;
-                                case DrawingMode.eraser:
-                                  _currentActionData =
-                                      List.from(_currentActionData)
-                                        ..add(const Offset(-100, -100));
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  setState(() {
-                                    _eraserPoints[_currentPage] =
-                                        const Offset(-100, -100);
-                                  });
-                                  break;
-                                default:
-                                  break;
-                              }
-                            },
-                            onPointerCancel: (details) {
-                              if (activePointerId != details.pointer) return;
-                              if (!isRecording) return;
-                              activePointerId = null;
-                              switch (_mode) {
-                                case DrawingMode.pen:
-                                  _penPoints[_currentPage].add(null);
-                                  _currentActionData =
-                                      List.from(_currentActionData)..add(null);
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  break;
-                                case DrawingMode.laser:
-                                  _laserPoints[_currentPage].add(null);
-                                  _currentActionData =
-                                      List.from(_currentActionData)..add(null);
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  _laserTimer = Timer(
-                                      const Duration(milliseconds: 1500),
-                                      _stopLaserDrawing);
-                                  break;
-                                case DrawingMode.highlighter:
-                                  _highlighterPoints[_currentPage].add(null);
-                                  _currentActionData =
-                                      List.from(_currentActionData)..add(null);
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  break;
-                                case DrawingMode.eraser:
-                                  _currentActionData =
-                                      List.from(_currentActionData)
-                                        ..add(const Offset(-100, -100));
-                                  _currentActionTimestamp = List.from(
-                                      _currentActionTimestamp)
-                                    ..add(
-                                        solveStopwatch.elapsed.inMilliseconds);
-                                  setState(() {
-                                    _eraserPoints[_currentPage] =
-                                        const Offset(-100, -100);
-                                  });
-                                  break;
-                                default:
-                                  break;
-                              }
-                            },
-                            child: CustomPaint(
-                              painter: SolvepadDrawerMarketplace(
-                                _penPoints[index],
-                                _replayPoints[index],
-                                _eraserPoints[index],
-                                _laserPoints[index],
-                                _highlighterPoints[index],
+                                    int penHit = _penPoints[_currentPage]
+                                        .indexWhere((point) =>
+                                            (point?.offset != null) &&
+                                            sqrDistanceBetween(point!.offset,
+                                                    details.localPosition) <=
+                                                100);
+                                    int highlightHit =
+                                        _highlighterPoints[_currentPage]
+                                            .indexWhere((point) =>
+                                                (point?.offset != null) &&
+                                                sqrDistanceBetween(
+                                                        point!.offset,
+                                                        details
+                                                            .localPosition) <=
+                                                    100);
+                                    if (penHit != -1) {
+                                      doErase(penHit, DrawingMode.pen);
+                                    }
+                                    if (highlightHit != -1) {
+                                      doErase(highlightHit,
+                                          DrawingMode.highlighter);
+                                    }
+                                    break;
+                                  default:
+                                    break;
+                                }
+                              },
+                              onPointerMove: (details) {
+                                if (activePointerId != details.pointer) return;
+                                activePointerId = details.pointer;
+                                switch (_mode) {
+                                  case DrawingMode.pen:
+                                    setState(() {
+                                      _penPoints[_currentPage].add(
+                                          SolvepadStroke(
+                                              details.localPosition,
+                                              _strokeColors[
+                                                  _selectedIndexColors],
+                                              _strokeWidths[
+                                                  _selectedIndexLines]));
+                                    });
+                                    break;
+                                  case DrawingMode.laser:
+                                    setState(() {
+                                      _laserPoints[_currentPage].add(
+                                        SolvepadStroke(
+                                            details.localPosition,
+                                            _strokeColors[_selectedIndexColors],
+                                            _strokeWidths[_selectedIndexLines]),
+                                      );
+                                    });
+                                    _laserDrawing();
+                                    break;
+                                  case DrawingMode.highlighter:
+                                    setState(() {
+                                      _highlighterPoints[_currentPage].add(
+                                        SolvepadStroke(
+                                            details.localPosition,
+                                            _strokeColors[_selectedIndexColors],
+                                            _strokeWidths[_selectedIndexLines]),
+                                      );
+                                    });
+                                    break;
+                                  case DrawingMode.eraser:
+                                    setState(() {
+                                      _eraserPoints[_currentPage] =
+                                          details.localPosition;
+                                    });
+                                    int penHit = _penPoints[_currentPage]
+                                        .indexWhere((point) =>
+                                            (point?.offset != null) &&
+                                            sqrDistanceBetween(point!.offset,
+                                                    details.localPosition) <=
+                                                100);
+                                    int highlightHit =
+                                        _highlighterPoints[_currentPage]
+                                            .indexWhere((point) =>
+                                                (point?.offset != null) &&
+                                                sqrDistanceBetween(
+                                                        point!.offset,
+                                                        details
+                                                            .localPosition) <=
+                                                    500);
+                                    if (penHit != -1) {
+                                      doErase(penHit, DrawingMode.pen);
+                                    }
+                                    if (highlightHit != -1) {
+                                      doErase(highlightHit,
+                                          DrawingMode.highlighter);
+                                    }
+                                    break;
+                                  default:
+                                    break;
+                                }
+                              },
+                              onPointerUp: (details) {
+                                if (activePointerId != details.pointer) return;
+                                activePointerId = null;
+                                switch (_mode) {
+                                  case DrawingMode.pen:
+                                    _penPoints[_currentPage].add(null);
+                                    break;
+                                  case DrawingMode.laser:
+                                    _laserPoints[_currentPage].add(null);
+                                    _laserTimer = Timer(
+                                        const Duration(milliseconds: 1500),
+                                        _stopLaserDrawing);
+                                    break;
+                                  case DrawingMode.highlighter:
+                                    _highlighterPoints[_currentPage].add(null);
+                                    break;
+                                  case DrawingMode.eraser:
+                                    setState(() {
+                                      _eraserPoints[_currentPage] =
+                                          const Offset(-100, -100);
+                                    });
+                                    break;
+                                  default:
+                                    break;
+                                }
+                              },
+                              onPointerCancel: (details) {
+                                if (activePointerId != details.pointer) return;
+                                activePointerId = null;
+                                switch (_mode) {
+                                  case DrawingMode.pen:
+                                    _penPoints[_currentPage].add(null);
+                                    break;
+                                  case DrawingMode.laser:
+                                    _laserPoints[_currentPage].add(null);
+                                    _laserTimer = Timer(
+                                        const Duration(milliseconds: 1500),
+                                        _stopLaserDrawing);
+                                    break;
+                                  case DrawingMode.highlighter:
+                                    _highlighterPoints[_currentPage].add(null);
+                                    break;
+                                  case DrawingMode.eraser:
+                                    setState(() {
+                                      _eraserPoints[_currentPage] =
+                                          const Offset(-100, -100);
+                                    });
+                                    break;
+                                  default:
+                                    break;
+                                }
+                              },
+                              child: CustomPaint(
+                                painter: SolvepadDrawerMarketplace(
+                                  _penPoints[index],
+                                  _replayPoints[index],
+                                  _eraserPoints[index],
+                                  _laserPoints[index],
+                                  _highlighterPoints[index],
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },
@@ -1181,7 +1037,7 @@ class _LearningPageState extends State<LearningPage> {
     );
   }
 
-  Widget replayRecordButton() {
+  Widget replayButton() {
     return Center(
       child: SizedBox(
         width: 70,
@@ -1401,6 +1257,117 @@ class _LearningPageState extends State<LearningPage> {
                 InkWell(
                   onTap: () {
                     setState(() {
+                      if (tabFreestyle == true) {
+                        tabFollowing = !tabFollowing;
+                        tabFreestyle = false;
+                        var parts = _tutorCurrentScrollZoom.split('|');
+                        var scrollX = double.parse(parts[0]);
+                        var scrollY = double.parse(parts[1]);
+                        var zoom = double.parse(parts.last);
+                        if (_currentPage != _tutorCurrentPage) {
+                          _pageController.animateToPage(
+                            _tutorCurrentPage,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        } // re-correct page
+                        _transformationController[_tutorCurrentPage].value =
+                            Matrix4.identity()
+                              ..translate(scrollX / 2, scrollY)
+                              ..scale(zoom);
+                      }
+                    });
+                  },
+                  child: Container(
+                    height: 50,
+                    width: 120,
+                    decoration: BoxDecoration(
+                      color: tabFollowing
+                          ? CustomColors.greenE5F6EB
+                          : CustomColors.whitePrimary,
+                      shape: BoxShape.rectangle,
+                      border: Border.all(
+                        color: CustomColors.grayCFCFCF,
+                        style: BorderStyle.solid,
+                        width: 1.0,
+                      ),
+                      borderRadius: const BorderRadius.horizontal(
+                        left: Radius.circular(50.0),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Image.asset(
+                          tabFollowing
+                              ? ImageAssets.avatarMe
+                              : ImageAssets.avatarDisMen,
+                          width: 32,
+                        ),
+                        S.w(8),
+                        Text("เรียนรู้",
+                            style: tabFollowing
+                                ? CustomStyles.bold14greenPrimary
+                                : CustomStyles.bold14grayCFCFCF),
+                      ],
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      if (tabFollowing == true) {
+                        tabFreestyle = !tabFreestyle;
+                        tabFollowing = false;
+                      }
+                    });
+                  },
+                  child: Container(
+                    height: 50,
+                    width: 120,
+                    decoration: BoxDecoration(
+                      color: tabFreestyle
+                          ? CustomColors.greenE5F6EB
+                          : CustomColors.whitePrimary,
+                      shape: BoxShape.rectangle,
+                      border: Border.all(
+                        color: CustomColors.grayCFCFCF,
+                        style: BorderStyle.solid,
+                        width: 1.0,
+                      ),
+                      borderRadius: const BorderRadius.horizontal(
+                        right: Radius.circular(50.0),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Image.asset(
+                          tabFreestyle
+                              ? ImageAssets.pencilActive
+                              : ImageAssets.penDisTab,
+                          width: 32,
+                        ),
+                        S.w(8),
+                        Text("เขียนอิสระ",
+                            style: tabFreestyle
+                                ? CustomStyles.bold14greenPrimary
+                                : CustomStyles.bold14grayCFCFCF),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                InkWell(
+                  onTap: () {
+                    setState(() {
                       micEnable = !micEnable;
                     });
                     log(_data['metadata']['duration'].toString());
@@ -1414,23 +1381,12 @@ class _LearningPageState extends State<LearningPage> {
                 ),
                 S.w(defaultPadding),
                 const DividerVer(),
-                replayRecordButton(),
+                replayButton(),
                 RichText(
                   text: TextSpan(
                     text: 'เริ่มเรียน',
                     style: CustomStyles.bold14RedF44336,
                   ),
-                ),
-              ],
-            ),
-          ),
-          const Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                SizedBox(
-                  width: 200,
-                  height: 40,
                 ),
               ],
             ),
@@ -2110,7 +2066,6 @@ class _LearningPageState extends State<LearningPage> {
                                     InkWell(
                                       onTap: () {
                                         setState(() {
-                                          if (!isRecording) return;
                                           _selectedIndexTools = index;
                                         });
                                         if (index == 0) {
@@ -2275,1021 +2230,6 @@ class _LearningPageState extends State<LearningPage> {
           ),
         ),
       ],
-    );
-  }
-
-  ///Button for list student
-
-  Future<void> quizSelectModal() {
-    Color getColor(Set<MaterialState> states) {
-      const Set<MaterialState> interactiveStates = <MaterialState>{
-        MaterialState.pressed,
-        MaterialState.hovered,
-        MaterialState.focused
-      };
-
-      return CustomColors.greenPrimary;
-    }
-
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Column(
-              children: [
-                ///Header
-                Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    height: 60,
-                    color: CustomColors.whitePrimary,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        S.w(Responsive.isTablet(context) ? 5 : 24),
-                        if (Responsive.isTablet(context))
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              courseName,
-                              style: CustomStyles.bold16Black363636Overflow,
-                              maxLines: 1,
-                            ),
-                          ),
-                        if (Responsive.isDesktop(context))
-                          Expanded(
-                            flex: 4,
-                            child: Text(
-                              courseName,
-                              style: CustomStyles.bold16Black363636Overflow,
-                              maxLines: 1,
-                            ),
-                          ),
-                        if (Responsive.isMobile(context))
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              courseName,
-                              style: CustomStyles.bold16Black363636Overflow,
-                              maxLines: 1,
-                            ),
-                          ),
-                        Expanded(
-                            flex: Responsive.isDesktop(context) ? 3 : 4,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Container(
-                                  height: 32,
-                                  width: 145,
-                                  // margin: EdgeInsets.only(top: defaultPadding),
-                                  // padding: EdgeInsets.all(defaultPadding),
-                                  decoration: const BoxDecoration(
-                                    color: CustomColors.pinkFFCDD2,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(defaultPadding),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Image.asset(
-                                        ImageAssets.lowSignal,
-                                        height: 22,
-                                        width: 18,
-                                      ),
-                                      S.w(10),
-                                      Flexible(
-                                        child: Text(
-                                          "สัญญาณอ่อน",
-                                          style: CustomStyles.bold14redB71C1C,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                S.w(16.0),
-                                Container(
-                                  height: 11,
-                                  width: 11,
-                                  decoration: BoxDecoration(
-                                      color: CustomColors.redF44336,
-                                      borderRadius: BorderRadius.circular(100)
-                                      //more than 50% of width makes circle
-                                      ),
-                                ),
-                                S.w(4.0),
-                                RichText(
-                                  text: TextSpan(
-                                    text: 'Live Time: ',
-                                    style: CustomStyles.med14redFF4201,
-                                    children: <TextSpan>[
-                                      TextSpan(
-                                        text: '01 : 59 : 59',
-                                        style: CustomStyles.med14Gray878787,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                S.w(16.0),
-                                InkWell(
-                                  onTap: () {
-                                    showCloseDialog(context, () {});
-                                  },
-                                  child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: defaultPadding * 1,
-                                        vertical: defaultPadding / 1.5,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: CustomColors.redF44336,
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "ปิดห้องเรียน",
-                                            style: CustomStyles.bold14White,
-                                          ),
-                                        ],
-                                      )),
-                                ),
-                                S.w(Responsive.isTablet(context) ? 5 : 24),
-                              ],
-                            ))
-                      ],
-                    ),
-                  ),
-                ),
-
-                ///Modal Quiz title
-                Expanded(
-                  child: Dialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                    elevation: 0,
-                    backgroundColor: CustomColors.grayF3F3F3,
-                    child: SingleChildScrollView(
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.6,
-                        child: Padding(
-                          padding: const EdgeInsets.all(32.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Text('เลือก Quiz ที่จะแชร์ให้นักเรียน',
-                                  style: CustomStyles.bold22Black363636),
-                              S.h(4),
-                              Text(
-                                  'ติ๊กเลือก์ชุดคำถามที่จะแชร์ให้นักเรียนในห้อง คุณสามารถแก้ไขคำถามได้ที่หน้า “ตั้งค่า” คอร์สเรียน',
-                                  style: CustomStyles.med14Gray878787),
-                              S.h(24),
-
-                              /// Quiz
-                              ListView.builder(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  scrollDirection: Axis.vertical,
-                                  shrinkWrap: true,
-                                  itemCount: quizList.length,
-                                  itemBuilder: (context, index) {
-                                    return Column(
-                                      children: [
-                                        InkWell(
-                                          onTap: () {
-                                            setState(() {
-                                              quizList[index].isSelected =
-                                                  !quizList[index].isSelected;
-                                            });
-                                          },
-                                          child: Container(
-                                            width: double.infinity,
-                                            height: 54,
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  color: quizList[index]
-                                                              .isSelected ==
-                                                          false
-                                                      ? CustomColors.grayE5E6E9
-                                                      : CustomColors
-                                                          .greenPrimary,
-                                                  width: 1.0,
-                                                  style: BorderStyle.solid),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              color: quizList[index]
-                                                          .isSelected ==
-                                                      false
-                                                  ? CustomColors.whitePrimary
-                                                  : CustomColors.greenE5F6EB,
-                                            ),
-                                            child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                Checkbox(
-                                                  checkColor: Colors.white,
-                                                  fillColor:
-                                                      MaterialStateProperty
-                                                          .resolveWith(
-                                                              getColor),
-                                                  value: quizList[index]
-                                                      .isSelected,
-                                                  onChanged: (bool? value) {
-                                                    log('checkbox tapped');
-                                                    setState(() {
-                                                      quizList[index]
-                                                              .isSelected =
-                                                          !quizList[index]
-                                                              .isSelected;
-                                                    });
-                                                    // setState(() {
-                                                    //   isChecked = value!;
-                                                    // });
-                                                  },
-                                                ),
-                                                Text(
-                                                  quizList[index].quiz,
-                                                  style: quizList[index]
-                                                              .isSelected ==
-                                                          false
-                                                      ? CustomStyles
-                                                          .bold16Black363636Overflow
-                                                      : CustomStyles
-                                                          .bold16greenPrimaryOverflow,
-                                                ),
-                                                Expanded(child: Container()),
-                                                Text(
-                                                  quizList[index].choice,
-                                                  style: quizList[index]
-                                                              .isSelected ==
-                                                          false
-                                                      ? CustomStyles
-                                                          .med16gray878787
-                                                      : CustomStyles.med16Green,
-                                                ),
-                                                S.w(20),
-                                                const Icon(
-                                                  Icons
-                                                      .arrow_forward_ios_rounded,
-                                                  color:
-                                                      CustomColors.greenPrimary,
-                                                  size: 16.0,
-                                                ),
-                                                S.w(12),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        S.h(16),
-                                      ],
-                                    );
-                                  }),
-                              S.h(24),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                    width: 165,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: CustomColors.grayCFCFCF,
-                                        style: BorderStyle.solid,
-                                        width: 1.0,
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
-                                      color: CustomColors.whitePrimary,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: <Widget>[
-                                        const Icon(
-                                          Icons.arrow_back,
-                                          size: 20,
-                                          color: CustomColors.gray878787,
-                                        ),
-                                        S.w(4),
-                                        Text("กลับไปที่ห้องเรียน",
-                                            textAlign: TextAlign.center,
-                                            style:
-                                                CustomStyles.bold14Gray878787),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 185,
-                                    height: 40,
-                                    child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              CustomColors.greenPrimary,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                8.0), // <-- Radius
-                                          ), // NEW
-                                        ),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                          shareQuizModal();
-                                        },
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Image.asset(
-                                              ImageAssets.icShareWhite,
-                                              width: 16,
-                                            ),
-                                            S.w(10),
-                                            Text('แชร์ Quiz (2)',
-                                                style: CustomStyles.bold14White)
-                                          ],
-                                        )),
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Future<void> shareQuizModal() {
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Column(
-              children: [
-                ///Header1
-                Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    height: 60,
-                    color: CustomColors.whitePrimary,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        S.w(Responsive.isTablet(context) ? 5 : 24),
-                        if (Responsive.isTablet(context))
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              courseName,
-                              style: CustomStyles.bold16Black363636Overflow,
-                              maxLines: 1,
-                            ),
-                          ),
-                        if (Responsive.isDesktop(context))
-                          Expanded(
-                            flex: 4,
-                            child: Text(
-                              courseName,
-                              style: CustomStyles.bold16Black363636Overflow,
-                              maxLines: 1,
-                            ),
-                          ),
-                        if (Responsive.isMobile(context))
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              courseName,
-                              style: CustomStyles.bold16Black363636Overflow,
-                              maxLines: 1,
-                            ),
-                          ),
-                        Expanded(
-                            flex: Responsive.isDesktop(context) ? 3 : 4,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Container(
-                                  height: 32,
-                                  width: 145,
-                                  // margin: EdgeInsets.only(top: defaultPadding),
-                                  // padding: EdgeInsets.all(defaultPadding),
-                                  decoration: const BoxDecoration(
-                                    color: CustomColors.pinkFFCDD2,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(defaultPadding),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Image.asset(
-                                        ImageAssets.lowSignal,
-                                        height: 22,
-                                        width: 18,
-                                      ),
-                                      S.w(10),
-                                      Flexible(
-                                        child: Text(
-                                          "สัญญาณอ่อน",
-                                          style: CustomStyles.bold14redB71C1C,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                S.w(16.0),
-                                Container(
-                                  height: 11,
-                                  width: 11,
-                                  decoration: BoxDecoration(
-                                      color: CustomColors.redF44336,
-                                      borderRadius: BorderRadius.circular(100)
-                                      //more than 50% of width makes circle
-                                      ),
-                                ),
-                                S.w(4.0),
-                                RichText(
-                                  text: TextSpan(
-                                    text: 'Live Time: ',
-                                    style: CustomStyles.med14redFF4201,
-                                    children: <TextSpan>[
-                                      TextSpan(
-                                        text: '01 : 59 : 59',
-                                        style: CustomStyles.med14Gray878787,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                S.w(16.0),
-                                InkWell(
-                                  onTap: () {
-                                    showCloseDialog(context, () {});
-                                  },
-                                  child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: defaultPadding * 1,
-                                        vertical: defaultPadding / 1.5,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: CustomColors.redF44336,
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "ปิดห้องเรียน",
-                                            style: CustomStyles.bold14White,
-                                          ),
-                                        ],
-                                      )),
-                                ),
-                                S.w(Responsive.isTablet(context) ? 5 : 24),
-                              ],
-                            ))
-                      ],
-                    ),
-                  ),
-                ),
-                Material(
-                    // color: Colors.transparent,
-                    child: Container(
-                  width: double.infinity,
-                  height: 1,
-                  color: CustomColors.grayCFCFCF,
-                )),
-
-                ///Header2
-                Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    height: 70,
-                    decoration: BoxDecoration(
-                        color: CustomColors.whitePrimary,
-                        boxShadow: [
-                          BoxShadow(
-                              color: CustomColors.gray878787.withOpacity(.1),
-                              offset: const Offset(0.0, 6),
-                              blurRadius: 10,
-                              spreadRadius: 1)
-                        ]),
-                    child: Row(
-                      children: [
-                        S.w(Responsive.isTablet(context) ? 5 : 24),
-                        Expanded(
-                          flex: 2,
-                          child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: CustomColors.grayCFCFCF,
-                                      style: BorderStyle.solid,
-                                      width: 1.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                    color: CustomColors.whitePrimary,
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 1, vertical: 8),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Image.asset(
-                                        ImageAssets.allPages,
-                                        height: 30,
-                                        width: 32,
-                                      ),
-                                      S.w(defaultPadding),
-                                      Container(
-                                        width: 1,
-                                        height: 24,
-                                        color: CustomColors.grayCFCFCF,
-                                      ),
-                                      S.w(defaultPadding),
-                                      Image.asset(
-                                        ImageAssets.backDis,
-                                        height: 16,
-                                        width: 17,
-                                      ),
-                                      S.w(defaultPadding),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: CustomColors.grayCFCFCF,
-                                            style: BorderStyle.solid,
-                                            width: 1.0,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                          color: CustomColors.whitePrimary,
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 4),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: <Widget>[
-                                            Text("Page 20",
-                                                style: CustomStyles
-                                                    .bold14greenPrimary),
-                                          ],
-                                        ),
-                                      ),
-                                      S.w(8.0),
-                                      Text("/ 149",
-                                          style: CustomStyles.med14Gray878787),
-                                      S.w(defaultPadding),
-                                      Image.asset(
-                                        ImageAssets.forward,
-                                        height: 16,
-                                        width: 17,
-                                      ),
-                                      S.w(6.0),
-                                    ],
-                                  ))),
-                        ),
-                        Expanded(
-                          flex: 3,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    micEnable = !micEnable;
-                                  });
-                                },
-                                child: Image.asset(
-                                  micEnable
-                                      ? ImageAssets.micEnable
-                                      : ImageAssets.micDis,
-                                  height: 44,
-                                  width: 44,
-                                ),
-                              ),
-                              S.w(defaultPadding),
-                              InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    displayEnable = !displayEnable;
-                                  });
-                                },
-                                child: Image.asset(
-                                  displayEnable
-                                      ? ImageAssets.displayEnable
-                                      : ImageAssets.displayDis,
-                                  height: 44,
-                                  width: 44,
-                                ),
-                              ),
-                              S.w(defaultPadding),
-
-                              ///todo Icon share for disable
-                              // Image.asset(
-                              //   ImageAssets.shareQa,
-                              //   height: 44,
-                              //   width: 44,
-                              // ),
-                              Stack(
-                                children: [
-                                  InkWell(
-                                    onTap: () {
-                                      quizSelectModal();
-                                    },
-                                    child: Image.asset(
-                                      ImageAssets.icShareAction,
-                                      height: 44,
-                                      width: 44,
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 32, bottom: 1),
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                          color: CustomColors.black363636,
-                                          shape: BoxShape.circle),
-                                      width: 25,
-                                      height: 25,
-                                      child: Center(
-                                        child: Text(
-                                          "12",
-                                          style: CustomStyles.bold11White,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              ///End icon share
-                              S.w(defaultPadding),
-                              const DividerVer(),
-                              S.w(defaultPadding),
-                              Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: CustomColors.grayCFCFCF,
-                                    style: BorderStyle.solid,
-                                    width: 1.0,
-                                  ),
-                                  borderRadius: BorderRadius.circular(100),
-                                  color: CustomColors.whitePrimary,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 4, vertical: 1),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Transform.scale(
-                                      scale: 0.7,
-                                      child: CupertinoSwitch(
-                                        value: _switchValue,
-                                        onChanged: (bool value) {
-                                          setState(() {
-                                            _switchValue = value;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                    Text("ให้นักเรียนแชร์จอ",
-                                        textAlign: TextAlign.center,
-                                        style: CustomStyles.bold14Gray878787),
-                                    S.w(4)
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-
-                        /// Statistics
-                        Expanded(
-                            flex: 2,
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: InkWell(
-                                onTap: () {
-                                  log('Go to Statistics');
-                                  showLeader(context);
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: CustomColors.grayCFCFCF,
-                                      style: BorderStyle.solid,
-                                      width: 1.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                    color: CustomColors.whitePrimary,
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 1, vertical: 6),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(6.0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        Image.asset(
-                                          ImageAssets.leaderboard,
-                                          height: 23,
-                                          width: 25,
-                                        ),
-                                        S.w(8),
-                                        Container(
-                                          width: 1,
-                                          height: 24,
-                                          color: CustomColors.grayCFCFCF,
-                                        ),
-                                        S.w(8),
-                                        Image.asset(
-                                          ImageAssets.checkTrue,
-                                          height: 18,
-                                          width: 18,
-                                        ),
-                                        if (!Responsive.isTablet(context))
-                                          S.w(8.0),
-                                        Text("100%",
-                                            style:
-                                                CustomStyles.bold14Gray878787),
-                                        if (!Responsive.isTablet(context))
-                                          S.w(8.0),
-                                        Image.asset(
-                                          ImageAssets.x,
-                                          height: 18,
-                                          width: 18,
-                                        ),
-                                        if (!Responsive.isTablet(context))
-                                          S.w(8.0),
-                                        Text("100%",
-                                            style:
-                                                CustomStyles.bold14Gray878787),
-                                        if (!Responsive.isTablet(context))
-                                          S.w(8.0),
-                                        Image.asset(
-                                          ImageAssets.icQa,
-                                          height: 18,
-                                          width: 18,
-                                        ),
-                                        if (!Responsive.isTablet(context))
-                                          S.w(8.0),
-                                        Text("100%",
-                                            style:
-                                                CustomStyles.bold14Gray878787),
-                                        if (!Responsive.isTablet(context))
-                                          S.w(8.0),
-                                        Image.asset(
-                                          ImageAssets.arrowNextCircle,
-                                          width: 21,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )),
-                        S.w(Responsive.isTablet(context) ? 5 : 24),
-                      ],
-                    ),
-                  ),
-                ),
-
-                ///Modal Share Quiz
-                Expanded(
-                  child: Dialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                    elevation: 0,
-                    backgroundColor: CustomColors.whitePrimary,
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.8,
-                      child: Padding(
-                        padding: const EdgeInsets.all(32.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  width: 30,
-                                  height: 30,
-                                  decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: CustomColors.greenPrimary),
-                                  child: InkWell(
-                                    onTap: () {
-                                      if (focusQuestion != 0) {
-                                        setState(() {
-                                          focusQuestion--;
-                                        });
-                                      }
-                                    },
-                                    child: const Icon(
-                                      Icons.arrow_back_ios_new_rounded,
-                                      size: 16,
-                                      color: CustomColors.whitePrimary,
-                                    ),
-                                  ),
-                                ),
-                                Column(
-                                  children: [
-                                    Text(quizSetData.quizSetName,
-                                        style: CustomStyles.bold22Black363636),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          '2 ข้อ',
-                                          style: CustomStyles.med16gray878787,
-                                        ),
-                                        S.w(defaultPadding),
-                                        Container(
-                                          width: 1,
-                                          height: 16,
-                                          color: CustomColors.grayCFCFCF,
-                                        ),
-                                        Transform.scale(
-                                          scale: 0.7,
-                                          child: CupertinoSwitch(
-                                            value: _switchShareValue,
-                                            onChanged: (bool value) {
-                                              setState(() {
-                                                _switchShareValue = value;
-                                              });
-                                            },
-                                          ),
-                                        ),
-                                        Text(
-                                          "แชร์คำถามให้นักเรียน",
-                                          style: CustomStyles.bold14Gray878787,
-                                        )
-                                      ],
-                                    )
-                                  ],
-                                ),
-                                Container(
-                                  width: 30,
-                                  height: 30,
-                                  decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: CustomColors.greenPrimary),
-                                  child: InkWell(
-                                    onTap: () {
-                                      if (focusQuestion + 1 <
-                                          quizSetData.quizQuestions.length) {
-                                        setState(() {
-                                          focusQuestion++;
-                                        });
-                                      }
-                                    },
-                                    child: const Icon(
-                                      Icons.arrow_forward_ios_rounded,
-                                      size: 16,
-                                      color: CustomColors.whitePrimary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            S.h(12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  quizSetData.quizQuestions[focusQuestion]
-                                      .questionText,
-                                  style: CustomStyles.bold16Black363636Overflow,
-                                ),
-                                S.h(12),
-                                ListView.builder(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  scrollDirection: Axis.vertical,
-                                  shrinkWrap: true,
-                                  itemCount: quizSetData
-                                      .quizQuestions[focusQuestion]
-                                      .choices
-                                      .length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                    return Container(
-                                      width: double.infinity,
-                                      height: 54,
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                            color: CustomColors.grayE5E6E9,
-                                            width: 1.0,
-                                            style: BorderStyle.solid),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Radio(
-                                              value: index,
-                                              groupValue: radioTest,
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  radioTest = value!;
-                                                });
-                                              }),
-                                          Text(
-                                            quizSetData
-                                                .quizQuestions[focusQuestion]
-                                                .choices[index],
-                                            style: CustomStyles
-                                                .bold16Black363636Overflow,
-                                          ),
-                                          Expanded(child: Container()),
-                                          const Icon(
-                                            Icons.check,
-                                            color: CustomColors.greenPrimary,
-                                            size: 16.0,
-                                          ),
-                                          S.w(20),
-                                          Text(
-                                            'ถุกต้อง',
-                                            style: CustomStyles.med16Green,
-                                          ),
-                                          S.w(12),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                            S.h(18),
-                            Center(
-                              child: SizedBox(
-                                width: 185,
-                                height: 40,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: CustomColors.greenPrimary,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                          8.0), // <-- Radius
-                                    ), // NEW
-                                  ),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.arrow_back,
-                                        color: CustomColors.whitePrimary,
-                                        size: 20.0,
-                                      ),
-                                      S.w(4),
-                                      Text('กลับไปที่ห้องเรียน',
-                                          style: CustomStyles.bold14White)
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
     );
   }
 }
