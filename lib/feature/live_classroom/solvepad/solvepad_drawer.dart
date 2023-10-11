@@ -6,7 +6,6 @@ enum DrawingMode { drag, pen, eraser, laser, highlighter }
 class SolvepadDrawer extends CustomPainter {
   SolvepadDrawer(
       this.penPoints,
-      this.replayPoints,
       this.eraserPoint,
       this.laserPoints,
       this.highlighterPoints,
@@ -15,7 +14,6 @@ class SolvepadDrawer extends CustomPainter {
       this.hostHighlighterPoints,
       this.hostEraserPoint);
 
-  List<Offset?> replayPoints;
   List<SolvepadStroke?> penPoints;
   List<SolvepadStroke?> laserPoints;
   List<SolvepadStroke?> highlighterPoints;
@@ -106,11 +104,6 @@ class SolvepadDrawer extends CustomPainter {
     }
     canvas.drawPath(path, highlightPaint);
 
-    for (int i = 0; i < replayPoints.length - 1; i++) {
-      if (replayPoints[i] != null && replayPoints[i + 1] != null) {
-        canvas.drawLine(replayPoints[i]!, replayPoints[i + 1]!, penPaint);
-      }
-    }
     for (int i = 0; i < laserPoints.length - 1; i++) {
       if (laserPoints[i] != null && laserPoints[i + 1] != null) {
         laserPaint.color = laserPoints[i]!.color.withOpacity(0.8);
@@ -185,13 +178,11 @@ class SolvepadDrawer extends CustomPainter {
 class SolvepadDrawerMarketplace extends CustomPainter {
   SolvepadDrawerMarketplace(
     this.penPoints,
-    this.replayPoints,
     this.eraserPoint,
     this.laserPoints,
     this.highlighterPoints,
   );
 
-  List<Offset?> replayPoints;
   List<SolvepadStroke?> penPoints;
   List<SolvepadStroke?> laserPoints;
   List<SolvepadStroke?> highlighterPoints;
@@ -256,11 +247,6 @@ class SolvepadDrawerMarketplace extends CustomPainter {
     }
     canvas.drawPath(path, highlightPaint);
 
-    for (int i = 0; i < replayPoints.length - 1; i++) {
-      if (replayPoints[i] != null && replayPoints[i + 1] != null) {
-        canvas.drawLine(replayPoints[i]!, replayPoints[i + 1]!, penPaint);
-      }
-    }
     for (int i = 0; i < laserPoints.length - 1; i++) {
       if (laserPoints[i] != null && laserPoints[i + 1] != null) {
         laserPaint.color = laserPoints[i]!.color.withOpacity(0.8);

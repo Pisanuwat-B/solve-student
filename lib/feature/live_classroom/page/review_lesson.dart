@@ -1325,7 +1325,6 @@ class _ReviewLessonState extends State<ReviewLesson>
                             child: CustomPaint(
                               painter: SolvepadDrawer(
                                 _penPoints[index],
-                                _replayPoints[index],
                                 _eraserPoints[index],
                                 _laserPoints[index],
                                 _highlighterPoints[index],

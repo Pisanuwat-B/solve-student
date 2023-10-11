@@ -76,7 +76,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   final List<List<SolvepadStroke?>> _hostHighlighterPoints = [[]];
   final List<Offset> _eraserPoints = [const Offset(-100, -100)];
   final List<Offset> _hostEraserPoints = [const Offset(-100, -100)];
-  final List<List<Offset?>> _replayPoints = [[]];
   final SolveStopwatch stopwatch = SolveStopwatch();
   DrawingMode _mode = DrawingMode.drag;
   DrawingMode _hostMode = DrawingMode.drag;
@@ -808,7 +807,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       _laserPoints.add([]);
       _highlighterPoints.add([]);
       _eraserPoints.add(const Offset(-100, -100));
-      _replayPoints.add([]);
       _hostPenPoints.add([]);
       _hostLaserPoints.add([]);
       _hostHighlighterPoints.add([]);
@@ -1319,7 +1317,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                               child: CustomPaint(
                                 painter: SolvepadDrawer(
                                   _penPoints[index],
-                                  _replayPoints[index],
                                   _eraserPoints[index],
                                   _laserPoints[index],
                                   _highlighterPoints[index],

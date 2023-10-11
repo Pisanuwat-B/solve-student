@@ -114,7 +114,10 @@ class _LearningPageState extends State<LearningPage> {
   final List<List<SolvepadStroke?>> _laserPoints = [[]];
   final List<List<SolvepadStroke?>> _highlighterPoints = [[]];
   final List<Offset> _eraserPoints = [const Offset(-100, -100)];
-  final List<List<Offset?>> _replayPoints = [[]];
+  final List<List<SolvepadStroke?>> _replayPenPoints = [[]];
+  final List<List<SolvepadStroke?>> _replayLaserPoints = [[]];
+  final List<List<SolvepadStroke?>> _replayHighlighterPoints = [[]];
+  final List<Offset> _replayEraserPoints = [const Offset(-100, -100)];
   DrawingMode _mode = DrawingMode.drag;
   final SolveStopwatch solveStopwatch = SolveStopwatch();
 
@@ -290,7 +293,6 @@ class _LearningPageState extends State<LearningPage> {
       _laserPoints.add([]);
       _highlighterPoints.add([]);
       _eraserPoints.add(const Offset(-100, -100));
-      _replayPoints.add([]);
     });
   }
 
@@ -368,13 +370,10 @@ class _LearningPageState extends State<LearningPage> {
 
   // ---------- FUNCTION: solve pad core
   void clearReplayPoint() {
-    for (var point in _penPoints) {
+    for (var point in _replayPenPoints) {
       point.clear();
     }
-    for (var point in _replayPoints) {
-      point.clear();
-    }
-    for (var point in _highlighterPoints) {
+    for (var point in _replayHighlighterPoints) {
       point.clear();
     }
   }
@@ -514,14 +513,14 @@ class _LearningPageState extends State<LearningPage> {
   void drawReplayPoint(
       Map<String, dynamic> point, String tool, String color, double stroke) {
     if (tool == "DrawingMode.pen") {
-      _penPoints[_currentPage].add(SolvepadStroke(
+      _replayPenPoints[_currentPage].add(SolvepadStroke(
         Offset(point['x'], point['y']),
         Color(int.parse(color, radix: 16)),
         stroke,
       ));
       setState(() {});
     } else if (tool == "DrawingMode.highlighter") {
-      _highlighterPoints[_currentPage].add(SolvepadStroke(
+      _replayHighlighterPoints[_currentPage].add(SolvepadStroke(
         Offset(point['x'], point['y']),
         Color(int.parse(color, radix: 16)),
         stroke,
@@ -532,9 +531,9 @@ class _LearningPageState extends State<LearningPage> {
 
   void drawReplayNull(String tool) {
     if (tool == "DrawingMode.pen") {
-      _penPoints[_currentPage].add(null);
+      _replayPenPoints[_currentPage].add(null);
     } else if (tool == "DrawingMode.highlighter") {
-      _highlighterPoints[_currentPage].add(null);
+      _replayHighlighterPoints[_currentPage].add(null);
     }
   }
 
@@ -1014,12 +1013,15 @@ class _LearningPageState extends State<LearningPage> {
                                 }
                               },
                               child: CustomPaint(
-                                painter: SolvepadDrawerMarketplace(
+                                painter: SolvepadDrawer(
                                   _penPoints[index],
-                                  _replayPoints[index],
                                   _eraserPoints[index],
                                   _laserPoints[index],
                                   _highlighterPoints[index],
+                                  _replayPenPoints[index],
+                                  _replayLaserPoints[index],
+                                  _replayHighlighterPoints[index],
+                                  _replayEraserPoints[index],
                                 ),
                               ),
                             ),
