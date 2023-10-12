@@ -12,6 +12,7 @@ import 'package:solve_student/feature/my_course/pages/my_course_home.dart';
 import 'package:solve_student/feature/my_course/pages/my_course_page.dart';
 import 'package:solve_student/feature/notification/notification_page.dart';
 import 'package:solve_student/feature/profile/pages/profile_page.dart';
+import 'package:solve_student/feature/replay/pages/replay_page.dart';
 
 import 'authentication/service/auth_provider.dart';
 import 'feature/class/pages/find_class_page.dart';
@@ -39,7 +40,7 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
     const MyCoursePage(),
     // ClassListPage(),
     const ChatListPage(),
-    const NotificationPage(),
+    const ReplayPage(),
     const ProfilePage(),
   ];
 
