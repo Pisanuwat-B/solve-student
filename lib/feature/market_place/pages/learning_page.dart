@@ -293,6 +293,10 @@ class _LearningPageState extends State<LearningPage> {
       _laserPoints.add([]);
       _highlighterPoints.add([]);
       _eraserPoints.add(const Offset(-100, -100));
+      _replayPenPoints.add([]);
+      _replayLaserPoints.add([]);
+      _replayHighlighterPoints.add([]);
+      _replayEraserPoints.add(const Offset(-100, -100));
     });
   }
 
