@@ -497,11 +497,36 @@ class _StudentScreenState extends State<StudentScreen>
                   ],
                 ),
               ] else ...[
-                Image.asset(
-                  ImageAssets.emptyCourse,
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.fitHeight,
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      height: 180,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          topRight: Radius.circular(8),
+                        ),
+                        image: DecorationImage(
+                          image: const AssetImage(
+                            'assets/images/img_not_available.jpeg',
+                          ),
+                          fit: BoxFit.cover,
+                          colorFilter: !courseReady
+                              ? ColorFilter.mode(Colors.black.withOpacity(0.5),
+                                  BlendMode.srcOver)
+                              : null,
+                        ),
+                      ),
+                    ),
+                    if (!courseReady) ...[
+                      const Text(
+                        '- ยังไม่ถึงเวลาเข้าห้องเรียน -',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ]
+                  ],
                 ),
               ],
               S.h(8),
@@ -667,7 +692,7 @@ class _StudentScreenState extends State<StudentScreen>
   }
 
   List<bool> _isSelected = [true, false];
-  Widget _swicth() {
+  Widget _switch() {
     return ToggleButtons(
       isSelected: _isSelected,
       borderColor: Colors.grey,
@@ -716,7 +741,7 @@ class _StudentScreenState extends State<StudentScreen>
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [_topicText('ตารางเรียนของฉัน'), _swicth()],
+          children: [_topicText('ตารางเรียนของฉัน'), _switch()],
         ),
         if (_isSelected.last == true) ...[
           if (_util.isTablet()) ...[
@@ -1497,24 +1522,26 @@ class _StudentScreenState extends State<StudentScreen>
   }
 
   Color _getWeekColor(int weekday) {
-    switch (weekday) {
-      case 1:
-        return Colors.black;
-      case 2:
-        return Colors.pinkAccent;
-      case 3:
-        return CustomColors.greenPrimary;
-      case 4:
-        return const Color(0xffFF9800);
-      case 5:
-        return Colors.blueAccent;
-      case 6:
-        return const Color(0xff8B5CF6);
-      case 7:
-        return const Color(0xffF44336);
-      default:
-        return Colors.black; // Should never be reached.
-    }
+    /// TODO: Redesign color
+    // switch (weekday) {
+    //   case 1:
+    //     return Colors.black;
+    //   case 2:
+    //     return Colors.pinkAccent;
+    //   case 3:
+    //     return CustomColors.greenPrimary;
+    //   case 4:
+    //     return const Color(0xffFF9800);
+    //   case 5:
+    //     return Colors.blueAccent;
+    //   case 6:
+    //     return const Color(0xff8B5CF6);
+    //   case 7:
+    //     return const Color(0xffF44336);
+    //   default:
+    //     return Colors.black; // Should never be reached.
+    // }
+    return CustomColors.greenPrimary;
   }
 
   DateTime resetToMidnight(DateTime date) {

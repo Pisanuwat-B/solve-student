@@ -486,11 +486,13 @@ class _LearningPageState extends State<LearningPage> {
             '${action['scrollX']}|${action['scrollY']}|${action['scale']}';
         break;
       case 'change-page':
-        _pageController.animateToPage(
-          action['data'],
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
+        if (tabFollowing) {
+          _pageController.animateToPage(
+            action['data'],
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
         _tutorCurrentPage = action['data'];
         break;
       case 'stop-recording':
@@ -501,11 +503,14 @@ class _LearningPageState extends State<LearningPage> {
           await Future.delayed(const Duration(milliseconds: 0), () {
             if (solveStopwatch.elapsed.inMilliseconds >=
                 scrollAction[currentReplayScrollIndex]['time']) {
-              _transformationController[_currentPage].value = Matrix4.identity()
-                ..translate(
-                    scaleScrollX(scrollAction[currentReplayScrollIndex]['x']),
-                    scaleScrollY(scrollAction[currentReplayScrollIndex]['y']))
-                ..scale(scrollAction[currentReplayScrollIndex]['scale']);
+              if (tabFollowing) {
+                _transformationController[_currentPage]
+                    .value = Matrix4.identity()
+                  ..translate(
+                      scaleScrollX(scrollAction[currentReplayScrollIndex]['x']),
+                      scaleScrollY(scrollAction[currentReplayScrollIndex]['y']))
+                  ..scale(scrollAction[currentReplayScrollIndex]['scale']);
+              }
               _tutorCurrentScrollZoom =
                   '${scaleScrollX(scrollAction[currentReplayScrollIndex]['x'])}|${scaleScrollX(scrollAction[currentReplayScrollIndex]['y'])}|${scrollAction[currentReplayScrollIndex]['scale']}';
               currentReplayScrollIndex++;
@@ -576,10 +581,7 @@ class _LearningPageState extends State<LearningPage> {
   void drawReplayPoint(
       Map<String, dynamic> point, String tool, String color, double stroke) {
     if (tool == "DrawingMode.pen") {
-      var theOffset = Offset(point['x'], point['y']);
-      // log('$theOffset');
-      // log(scaleOffset(theOffset).toString());
-      _replayPenPoints[_currentPage].add(SolvepadStroke(
+      _replayPenPoints[_tutorCurrentPage].add(SolvepadStroke(
         scaleOffset(Offset(point['x'], point['y'])),
         Color(int.parse(color, radix: 16)),
         stroke,
@@ -587,7 +589,7 @@ class _LearningPageState extends State<LearningPage> {
       setState(() {});
     } // pen
     else if (tool == "DrawingMode.highlighter") {
-      _replayHighlighterPoints[_currentPage].add(SolvepadStroke(
+      _replayHighlighterPoints[_tutorCurrentPage].add(SolvepadStroke(
         scaleOffset(Offset(point['x'], point['y'])),
         Color(int.parse(color, radix: 16)),
         stroke,
@@ -598,9 +600,9 @@ class _LearningPageState extends State<LearningPage> {
 
   void drawReplayNull(String tool) {
     if (tool == "DrawingMode.pen") {
-      _replayPenPoints[_currentPage].add(null);
+      _replayPenPoints[_tutorCurrentPage].add(null);
     } else if (tool == "DrawingMode.highlighter") {
-      _replayHighlighterPoints[_currentPage].add(null);
+      _replayHighlighterPoints[_tutorCurrentPage].add(null);
     }
   }
 
