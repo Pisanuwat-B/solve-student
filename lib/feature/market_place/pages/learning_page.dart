@@ -123,9 +123,10 @@ class _LearningPageState extends State<LearningPage> {
 
   // ---------- VARIABLE: Solve Size
   Size mySolvepadSize = const Size(1059.0, 547.0);
+  Size tutorSolvepadSize = const Size(1059.0, 547.0);
   double sheetImageRatio = 0.708;
-  double studentImageWidth = 0;
-  double studentExtraSpaceX = 0;
+  double tutorImageWidth = 0;
+  double tutorExtraSpaceX = 0;
   double myImageWidth = 0;
   double myExtraSpaceX = 0;
   double scaleImageX = 0;
@@ -139,7 +140,6 @@ class _LearningPageState extends State<LearningPage> {
 
   // ---------- VARIABLE: page control
   Timer? _laserTimer;
-  Timer? _recordTimer;
   int _currentPage = 0;
   int _tutorCurrentPage = 0;
   String _tutorCurrentScrollZoom = '';
@@ -248,22 +248,43 @@ class _LearningPageState extends State<LearningPage> {
     log(widget.lesson.media!);
     var downloadData =
         await firebaseService.getSolvepadData(widget.lesson.media!);
-    log('download success');
     String voiceUrl = await firebaseService.downloadAudio(downloadData[1]);
+    log('download success');
     _data = downloadData[0];
     setState(() {
       _mPath = voiceUrl;
       _mPlaybackReady = true;
+      tutorSolvepadSize = Size(_data['solvepadWidth'], _data['solvepadHeight']);
       replayDuration = _data['metadata']['duration'];
     });
+    initSolvepadScaling();
+    log(tutorSolvepadSize.toString());
   }
+
+  void initSolvepadScaling() {
+    tutorImageWidth = tutorSolvepadSize.height * sheetImageRatio;
+    tutorExtraSpaceX = (tutorSolvepadSize.width - tutorImageWidth) / 2;
+    myImageWidth = mySolvepadSize.height * sheetImageRatio;
+    myExtraSpaceX = (mySolvepadSize.width - myImageWidth) / 2;
+    scaleImageX = myImageWidth / tutorImageWidth;
+    scaleX = mySolvepadSize.width / tutorSolvepadSize.width;
+    scaleY = mySolvepadSize.height / tutorSolvepadSize.height;
+  }
+
+  Offset scaleOffset(Offset offset) {
+    return Offset((offset.dx - tutorExtraSpaceX) * scaleImageX + myExtraSpaceX,
+        offset.dy * scaleY);
+  }
+
+  double scaleScrollX(double scrollX) => scrollX * scaleX;
+  double scaleScrollY(double scrollY) => scrollY * scaleY;
 
   @override
   dispose() {
     _mPlayer!.closePlayer();
     _mPlayer = null;
     _pageController.dispose();
-    _recordTimer?.cancel();
+    _sliderTimer?.cancel();
     _laserTimer?.cancel();
     super.dispose();
   }
@@ -401,6 +422,7 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   void _initReplay() {
+    log('init replay');
     setState(() {
       isReplaying = true;
       isReplayEnd = false;
@@ -457,7 +479,8 @@ class _LearningPageState extends State<LearningPage> {
         );
         _tutorCurrentPage = page;
         _transformationController[page].value = Matrix4.identity()
-          ..translate(action['scrollX'] / 2, action['scrollY'])
+          ..translate(scaleScrollX(action['scrollX']) / 2,
+              scaleScrollY(action['scrollY']))
           ..scale(action['scale']);
         _tutorCurrentScrollZoom =
             '${action['scrollX']}|${action['scrollY']}|${action['scale']}';
@@ -479,11 +502,12 @@ class _LearningPageState extends State<LearningPage> {
             if (solveStopwatch.elapsed.inMilliseconds >=
                 scrollAction[currentReplayScrollIndex]['time']) {
               _transformationController[_currentPage].value = Matrix4.identity()
-                ..translate(scrollAction[currentReplayScrollIndex]['x'],
-                    scrollAction[currentReplayScrollIndex]['y'])
+                ..translate(
+                    scaleScrollX(scrollAction[currentReplayScrollIndex]['x']),
+                    scaleScrollY(scrollAction[currentReplayScrollIndex]['y']))
                 ..scale(scrollAction[currentReplayScrollIndex]['scale']);
               _tutorCurrentScrollZoom =
-                  '${scrollAction[currentReplayScrollIndex]['x']}|${scrollAction[currentReplayScrollIndex]['y']}|${scrollAction[currentReplayScrollIndex]['scale']}';
+                  '${scaleScrollX(scrollAction[currentReplayScrollIndex]['x'])}|${scaleScrollX(scrollAction[currentReplayScrollIndex]['y'])}|${scrollAction[currentReplayScrollIndex]['scale']}';
               currentReplayScrollIndex++;
             }
           });
@@ -552,20 +576,24 @@ class _LearningPageState extends State<LearningPage> {
   void drawReplayPoint(
       Map<String, dynamic> point, String tool, String color, double stroke) {
     if (tool == "DrawingMode.pen") {
+      var theOffset = Offset(point['x'], point['y']);
+      // log('$theOffset');
+      // log(scaleOffset(theOffset).toString());
       _replayPenPoints[_currentPage].add(SolvepadStroke(
-        Offset(point['x'], point['y']),
+        scaleOffset(Offset(point['x'], point['y'])),
         Color(int.parse(color, radix: 16)),
         stroke,
       ));
       setState(() {});
-    } else if (tool == "DrawingMode.highlighter") {
+    } // pen
+    else if (tool == "DrawingMode.highlighter") {
       _replayHighlighterPoints[_currentPage].add(SolvepadStroke(
-        Offset(point['x'], point['y']),
+        scaleOffset(Offset(point['x'], point['y'])),
         Color(int.parse(color, radix: 16)),
         stroke,
       ));
       setState(() {});
-    }
+    } // high
   }
 
   void drawReplayNull(String tool) {
@@ -837,6 +865,12 @@ class _LearningPageState extends State<LearningPage> {
       child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
         double solvepadWidth = constraints.maxWidth;
+        double solvepadHeight = constraints.maxHeight;
+        currentScrollX = (-1 * solvepadWidth);
+        if (mySolvepadSize.width != solvepadWidth) {
+          mySolvepadSize = Size(solvepadWidth, solvepadHeight);
+          log('my solvepad size $mySolvepadSize');
+        }
         return Stack(children: [
           PageView.builder(
             onPageChanged: _onPageViewChange,
@@ -1086,13 +1120,14 @@ class _LearningPageState extends State<LearningPage> {
         child: GestureDetector(
           onTap: () {
             if (!isReplaying) {
-              _initReplay();
+              if (isReplayEnd) {
+                _initReplay();
+              } else {
+                resumeReplay();
+              }
             } // before replay
             else {
-              log('pause replay');
-              setState(() {
-                isReplaying = false;
-              });
+              pauseReplay();
             }
           },
           child: Container(
@@ -1171,7 +1206,12 @@ class _LearningPageState extends State<LearningPage> {
       ]),
       child: Row(
         children: [
-          S.w(Responsive.isTablet(context) ? 5 : 24),
+          S.w(8),
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: CustomColors.gray878787),
+            onPressed: () => Navigator.pop(context),
+          ),
+          S.w(Responsive.isTablet(context) ? 5 : 12),
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
