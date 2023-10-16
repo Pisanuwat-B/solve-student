@@ -2963,6 +2963,50 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 width: 44,
               ),
             ),
+            S.h(8),
+            InkWell(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text("Select Audio Device"),
+                    content: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        SingleChildScrollView(
+                          reverse: true,
+                          child: Column(
+                            children: meeting
+                                .getAudioOutputDevices()
+                                .map(
+                                  (device) => ElevatedButton(
+                                    child: Text(device.label),
+                                    onPressed: () => {
+                                      meeting.switchAudioDevice(device),
+                                      Navigator.pop(context)
+                                    },
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: const BoxDecoration(
+                    color: CustomColors.redFF4201, shape: BoxShape.circle),
+                child: const Icon(
+                  Icons.audiotrack,
+                  size: 20,
+                  color: Colors.white,
+                ),
+              ),
+            ),
 
             /// TODO: Reconsider fullscreen option
             // InkWell(
