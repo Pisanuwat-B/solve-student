@@ -592,9 +592,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
+      // DeviceOrientation.portraitDown,
+      // DeviceOrientation.landscapeRight,
+      // DeviceOrientation.landscapeLeft,
     ]);
     _pageController.dispose();
     _meetingTimer?.cancel();
