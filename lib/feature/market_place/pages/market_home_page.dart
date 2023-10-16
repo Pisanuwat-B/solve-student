@@ -57,6 +57,15 @@ class _HomePageState extends State<MarketHomePage> {
         centerTitle: true,
         elevation: 0,
         title: Image.asset("assets/images/solve1.png"),
+        leading: InkWell(
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: const Icon(
+            Icons.chevron_left,
+            color: Colors.black,
+          ),
+        ),
         actions: [
           GestureDetector(
             onTap: () {

@@ -35,6 +35,15 @@ class _MyCoursePageState extends State<MyCoursePage> {
           appBar: AppBar(
             backgroundColor: Colors.white,
             elevation: 1,
+            leading: InkWell(
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+              child: const Icon(
+                Icons.chevron_left,
+                color: Colors.black,
+              ),
+            ),
             title: Text(
               "คอร์สของฉัน ",
               style: TextStyle(
