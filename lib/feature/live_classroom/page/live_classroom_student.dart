@@ -341,29 +341,30 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       setState(() {
         var decodedMessage = json.decode(message);
         log('json message');
-        log(decodedMessage);
+        log(decodedMessage.toString());
 
         for (int i = 0; i < decodedMessage.length; i++) {
           var item = decodedMessage[i];
           var data = item['data'];
           var uid = item['uid'];
-          if(data.startsWith('RequestScreenShare')){
+          if (data.startsWith('RequestScreenShare')) {
             for (var entry in handlers.entries) {
               if (data.startsWith(entry.key)) {
                 entry.value(data);
                 break;
               }
             }
-          }else if (uid != widget.userId && uid == courseController.courseData!.tutorId) {
-            if(!isHostRequestShareScreen){
+          } else if (uid != widget.userId &&
+              uid == courseController.courseData!.tutorId) {
+            if (!isHostRequestShareScreen) {
               for (var entry in handlers.entries) {
                 if (data.startsWith(entry.key)) {
                   entry.value(data);
                   break;
                 }
               }
-            }else{
-              if(isAllowSharingScreen && isHostFocus){
+            } else {
+              if (isAllowSharingScreen && isHostFocus) {
                 for (var entry in handlers.entries) {
                   if (data.startsWith(entry.key)) {
                     entry.value(data);
@@ -498,7 +499,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       _currentHostPage = pageNumber;
     });
     if (tabFreestyle) return;
-    if(_currentPage != pageNumber) {
+    if (_currentPage != pageNumber) {
       _pageController.animateToPage(
         pageNumber,
         duration: const Duration(milliseconds: 300),
@@ -1279,7 +1280,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                 if (activePointerId != details.pointer) return;
                                 activePointerId = null;
                                 if (isAllowSharingScreen && isHostFocus) {
-                                  for(int i=0;i<=2;i++) {
+                                  for (int i = 0; i <= 2; i++) {
                                     sendMessage('null');
                                   }
                                 }
@@ -1310,7 +1311,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                 if (activePointerId != details.pointer) return;
                                 activePointerId = null;
                                 if (isAllowSharingScreen && isHostFocus) {
-                                  for(int i=0;i<=2;i++) {
+                                  for (int i = 0; i <= 2; i++) {
                                     sendMessage('null');
                                   }
                                 }
@@ -1569,8 +1570,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                   _pageController.page!.toInt() != 0 &&
                                   !tabFollowing) {
                                 if (isAllowSharingScreen && isHostFocus) {
-                                  for(int i=0;i<=2;i++) {
-                                    sendMessage('ChangePage:${_currentPage - 1}');
+                                  for (int i = 0; i <= 2; i++) {
+                                    sendMessage(
+                                        'ChangePage:${_currentPage - 1}');
                                   }
                                 }
                                 _pageController.animateToPage(
@@ -1624,7 +1626,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                     _pageController.page!.toInt() !=
                                         _pages.length - 1) {
                                   if (isAllowSharingScreen && isHostFocus) {
-                                    for(int i=0;i<=2;i++) {
+                                    for (int i = 0; i <= 2; i++) {
                                       sendMessage(
                                           'ChangePage:${_currentPage + 1}');
                                     }
@@ -2409,7 +2411,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                           updateDataHistory(DrawingMode.drag);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            for(int i=0;i<=2;i++) {
+                                            for (int i = 0; i <= 2; i++) {
                                               sendMessage('DrawingMode.drag');
                                             }
                                           }
@@ -2417,7 +2419,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                           updateDataHistory(DrawingMode.pen);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            for(int i=0;i<=2;i++) {
+                                            for (int i = 0; i <= 2; i++) {
                                               sendMessage('DrawingMode.pen');
                                             }
                                           }
@@ -2426,7 +2428,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                               DrawingMode.highlighter);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            for(int i=0;i<=2;i++) {
+                                            for (int i = 0; i <= 2; i++) {
                                               sendMessage(
                                                   'DrawingMode.highlighter');
                                             }
@@ -2435,7 +2437,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                           updateDataHistory(DrawingMode.eraser);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            for(int i=0;i<=2;i++) {
+                                            for (int i = 0; i <= 2; i++) {
                                               sendMessage('DrawingMode.eraser');
                                             }
                                           }
@@ -2443,7 +2445,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                           updateDataHistory(DrawingMode.laser);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            for(int i=0;i<=2;i++) {
+                                            for (int i = 0; i <= 2; i++) {
                                               sendMessage('DrawingMode.laser');
                                             }
                                           }
@@ -3018,8 +3020,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                   _selectedIndexColors = index;
                                   openColors = !openColors;
                                 });
-                                if (isAllowSharingScreen &&
-                                    isHostFocus) {
+                                if (isAllowSharingScreen && isHostFocus) {
                                   for (int i = 0; i <= 2; i++) {
                                     sendMessage('StrokeColor.$index');
                                   }
@@ -3065,8 +3066,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                     _selectedIndexLines = index;
                                     openLines = !openLines;
                                   });
-                                  if (isAllowSharingScreen &&
-                                      isHostFocus) {
+                                  if (isAllowSharingScreen && isHostFocus) {
                                     for (int i = 0; i <= 2; i++) {
                                       sendMessage('StrokeWidth.$index');
                                     }
@@ -3152,8 +3152,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                                   DrawingMode.drag);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                for(int i=0;i<=2;i++) {
-                                                  sendMessage('DrawingMode.drag');
+                                                for (int i = 0; i <= 2; i++) {
+                                                  sendMessage(
+                                                      'DrawingMode.drag');
                                                 }
                                               }
                                             } else if (index == 1) {
@@ -3161,7 +3162,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                                   DrawingMode.pen);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                for(int i=0;i<=2;i++) {
+                                                for (int i = 0; i <= 2; i++) {
                                                   sendMessage(
                                                       'DrawingMode.pen');
                                                 }
@@ -3171,7 +3172,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                                   DrawingMode.highlighter);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                for(int i=0;i<=2;i++) {
+                                                for (int i = 0; i <= 2; i++) {
                                                   sendMessage(
                                                       'DrawingMode.highlighter');
                                                 }
@@ -3181,7 +3182,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                                   DrawingMode.eraser);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                for(int i=0;i<=2;i++) {
+                                                for (int i = 0; i <= 2; i++) {
                                                   sendMessage(
                                                       'DrawingMode.eraser');
                                                 }
@@ -3191,7 +3192,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                                   DrawingMode.laser);
                                               if (isAllowSharingScreen &&
                                                   isHostFocus) {
-                                                for(int i=0;i<=2;i++) {
+                                                for (int i = 0; i <= 2; i++) {
                                                   sendMessage(
                                                       'DrawingMode.laser');
                                                 }
@@ -3293,7 +3294,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 if (_pageController.hasClients &&
                     _pageController.page!.toInt() != 0) {
                   if (isAllowSharingScreen && isHostFocus) {
-                    for(int i=0;i<=2;i++) {
+                    for (int i = 0; i <= 2; i++) {
                       sendMessage('ChangePage:${_currentPage - 1}');
                     }
                     _currentHostPage = _currentPage - 1;
@@ -3330,7 +3331,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                   if (_pageController.hasClients &&
                       _pageController.page!.toInt() != _pages.length - 1) {
                     if (isAllowSharingScreen && isHostFocus) {
-                      for(int i=0;i<=2;i++) {
+                      for (int i = 0; i <= 2; i++) {
                         sendMessage('ChangePage:${_currentPage + 1}');
                       }
                       _currentHostPage = _currentPage + 1;

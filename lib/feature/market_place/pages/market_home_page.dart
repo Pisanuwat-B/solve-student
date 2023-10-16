@@ -263,11 +263,25 @@ class _HomePageState extends State<MarketHomePage> {
                                                   Builder(builder: (context) {
                                                 if (only.thumbnailUrl == null ||
                                                     only.thumbnailUrl == "") {
-                                                  return Image.asset(
-                                                    ImageAssets.emptyCourse,
-                                                    height: 200,
+                                                  return Container(
+                                                    height: 180,
                                                     width: double.infinity,
-                                                    fit: BoxFit.fitHeight,
+                                                    decoration:
+                                                        const BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.only(
+                                                        topLeft:
+                                                            Radius.circular(8),
+                                                        topRight:
+                                                            Radius.circular(8),
+                                                      ),
+                                                      image: DecorationImage(
+                                                        image: AssetImage(
+                                                          'assets/images/img_not_available.jpeg',
+                                                        ),
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
                                                   );
                                                 }
                                                 return Image.network(

@@ -9,8 +9,8 @@ import '../utils/responsive.dart';
 Future<void> showCloseDialog(
   BuildContext context,
   Function onConfirm, {
-  String title = 'ต้องการจบการสอน?',
-  String detail = 'นักเรียนในห้องของคุณทั้งหมดจะถูกบังคับให้ออกจากห้อง',
+  String title = 'ต้องการออกจากห้องเรียนหรือไม่?',
+  String detail = '. . . จะออกจริงหรอ ~~',
   String confirm = 'ปิดห้องเรียน',
   String cancel = 'กลับไปที่ห้องเรียน',
   Function? onCancel,
