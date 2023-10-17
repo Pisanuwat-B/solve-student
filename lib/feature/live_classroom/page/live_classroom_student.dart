@@ -10,6 +10,7 @@ import 'package:videosdk/videosdk.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../authentication/service/auth_provider.dart';
+import '../../../nav.dart';
 import '../../calendar/constants/custom_styles.dart';
 import '../../calendar/controller/create_course_live_controller.dart';
 import '../../calendar/widgets/sizebox.dart';
@@ -1484,7 +1485,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 InkWell(
                   onTap: () {
                     showCloseDialog(context, () {
-                      if (!widget.isMock) meeting.leave();
+                      if (!widget.isMock) {
+                        meeting.leave();
+                      }
                     });
                   },
                   child: Container(
@@ -2855,6 +2858,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               onTap: () {
                 showCloseDialog(context, () {
                   if (!widget.isMock) meeting.leave();
+                  Navigator.push(
+                      context, MaterialPageRoute(builder: (_) => Nav()));
                 });
               },
               child: Image.asset(

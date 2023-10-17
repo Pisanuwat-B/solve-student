@@ -10,8 +10,8 @@ Future<void> showCloseDialog(
   BuildContext context,
   Function onConfirm, {
   String title = 'ต้องการออกจากห้องเรียนหรือไม่?',
-  String detail = '. . . จะออกจริงหรอ ~~',
-  String confirm = 'ปิดห้องเรียน',
+  String detail = '',
+  String confirm = 'ออกห้องเรียน',
   String cancel = 'กลับไปที่ห้องเรียน',
   Function? onCancel,
 }) {
