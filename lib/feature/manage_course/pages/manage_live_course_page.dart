@@ -517,7 +517,7 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                                         children: [
                                           Expanded(
                                             child: Text(
-                                              "้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี SOLVEPad",
+                                              "้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี Solvepad",
                                               style: TextStyle(
                                                 color: appTextSecondaryColor,
                                                 fontSize:
