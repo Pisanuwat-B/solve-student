@@ -239,7 +239,11 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                       ),
                       gridCard(
                         context,
-                        onTap: () async {},
+                        onTap: () async {
+                          var route = MaterialPageRoute(
+                              builder: (context) => const MaintenancePage());
+                          Navigator.push(context, route);
+                        },
                         image: 'assets/images/menu_create_sheet.png',
                         title: "คอร์ส SOLVE live ของฉัน",
                         content: "คอร์สเรียนสดของคุณ",
@@ -517,7 +521,7 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                                         children: [
                                           Expanded(
                                             child: Text(
-                                              "้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี Solvepad",
+                                              "ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี Solvepad",
                                               style: TextStyle(
                                                 color: appTextSecondaryColor,
                                                 fontSize:

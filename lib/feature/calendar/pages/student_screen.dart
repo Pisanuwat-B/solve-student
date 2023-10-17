@@ -1070,11 +1070,11 @@ class _StudentScreenState extends State<StudentScreen>
                                 height: 48,
                                 width: 85,
                                 child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
+                                  padding: const EdgeInsets.all(3.0),
                                   child: Image.asset(
-                                    ImageAssets.emptyCourse,
+                                    'assets/images/img_not_available.jpeg',
                                     width: double.infinity,
-                                    fit: BoxFit.fitHeight,
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
@@ -1119,10 +1119,7 @@ class _StudentScreenState extends State<StudentScreen>
                       Expanded(
                         child: Row(
                           children: [
-                            Image.asset(
-                              'assets/images/tutor_icon.png',
-                              scale: 4,
-                            ),
+                            const SizedBox(),
                             S.w(10),
                             // Text(
                             //   listCalendarTab[index].tutorId ?? '',

@@ -476,17 +476,16 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                       con.courseDetail!.lessons![index];
                                   return GestureDetector(
                                     onTap: () {
-                                      log(con.courseDetail!.id.toString());
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => LearningPage(
-                                            lesson: con
-                                                .courseDetail!.lessons![index],
-                                            course: con.courseDetail!,
-                                          ),
-                                        ),
-                                      );
+                                      // Navigator.push(
+                                      //   context,
+                                      //   MaterialPageRoute(
+                                      //     builder: (context) => LearningPage(
+                                      //       lesson: con
+                                      //           .courseDetail!.lessons![index],
+                                      //       course: con.courseDetail!,
+                                      //     ),
+                                      //   ),
+                                      // );
                                     },
                                     child: Container(
                                       width: Sizer(context).w,

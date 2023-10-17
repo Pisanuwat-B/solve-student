@@ -504,11 +504,13 @@ class _CountdownState extends State<Countdown> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      "คอร์สจะเริ่มในอีก ${_timeUntilStart.inHours} : ${(_timeUntilStart.inMinutes % 60).toString().padLeft(2, '0')} : ${(_timeUntilStart.inSeconds % 60).toString().padLeft(2, '0')}",
-      style: _util.isTablet()
-          ? CustomStyles.bold18Black363636
-          : CustomStyles.med14Black363636,
-    );
+    return (_timeUntilStart.inMilliseconds > 0)
+        ? Text(
+            "คอร์สจะเริ่มในอีก ${_timeUntilStart.inHours} : ${(_timeUntilStart.inMinutes % 60).toString().padLeft(2, '0')} : ${(_timeUntilStart.inSeconds % 60).toString().padLeft(2, '0')}",
+            style: _util.isTablet()
+                ? CustomStyles.bold18Black363636
+                : CustomStyles.med14Black363636,
+          )
+        : Container();
   }
 }
