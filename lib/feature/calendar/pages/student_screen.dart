@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -16,6 +18,7 @@ import 'package:solve_student/feature/calendar/widgets/sizebox.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../../authentication/service/auth_provider.dart';
+import '../../../firebase/database.dart';
 import '../../class/pages/class_list_page.dart';
 import 'course_history.dart';
 
@@ -42,6 +45,7 @@ class _StudentScreenState extends State<StudentScreen>
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   AuthProvider? authProvider;
+  FirebaseService dbService = FirebaseService();
 
   @override
   void initState() {
@@ -841,10 +845,14 @@ class _StudentScreenState extends State<StudentScreen>
       ],
       Column(
         children: List.generate(listCalendarTab.length, (index) {
+          var filterLevelId = courseController.levels
+              .where((e) =>
+                  e.id ==
+                  studentController.showCourseStudentFilterToday[index].levelId)
+              .toList();
           var filterSubjectId = courseController.subjects
               .where((e) => e.id == listCalendarTab[index].subjectId)
               .toList();
-
           return Container(
             margin: const EdgeInsets.symmetric(vertical: 10),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -876,23 +884,30 @@ class _StudentScreenState extends State<StudentScreen>
                     SizedBox(
                       height: 74,
                       width: 131,
-                      child: CachedNetworkImage(
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        imageBuilder: (context, imageProvider) => Container(
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(8),
-                              topRight: Radius.circular(8),
-                            ),
-                            image: DecorationImage(
-                              image: imageProvider,
+                      child: listCalendarTab[index].thumbnailUrl != ''
+                          ? CachedNetworkImage(
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              imageBuilder: (context, imageProvider) =>
+                                  Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(8),
+                                    topRight: Radius.circular(8),
+                                  ),
+                                  image: DecorationImage(
+                                    image: imageProvider,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              imageUrl: listCalendarTab[index].thumbnailUrl!,
+                            )
+                          : Image.asset(
+                              'assets/images/img_not_available.jpeg',
+                              width: double.infinity,
                               fit: BoxFit.cover,
                             ),
-                          ),
-                        ),
-                        imageUrl: listCalendarTab[index].thumbnailUrl ?? '',
-                      ),
                     ),
                     S.w(10),
                     Expanded(
@@ -920,14 +935,17 @@ class _StudentScreenState extends State<StudentScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      listCalendarTab[index].tutorId ?? '',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: CustomStyles.reg16Green,
-                    ),
+                    // Text(
+                    //   'tutorName',
+                    //   maxLines: 2,
+                    //   overflow: TextOverflow.ellipsis,
+                    //   style: CustomStyles.reg16Green,
+                    // ),
                     Row(
                       children: [
+                        _tagType(
+                            '${filterLevelId.isNotEmpty ? filterLevelId.first.name : ''}'),
+                        S.w(4.0),
                         _tagType(
                             '${filterSubjectId.isNotEmpty ? filterSubjectId.first.name : ''}'),
                         S.w(4.0),

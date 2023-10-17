@@ -19,16 +19,16 @@ class FirebaseService {
         final user = snapshot.data()!;
         return user;
       } else {
-        print('Document does not exist');
+        log('Document does not exist');
         return {};
       }
     } catch (e) {
-      print('Error getting course: $e');
+      log('Error getting course: $e');
       return {};
     }
   }
 
-  Future<Map<String, dynamic>> getUserNameById(userId) async {
+  Future<String> getUserNameById(userId) async {
     final docRef = db.collection('users');
     try {
       final snapshot = await docRef.doc(userId).get();
@@ -36,12 +36,12 @@ class FirebaseService {
         final name = snapshot.data()!['name'];
         return name;
       } else {
-        print('Document does not exist');
-        return {};
+        log('Document does not exist');
+        return '';
       }
     } catch (e) {
-      print('Error getting course: $e');
-      return {};
+      log('Error getting course: $e');
+      return '';
     }
   }
 

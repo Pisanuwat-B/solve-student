@@ -213,9 +213,27 @@ class _CourseHistoryState extends State<CourseHistory>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _tagTime(
-                                '${FormatDate.timeOnlyNumber(reviewList[index].start)} น. - ${FormatDate.timeOnlyNumber(reviewList[index].end)} น.'),
-                            S.w(50),
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    reviewList[index].courseName ?? '',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: CustomStyles.bold14Black363636,
+                                  ), // course-name
+                                  Text(
+                                    reviewList[index].detailsText ?? '',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style:
+                                        CustomStyles.med14Black363636Overflow,
+                                  ), // course-detail
+                                ],
+                              ),
+                            ), // course-name + detail
                             SizedBox(
                               height: 48,
                               width: 85,
@@ -252,37 +270,15 @@ class _CourseHistoryState extends State<CourseHistory>
                                       height: 48,
                                       width: 85,
                                       child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
+                                        padding: const EdgeInsets.all(3.0),
                                         child: Image.asset(
-                                          ImageAssets.emptyCourse,
+                                          'assets/images/img_not_available.jpeg',
                                           width: double.infinity,
-                                          fit: BoxFit.fitHeight,
+                                          fit: BoxFit.cover,
                                         ),
                                       ),
                                     ),
-                            ),
-                            S.w(10),
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    reviewList[index].courseName ?? '',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: CustomStyles.bold14Black363636,
-                                  ),
-                                  Text(
-                                    reviewList[index].detailsText ?? '',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style:
-                                        CustomStyles.med14Black363636Overflow,
-                                  ),
-                                ],
-                              ),
-                            ),
+                            ), // image
                             if (_util.isTablet()) S.w(50),
                             Row(
                               children: [
@@ -292,7 +288,7 @@ class _CourseHistoryState extends State<CourseHistory>
                                 _tagType(
                                     '${filterSubjectId.isNotEmpty ? filterSubjectId.first.name : ''}'),
                               ],
-                            ),
+                            ), // subject-level
                           ],
                         ),
                         S.h(10),
@@ -315,7 +311,10 @@ class _CourseHistoryState extends State<CourseHistory>
                                   // ),
                                 ],
                               ),
-                            ),
+                            ), // profile-image
+                            _tagTime(
+                                '${FormatDate.timeOnlyNumber(reviewList[index].start)} น. - ${FormatDate.timeOnlyNumber(reviewList[index].end)} น.'),
+                            S.w(12),
                             Column(
                               children: [
                                 Text(
@@ -325,7 +324,7 @@ class _CourseHistoryState extends State<CourseHistory>
                                 S.w(10),
                                 // _learned(),
                               ],
-                            ),
+                            ), // start-time
                           ],
                         )
                       ],

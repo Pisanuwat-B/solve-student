@@ -58,6 +58,15 @@ class _HomePageState extends State<MarketHomePage> {
         backgroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
+        leading: InkWell(
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: const Icon(
+            Icons.chevron_left,
+            color: Colors.black,
+          ),
+        ),
         title: Image.asset(
           "assets/images/solve1.png",
           width: 80,
