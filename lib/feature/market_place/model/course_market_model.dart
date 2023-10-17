@@ -33,6 +33,7 @@ class CourseMarketModel {
   DateTime? createTime;
   DateTime? updateTime;
   List<Lesson>? lessons;
+  double? price;
 
   CourseMarketModel({
     this.id,
@@ -54,6 +55,7 @@ class CourseMarketModel {
     this.createTime,
     this.updateTime,
     this.lessons,
+    this.price,
   });
 
   factory CourseMarketModel.fromJson(Map<String, dynamic> json) {
@@ -74,6 +76,7 @@ class CourseMarketModel {
       detailsText: json["details_text"],
       createUser: json["create_user"],
       publishing: json["publishing"],
+      price: json["price"] ?? 0,
       firstDay: json["first_day"] == null
           ? null
           : DateTime.fromMicrosecondsSinceEpoch(json["first_day"]),
@@ -112,6 +115,7 @@ class CourseMarketModel {
         "last_day": lastDay?.millisecondsSinceEpoch,
         "create_time": createTime?.millisecondsSinceEpoch,
         "update_time": updateTime?.millisecondsSinceEpoch,
+        "price": price,
         "lessons": lessons == null
             ? []
             : List<dynamic>.from(lessons!.map((x) => x.toJson())),

@@ -18,6 +18,8 @@ import 'package:solve_student/feature/market_place/service/market_home_provider.
 import 'package:solve_student/feature/profile/pages/profile_page.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import '../../live_classroom/components/divider.dart';
+
 class MarketHomePage extends StatefulWidget {
   const MarketHomePage({super.key});
 
@@ -56,113 +58,118 @@ class _HomePageState extends State<MarketHomePage> {
         backgroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
-        title: Image.asset("assets/images/solve1.png"),
-        actions: [
-          GestureDetector(
-            onTap: () {
-              var route =
-                  MaterialPageRoute(builder: (context) => const ProfilePage());
-              Navigator.push(context, route);
-            },
-            child: Container(
-              width: 45,
-              height: 45,
-              margin: const EdgeInsets.fromLTRB(5, 5, 15, 5),
-              child: Builder(
-                builder: (context) {
-                  if (authprovider?.user?.image != null) {
-                    return ClipRRect(
-                      borderRadius:
-                          BorderRadius.circular(Sizer(context).h * .1),
-                      child: CachedNetworkImage(
-                        fit: BoxFit.cover,
-                        imageUrl: authprovider?.user?.image ?? "",
-                        errorWidget: (context, url, error) =>
-                            const CircleAvatar(
-                                child: Icon(CupertinoIcons.person)),
-                      ),
-                    );
-                  }
-                  return Image.asset("assets/images/profile2.png");
-                },
-              ),
-            ),
-          ),
-        ],
+        title: Image.asset(
+          "assets/images/solve1.png",
+          width: 80,
+          height: 80,
+        ),
+        // actions: [
+        //   GestureDetector(
+        //     onTap: () {
+        //       var route =
+        //           MaterialPageRoute(builder: (context) => const ProfilePage());
+        //       Navigator.push(context, route);
+        //     },
+        //     child: Container(
+        //       width: 45,
+        //       height: 45,
+        //       margin: const EdgeInsets.fromLTRB(5, 5, 15, 5),
+        //       child: Builder(
+        //         builder: (context) {
+        //           if (authprovider?.user?.image != null) {
+        //             return ClipRRect(
+        //               borderRadius:
+        //                   BorderRadius.circular(Sizer(context).h * .1),
+        //               child: CachedNetworkImage(
+        //                 fit: BoxFit.cover,
+        //                 imageUrl: authprovider?.user?.image ?? "",
+        //                 errorWidget: (context, url, error) =>
+        //                     const CircleAvatar(
+        //                         child: Icon(CupertinoIcons.person)),
+        //               ),
+        //             );
+        //           }
+        //           return Image.asset("assets/images/profile2.png");
+        //         },
+        //       ),
+        //     ),
+        //   ),
+        // ],
       ),
       body: SafeArea(
-        child: Container(
+        child: SizedBox(
           width: Sizer(context).w,
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  height: 400.0,
-                  child: Stack(
-                    children: [
-                      CarouselSlider(
-                        options: CarouselOptions(
-                          height: 400.0,
-                          viewportFraction: 1,
-                          onPageChanged: (index, reason) {
-                            setState(() {
-                              currentIndex = index;
-                            });
-                          },
-                        ),
-                        items: bannerList.map((String item) {
-                          return Builder(
-                            builder: (BuildContext context) {
-                              return Container(
-                                width: MediaQuery.of(context).size.width,
-                                decoration:
-                                    const BoxDecoration(color: Colors.white),
-                                child: Image.asset(
-                                  item,
-                                  fit: BoxFit.cover,
-                                ),
-                              );
-                            },
-                          );
-                        }).toList(),
-                      ),
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.transparent,
-                                Colors.grey.withOpacity(0.5),
-                              ],
-                              stops: [0.1, 0.9],
-                              begin: FractionalOffset.topCenter,
-                              end: FractionalOffset.bottomCenter,
-                              tileMode: TileMode.repeated,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: DotsIndicator(
-                          dotsCount: bannerList.length,
-                          position: currentIndex,
-                          decorator: DotsDecorator(
-                            color: Colors.white,
-                            size: const Size(10, 9.0),
-                            activeSize: const Size(30, 9.0),
-                            activeShape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5.0),
-                            ),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
+                const DividerLine(),
+                // Container(
+                //   height: 400.0,
+                //   child: Stack(
+                //     children: [
+                //       CarouselSlider(
+                //         options: CarouselOptions(
+                //           height: 400.0,
+                //           viewportFraction: 1,
+                //           onPageChanged: (index, reason) {
+                //             setState(() {
+                //               currentIndex = index;
+                //             });
+                //           },
+                //         ),
+                //         items: bannerList.map((String item) {
+                //           return Builder(
+                //             builder: (BuildContext context) {
+                //               return Container(
+                //                 width: MediaQuery.of(context).size.width,
+                //                 decoration:
+                //                     const BoxDecoration(color: Colors.white),
+                //                 child: Image.asset(
+                //                   item,
+                //                   fit: BoxFit.cover,
+                //                 ),
+                //               );
+                //             },
+                //           );
+                //         }).toList(),
+                //       ),
+                //       Align(
+                //         alignment: Alignment.bottomCenter,
+                //         child: Container(
+                //           height: 40,
+                //           decoration: BoxDecoration(
+                //             gradient: LinearGradient(
+                //               colors: [
+                //                 Colors.transparent,
+                //                 Colors.grey.withOpacity(0.5),
+                //               ],
+                //               stops: [0.1, 0.9],
+                //               begin: FractionalOffset.topCenter,
+                //               end: FractionalOffset.bottomCenter,
+                //               tileMode: TileMode.repeated,
+                //             ),
+                //           ),
+                //         ),
+                //       ),
+                //       Align(
+                //         alignment: Alignment.bottomCenter,
+                //         child: DotsIndicator(
+                //           dotsCount: bannerList.length,
+                //           position: currentIndex,
+                //           decorator: DotsDecorator(
+                //             color: Colors.white,
+                //             size: const Size(10, 9.0),
+                //             activeSize: const Size(30, 9.0),
+                //             activeShape: RoundedRectangleBorder(
+                //               borderRadius: BorderRadius.circular(5.0),
+                //             ),
+                //           ),
+                //         ),
+                //       )
+                //     ],
+                //   ),
+                // ),
                 Container(
                   padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
                   child: Column(

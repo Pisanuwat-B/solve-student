@@ -134,7 +134,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                   Text(
                                     con.courseDetail?.recommendText ?? "",
                                     // "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: appTextPrimaryColor,
                                       fontSize: 18,
                                     ),
@@ -156,7 +156,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                             5, 0, 5, 0),
                                         child: Text(
                                           con.subject,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 15,
                                           ),
                                           maxLines: 1,
@@ -175,7 +175,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                             5, 0, 5, 0),
                                         child: Text(
                                           con.level,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 15,
                                           ),
                                           maxLines: 1,
@@ -216,43 +216,43 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            "10,000 บาท",
-                                            style: TextStyle(
+                                            '${(con.courseDetail?.price ?? 0).toInt().toString()} บาท',
+                                            style: const TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold,
                                             ),
                                             maxLines: 1,
                                           ),
                                         ),
-                                        Container(
-                                          width: 100,
-                                          padding: const EdgeInsets.fromLTRB(
-                                              5, 0, 5, 0),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(50),
-                                            border:
-                                                Border.all(color: primaryColor),
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.list,
-                                                color: primaryColor,
-                                              ),
-                                              SizedBox(width: 5),
-                                              const Text(
-                                                "แบ่งชำระ",
-                                                style: TextStyle(
-                                                  color: primaryColor,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                        // Container(
+                                        //   width: 100,
+                                        //   padding: const EdgeInsets.fromLTRB(
+                                        //       5, 0, 5, 0),
+                                        //   decoration: BoxDecoration(
+                                        //     color: Colors.white,
+                                        //     borderRadius:
+                                        //         BorderRadius.circular(50),
+                                        //     border:
+                                        //         Border.all(color: primaryColor),
+                                        //   ),
+                                        //   child: Row(
+                                        //     mainAxisAlignment:
+                                        //         MainAxisAlignment.center,
+                                        //     children: [
+                                        //       Icon(
+                                        //         Icons.list,
+                                        //         color: primaryColor,
+                                        //       ),
+                                        //       SizedBox(width: 5),
+                                        //       const Text(
+                                        //         "แบ่งชำระ",
+                                        //         style: TextStyle(
+                                        //           color: primaryColor,
+                                        //         ),
+                                        //       ),
+                                        //     ],
+                                        //   ),
+                                        // ),
                                       ],
                                     ),
 

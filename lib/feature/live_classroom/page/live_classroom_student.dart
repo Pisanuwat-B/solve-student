@@ -331,7 +331,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   void initWss() {
     channel = WebSocketChannel.connect(
       Uri.parse(
-          'ws://35.240.169.164:3000/${widget.courseId}/${widget.startTime}'),
+          'ws://34.143.240.238:3000/${widget.courseId}/${widget.startTime}'),
     );
     log('connect to WSS');
     sendMessage('RequestSolvepadSize');
