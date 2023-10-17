@@ -561,6 +561,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
 
   void handleMessageEndMeeting(String data) {
     meeting.leave();
+    if (!mounted) return;
     Navigator.pop(context);
     Navigator.pop(context);
   }
@@ -608,8 +609,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   // ---------- FUNCTION: WSS
   void closeChanel() {
     log('close Chanel');
-    _webSocketSubscription?.cancel();
     channel?.sink.close();
+    _webSocketSubscription?.cancel();
   }
 
   void sendMessage(dynamic data) {
