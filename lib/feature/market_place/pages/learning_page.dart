@@ -749,25 +749,26 @@ class _LearningPageState extends State<LearningPage> {
                         itemCount: _listLines.length,
                         itemBuilder: (context, index) {
                           return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _selectedIndexLines = index;
-                                  openLines = !openLines;
-                                });
-                              },
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(3.0),
-                                    child: Image.asset(
-                                      _selectedIndexLines == index
-                                          ? _listLines[index]['image_active']
-                                          : _listLines[index]['image_dis'],
-                                    ),
+                            onTap: () {
+                              setState(() {
+                                _selectedIndexLines = index;
+                                openLines = !openLines;
+                              });
+                            },
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(3.0),
+                                  child: Image.asset(
+                                    _selectedIndexLines == index
+                                        ? _listLines[index]['image_active']
+                                        : _listLines[index]['image_dis'],
                                   ),
-                                  S.h(8)
-                                ],
-                              ));
+                                ),
+                                S.h(8)
+                              ],
+                            ),
+                          );
                         })
                   ],
                 ),

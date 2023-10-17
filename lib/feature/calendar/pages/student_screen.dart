@@ -1273,7 +1273,12 @@ class _StudentScreenState extends State<StudentScreen>
                   S.h(0),
                   if (event.isNotEmpty) ...[
                     InkWell(
-                      onTap: () async {},
+                      onTap: () async {
+                        await showDialog(
+                            context: context,
+                            builder: (context) => _eventList(day, event));
+                        setState(() {});
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 5.0, vertical: 0.0),
@@ -1346,7 +1351,12 @@ class _StudentScreenState extends State<StudentScreen>
                   S.h(0),
                   if (event.isNotEmpty) ...[
                     InkWell(
-                      onTap: () async {},
+                      onTap: () async {
+                        await showDialog(
+                            context: context,
+                            builder: (context) => _eventList(day, event));
+                        setState(() {});
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 5.0, vertical: 0.0),
