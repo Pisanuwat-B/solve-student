@@ -816,7 +816,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     var zoom = double.parse(parts.last);
     if (_currentHostScrollZoom != '') {
       _transformationController[_currentHostPage].value = Matrix4.identity()
-        ..translate(scrollX, scaleScrollY(scrollY))
+        ..translate(scaleScrollX(scrollX), scaleScrollY(scrollY))
         ..scale(zoom);
     }
   }
@@ -2271,74 +2271,77 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               ],
             ),
           ),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(32),
-                  child: Image.network(
-                    authProvider.user!.image!,
-                    height: 32,
-                    width: 32,
-                  ),
-                ),
-                S.w(8),
-
-                /// TODO: revise this when Quiz is ready
-                // Container(
-                //   height: 32,
-                //   decoration: BoxDecoration(
-                //     border: Border.all(
-                //       color: CustomColors.grayCFCFCF,
-                //       style: BorderStyle.solid,
-                //       width: 1.0,
-                //     ),
-                //     borderRadius: BorderRadius.circular(8),
-                //     color: CustomColors.whitePrimary,
-                //   ),
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     children: <Widget>[
-                //       S.w(8),
-                //       InkWell(
-                //         onTap: () {
-                //           showLeader(context);
-                //         },
-                //         child: Image.asset(
-                //           ImageAssets.leaderboard,
-                //           height: 24,
-                //           width: 24,
-                //         ),
-                //       ),
-                //       S.w(8),
-                //     ],
-                //   ),
-                // ),
-                // S.w(defaultPadding),
-                InkWell(
-                  onTap: () {
-                    log('tap catch-up');
-                    // sendCatchupMessage();
-                  },
-                  child: Container(
-                    height: 32,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: CustomColors.greenPrimary,
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child:
-                        Text("ไปหน้าที่สอน", style: CustomStyles.bold11White),
-                  ),
-                ),
-                S.w(28),
-              ],
-            ),
+          const Expanded(
+            child: SizedBox(),
           ),
+          // Expanded(
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.end,
+          //     children: [
+          //       ClipRRect(
+          //         borderRadius: BorderRadius.circular(32),
+          //         child: Image.network(
+          //           authProvider.user!.image!,
+          //           height: 32,
+          //           width: 32,
+          //         ),
+          //       ),
+          //       S.w(8),
+          //
+          //       /// TODO: revise this when Quiz is ready
+          //       // Container(
+          //       //   height: 32,
+          //       //   decoration: BoxDecoration(
+          //       //     border: Border.all(
+          //       //       color: CustomColors.grayCFCFCF,
+          //       //       style: BorderStyle.solid,
+          //       //       width: 1.0,
+          //       //     ),
+          //       //     borderRadius: BorderRadius.circular(8),
+          //       //     color: CustomColors.whitePrimary,
+          //       //   ),
+          //       //   child: Row(
+          //       //     mainAxisAlignment: MainAxisAlignment.center,
+          //       //     children: <Widget>[
+          //       //       S.w(8),
+          //       //       InkWell(
+          //       //         onTap: () {
+          //       //           showLeader(context);
+          //       //         },
+          //       //         child: Image.asset(
+          //       //           ImageAssets.leaderboard,
+          //       //           height: 24,
+          //       //           width: 24,
+          //       //         ),
+          //       //       ),
+          //       //       S.w(8),
+          //       //     ],
+          //       //   ),
+          //       // ),
+          //       // S.w(defaultPadding),
+          //       InkWell(
+          //         onTap: () {
+          //           log('tap catch-up');
+          //           // sendCatchupMessage();
+          //         },
+          //         child: Container(
+          //           height: 32,
+          //           padding: const EdgeInsets.symmetric(
+          //             horizontal: 6,
+          //             vertical: 10,
+          //           ),
+          //           decoration: BoxDecoration(
+          //             color: CustomColors.greenPrimary,
+          //             borderRadius: BorderRadius.circular(8.0),
+          //           ),
+          //           child:
+          //               Text("ไปหน้าที่สอน", style: CustomStyles.bold11White),
+          //         ),
+          //       ),
+          //       S.w(28),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
     );
