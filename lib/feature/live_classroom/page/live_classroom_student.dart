@@ -565,6 +565,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               sendMessage('DrawingMode.eraser');
               break;
         }
+        sendMessage('StrokeColor.$_selectedIndexColors');
+        sendMessage('StrokeWidth.$_selectedIndexLines');
       }
 
       sendMessage(
