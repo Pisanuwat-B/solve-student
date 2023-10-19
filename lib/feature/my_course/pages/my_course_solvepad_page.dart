@@ -5,7 +5,7 @@ import 'package:solve_student/constants/theme.dart';
 import 'package:solve_student/feature/calendar/constants/assets_manager.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
 import 'package:solve_student/feature/my_course/controller/my_course_solvepad_controller.dart';
-import 'package:solve_student/feature/my_course/pages/my_course_detail_page.dart';
+import 'package:solve_student/feature/my_course/pages/my_course_solvepad_detail_page.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
 class MyCourseSolvepadPage extends StatefulWidget {
@@ -88,7 +88,7 @@ class _MyCoursePageState extends State<MyCourseSolvepadPage> {
                         return GestureDetector(
                           onTap: () {
                             var route = MaterialPageRoute(
-                                builder: (context) => MyCourseDetailPage(
+                                builder: (context) => MyCourseSolveDetailPage(
                                     courseId: only.id ?? ""));
                             Navigator.push(context, route);
                           },

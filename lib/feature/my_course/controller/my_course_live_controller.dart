@@ -31,11 +31,15 @@ class MyCourseLiveController extends ChangeNotifier {
             studentList =
                 data.docs[i].data()['student_list'].cast<String>().toList();
             String? course = studentList
-                .where((element) => element == (auth?.uid ?? ""))
+                .where((element) => element == ("RCqVTMI7PVSZRUz94EpdJr9FPiK2"))
                 .firstOrNull;
+            // String? course = studentList
+            //     .where((element) => element == (auth?.uid ?? ""))
+            //     .firstOrNull;
             if (course != null) {
               CourseLiveModel only =
                   CourseLiveModel.fromJson(data.docs[i].data());
+              only.id = data.docs[i].id;
               myCourseList.add(only);
             }
           }

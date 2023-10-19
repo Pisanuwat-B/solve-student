@@ -11,6 +11,7 @@ String courseLiveModelToJson(CourseLiveModel data) =>
     json.encode(data.toJson());
 
 class CourseLiveModel {
+  String? id;
   List<Calendar>? calendar;
   String? subjectId;
   String? tutorId;
@@ -35,6 +36,7 @@ class CourseLiveModel {
   num? firstDay;
 
   CourseLiveModel({
+    this.id,
     this.calendar,
     this.subjectId,
     this.tutorId,
@@ -61,6 +63,7 @@ class CourseLiveModel {
 
   factory CourseLiveModel.fromJson(Map<String, dynamic> json) =>
       CourseLiveModel(
+        id: json["id"],
         calendar: json["calendar"] == null
             ? []
             : List<Calendar>.from(
@@ -96,6 +99,7 @@ class CourseLiveModel {
       );
 
   Map<String, dynamic> toJson() => {
+        "id": id,
         "calendar": calendar == null
             ? []
             : List<dynamic>.from(calendar!.map((x) => x.toJson())),

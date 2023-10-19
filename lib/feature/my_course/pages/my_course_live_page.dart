@@ -5,6 +5,7 @@ import 'package:solve_student/constants/theme.dart';
 import 'package:solve_student/feature/calendar/constants/constants.dart';
 import 'package:solve_student/feature/market_place/model/course_live_model.dart';
 import 'package:solve_student/feature/my_course/controller/my_course_live_controller.dart';
+import 'package:solve_student/feature/my_course/pages/my_course_live_detail_page.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
 class MyCourseLivePage extends StatefulWidget {
@@ -85,7 +86,12 @@ class _MyCourseLivePageState extends State<MyCourseLivePage> {
                       itemBuilder: (context, index) {
                         CourseLiveModel only = con.myCourseList[index];
                         return GestureDetector(
-                          onTap: () {},
+                          onTap: () {
+                            var route = MaterialPageRoute(
+                                builder: (context) => MyCourseLiveDetailPage(
+                                    courseId: only.id ?? ""));
+                            Navigator.push(context, route);
+                          },
                           child: Container(
                             margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                             alignment: Alignment.center,
