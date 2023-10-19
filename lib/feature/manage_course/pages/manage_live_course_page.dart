@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:solve_student/constants/theme.dart';
 import 'package:solve_student/feature/market_place/pages/market_home_page.dart';
-import 'package:solve_student/feature/my_course/pages/my_course_page.dart';
+import 'package:solve_student/feature/my_course/pages/my_course_live_page.dart';
+import 'package:solve_student/feature/my_course/pages/my_course_solvepad_page.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
 import '../../live_classroom/utils/responsive.dart';
@@ -229,7 +230,8 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const MyCoursePage(),
+                              builder: (context) =>
+                                  const MyCourseSolvepadPage(),
                             ),
                           );
                         },
@@ -241,7 +243,7 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                         context,
                         onTap: () async {
                           var route = MaterialPageRoute(
-                              builder: (context) => const MaintenancePage());
+                              builder: (context) => const MyCourseLivePage());
                           Navigator.push(context, route);
                         },
                         image: 'assets/images/menu_create_sheet.png',
@@ -289,7 +291,8 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const MyCoursePage(),
+                                  builder: (context) =>
+                                      const MyCourseSolvepadPage(),
                                 ),
                               );
                             },

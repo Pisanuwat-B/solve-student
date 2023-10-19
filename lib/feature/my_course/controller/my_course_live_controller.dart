@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -5,57 +8,42 @@ import 'package:provider/provider.dart';
 import 'package:solve_student/authentication/models/user_model.dart';
 import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:solve_student/feature/market_place/model/course_live_model.dart';
-import 'package:solve_student/feature/market_place/model/course_market_model.dart';
 
-class MyCourseController extends ChangeNotifier {
+class MyCourseLiveController extends ChangeNotifier {
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
-  MyCourseController(this.context);
+  MyCourseLiveController(this.context);
   BuildContext context;
   AuthProvider? auth;
 
-  List<String> idList = [];
-  List<CourseMarketModel> myCourseList = [];
+  List<CourseLiveModel> myCourseList = [];
   init() {
-    idList = [];
     auth = Provider.of<AuthProvider>(context, listen: false);
     getMyCourseList();
   }
 
   getMyCourseList() async {
-    idList = [];
-    await firebaseFirestore
-        .collection('orders')
-        .where('studentId', isEqualTo: auth?.uid ?? "")
-        .where('paymentStatus', isEqualTo: 'paid')
-        .get()
-        .then((data) async {
+    myCourseList = [];
+    await firebaseFirestore.collection('course_live').get().then((data) async {
       if (data.size != 0) {
         for (var i = 0; i < data.docs.length; i++) {
-          idList.add(data.docs[i].data()['classId']);
+          List<String> studentList = [];
+          if (data.docs[i].data()['student_list'] != null) {
+            studentList =
+                data.docs[i].data()['student_list'].cast<String>().toList();
+            String? course = studentList
+                .where((element) => element == (auth?.uid ?? ""))
+                .firstOrNull;
+            if (course != null) {
+              CourseLiveModel only =
+                  CourseLiveModel.fromJson(data.docs[i].data());
+              myCourseList.add(only);
+            }
+          }
         }
       }
     });
-    myCourseList = [];
-    for (var i = 0; i < idList.length; i++) {
-      CourseMarketModel only = await getCourseInfo(idList[i]);
-      only.id = idList[i];
-      myCourseList.add(only);
-    }
+    log("message : ${myCourseList.length}");
     notifyListeners();
-  }
-
-  Future<CourseMarketModel> getCourseInfo(String id) async {
-    return await firebaseFirestore
-        .collection('course')
-        .doc(id)
-        .get()
-        .then((userFirebase) async {
-      if (userFirebase.exists) {
-        return CourseMarketModel.fromJson(userFirebase.data()!);
-      } else {
-        return CourseMarketModel();
-      }
-    });
   }
 
   Future<UserModel> getTutorInfo(String id) async {
