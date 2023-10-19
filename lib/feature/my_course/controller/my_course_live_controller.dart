@@ -32,7 +32,7 @@ class MyCourseLiveController extends ChangeNotifier {
                 data.docs[i].data()['student_list'].cast<String>().toList();
             // String? course = studentList
             //     .where((element) => element == ("RCqVTMI7PVSZRUz94EpdJr9FPiK2"))
-                // .firstOrNull;
+            // .firstOrNull;
             String? course = studentList
                 .where((element) => element == (auth?.uid ?? ""))
                 .firstOrNull;
