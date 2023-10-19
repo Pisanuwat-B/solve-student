@@ -348,7 +348,11 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
           var item = decodedMessage[i];
           var data = item['data'];
           var uid = item['uid'];
-          if (data.startsWith('RequestScreenShare')) {
+          if (data.startsWith('RequestScreenShare') ||
+              data.startsWith('FocusStudentScreen') ||
+              data.startsWith('HostLeaveScreen') ||
+              data.startsWith('EndMeeting')
+          ) {
             for (var entry in handlers.entries) {
               if (data.startsWith(entry.key)) {
                 entry.value(data);
@@ -526,7 +530,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     var userId = parts[1];
     if (widget.userId == userId) {
       isHostFocus = true;
-
       List encodedPen = _penPoints[_currentPage].map((item) {
         if (item == null) {
           return null;
@@ -543,7 +546,29 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
         }
       }).toList();
       String jsonHigh = jsonEncode(encodedHighlight);
-      sendMessage(_mode);
+
+      for (int i = 0; i <= 2; i++) {
+        switch (_mode) {
+          case DrawingMode.drag:
+              sendMessage('DrawingMode.drag');
+              break;
+          case DrawingMode.pen:
+              sendMessage('DrawingMode.pen');
+              break;
+          case DrawingMode.highlighter:
+              sendMessage('DrawingMode.highlighter');
+              break;
+          case DrawingMode.laser:
+              sendMessage('DrawingMode.laser');
+              break;
+          case DrawingMode.eraser:
+              sendMessage('DrawingMode.eraser');
+              break;
+        }
+        sendMessage('StrokeColor.$_selectedIndexColors');
+        sendMessage('StrokeWidth.$_selectedIndexLines');
+      }
+
       sendMessage(
           'InstantArt|$_currentPage|$_currentScrollZoom|$jsonPen|$jsonHigh');
     } else {
@@ -1125,9 +1150,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                     if (_mode == DrawingMode.drag) {
                       _currentScrollZoom =
                           '${originalTranslationX.toStringAsFixed(2)}|${originalTranslationY.toStringAsFixed(2)}|$scale';
-                      // if (isSharingScreen && isHostFocus) {
+                      // if (isAllowSharingScreen && isHostFocus) {
                       //   sendMessage(
-                      //       'ScrollZoom:${originalTranslationX.toStringAsFixed(2)}:${originalTranslationY.toStringAsFixed(2)}:$scale');
+                      //       'ScrollZoom:$_currentScrollZoom');
                       // }
                     }
                   },
@@ -2352,7 +2377,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   void updateDataHistory(dynamic updateMode) {
-    _mode = updateMode;
+    setState(() {
+      _mode = updateMode;
+    });
   }
 
   /// Tools
