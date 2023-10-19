@@ -6,7 +6,6 @@ import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:solve_student/constants/theme.dart';
 import 'package:solve_student/feature/calendar/pages/student_screen.dart';
 import 'package:solve_student/feature/class/pages/class_list_page.dart';
-import 'package:solve_student/feature/class/pages/find_class_page.dart';
 import 'package:solve_student/feature/profile/pages/profile_page.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
@@ -18,10 +17,10 @@ class CourseLivePage extends StatefulWidget {
 }
 
 class _CourseLivePageState extends State<CourseLivePage> {
-  AuthProvider? authprovider;
+  AuthProvider? authProvider;
   @override
   Widget build(BuildContext context) {
-    authprovider = Provider.of<AuthProvider>(context);
+    authProvider = Provider.of<AuthProvider>(context);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -46,13 +45,13 @@ class _CourseLivePageState extends State<CourseLivePage> {
               margin: const EdgeInsets.fromLTRB(5, 5, 15, 5),
               child: Builder(
                 builder: (context) {
-                  if (authprovider?.user?.image != null) {
+                  if (authProvider?.user?.image != null) {
                     return ClipRRect(
                       borderRadius:
                           BorderRadius.circular(Sizer(context).h * .1),
                       child: CachedNetworkImage(
                         fit: BoxFit.cover,
-                        imageUrl: authprovider?.user?.image ?? "",
+                        imageUrl: authProvider?.user?.image ?? "",
                         errorWidget: (context, url, error) =>
                             const CircleAvatar(
                                 child: Icon(CupertinoIcons.person)),
@@ -66,14 +65,14 @@ class _CourseLivePageState extends State<CourseLivePage> {
           ),
         ],
       ),
-      body: Container(
+      body: SizedBox(
         width: Sizer(context).w,
         height: Sizer(context).h,
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(height: 20),
-              Container(
+              const SizedBox(height: 20),
+              SizedBox(
                 width: 110,
                 height: 50,
                 child: Image.asset(
@@ -81,14 +80,14 @@ class _CourseLivePageState extends State<CourseLivePage> {
                   fit: BoxFit.fitWidth,
                 ),
               ),
-              Text(
+              const Text(
                 "ติวผ่านห้องเรียนสอนสด",
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(
+              const Text(
                 "ติวออนไลน์ วิชาทั่วไป ติวเตอร์สอนสดผ่าน Live (แบบกลุ่ม)",
                 style: TextStyle(
                   fontSize: 14,
@@ -109,7 +108,7 @@ class _CourseLivePageState extends State<CourseLivePage> {
                     onTap: () {
                       var route = MaterialPageRoute(
                           builder: (context) => StudentScreen(
-                                studentId: authprovider?.uid ?? "",
+                                studentId: authProvider?.uid ?? "",
                               ));
                       Navigator.push(context, route);
                     },
