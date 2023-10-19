@@ -30,12 +30,12 @@ class MyCourseLiveController extends ChangeNotifier {
           if (data.docs[i].data()['student_list'] != null) {
             studentList =
                 data.docs[i].data()['student_list'].cast<String>().toList();
-            String? course = studentList
-                .where((element) => element == ("RCqVTMI7PVSZRUz94EpdJr9FPiK2"))
-                .firstOrNull;
             // String? course = studentList
-            //     .where((element) => element == (auth?.uid ?? ""))
-            //     .firstOrNull;
+            //     .where((element) => element == ("RCqVTMI7PVSZRUz94EpdJr9FPiK2"))
+                .firstOrNull;
+            String? course = studentList
+                .where((element) => element == (auth?.uid ?? ""))
+                .firstOrNull;
             if (course != null) {
               CourseLiveModel only =
                   CourseLiveModel.fromJson(data.docs[i].data());
