@@ -351,15 +351,15 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
           if (data.startsWith('RequestScreenShare') ||
               data.startsWith('FocusStudentScreen') ||
               data.startsWith('HostLeaveScreen') ||
-              data.startsWith('EndMeeting')
-          ) {
+              data.startsWith('EndMeeting')) {
             for (var entry in handlers.entries) {
               if (data.startsWith(entry.key)) {
                 entry.value(data);
                 break;
               }
             }
-          } else if (uid != widget.userId &&
+          } //
+          else if (uid != widget.userId &&
               uid == courseController.courseData!.tutorId) {
             if (!isHostRequestShareScreen) {
               for (var entry in handlers.entries) {
@@ -550,20 +550,20 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       for (int i = 0; i <= 2; i++) {
         switch (_mode) {
           case DrawingMode.drag:
-              sendMessage('DrawingMode.drag');
-              break;
+            sendMessage('DrawingMode.drag');
+            break;
           case DrawingMode.pen:
-              sendMessage('DrawingMode.pen');
-              break;
+            sendMessage('DrawingMode.pen');
+            break;
           case DrawingMode.highlighter:
-              sendMessage('DrawingMode.highlighter');
-              break;
+            sendMessage('DrawingMode.highlighter');
+            break;
           case DrawingMode.laser:
-              sendMessage('DrawingMode.laser');
-              break;
+            sendMessage('DrawingMode.laser');
+            break;
           case DrawingMode.eraser:
-              sendMessage('DrawingMode.eraser');
-              break;
+            sendMessage('DrawingMode.eraser');
+            break;
         }
         sendMessage('StrokeColor.$_selectedIndexColors');
         sendMessage('StrokeWidth.$_selectedIndexLines');
@@ -587,8 +587,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   void handleMessageEndMeeting(String data) {
     meeting.leave();
     if (!mounted) return;
-    Navigator.pop(context);
-    Navigator.pop(context);
+    // Navigator.pop(context);
+    // Navigator.pop(context);
+    Navigator.push(context, MaterialPageRoute(builder: (_) => Nav()));
   }
 
   void handleMessageSetSolvepad(String data) {
