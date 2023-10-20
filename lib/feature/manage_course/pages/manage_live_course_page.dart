@@ -380,12 +380,10 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                           ),
                           child: InkWell(
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const MaintenancePage(),
-                                ),
-                              );
+                              var route = MaterialPageRoute(
+                                  builder: (context) =>
+                                      const MyCourseLivePage());
+                              Navigator.push(context, route);
                             },
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
