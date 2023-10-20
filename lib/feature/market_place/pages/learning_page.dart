@@ -160,7 +160,7 @@ class _LearningPageState extends State<LearningPage> {
   bool _mPlayerIsInited = false;
   bool _mPlaybackReady = false;
 
-  // ---------- VARIABLE: new format
+  // ---------- VARIABLE: tutor solvepad data
   late Map<String, dynamic> _data;
   String jsonData = '';
   List<StrokeStamp> currentStroke = [];
@@ -560,11 +560,12 @@ class _LearningPageState extends State<LearningPage> {
                 solveStopwatch.elapsed.inMilliseconds < eraseAction['time']) {
               await Future.delayed(const Duration(milliseconds: 0), () {});
             }
-            List<SolvepadStroke?> pointStack = _penPoints[_currentPage];
+            List<SolvepadStroke?> pointStack =
+                _replayPenPoints[_tutorCurrentPage];
             if (eraseAction['mode'] == "DrawingMode.pen") {
-              pointStack = _replayPenPoints[_currentPage];
+              pointStack = _replayPenPoints[_tutorCurrentPage];
             } else if (eraseAction['mode'] == "DrawingMode.highlighter") {
-              pointStack = _replayHighlighterPoints[_currentPage];
+              pointStack = _replayHighlighterPoints[_tutorCurrentPage];
             }
             setState(() {
               pointStack.removeRange(eraseAction['prev'], eraseAction['next']);
@@ -572,7 +573,7 @@ class _LearningPageState extends State<LearningPage> {
           } // erase
         }
         setState(() {
-          _replayEraserPoints[_currentPage] = const Offset(-100, -100);
+          _replayEraserPoints[_tutorCurrentPage] = const Offset(-100, -100);
         });
         break;
     }
@@ -604,14 +605,6 @@ class _LearningPageState extends State<LearningPage> {
     } else if (tool == "DrawingMode.highlighter") {
       _replayHighlighterPoints[_tutorCurrentPage].add(null);
     }
-  }
-
-  Future<void> writeToFile(String fileName, dynamic data) async {
-    Directory tempDir = await getTemporaryDirectory();
-    String tempPath = tempDir.path;
-    final file = File('$tempPath/$fileName');
-    final json = jsonEncode(data);
-    file.writeAsString(json);
   }
 
   // ---------- FUNCTION: recording and playback
