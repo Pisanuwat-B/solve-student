@@ -23,10 +23,11 @@ class _PaymentPageState extends State<PaymentPage> {
   _PaymentPageState();
   OrderClassModel? orderDetail;
   List<Bank> bankImageList = [
-    Bank("บัตรเครดิต", 'assets/images/visa1.png'),
-    Bank("โอนผ่านธนาคาร", 'assets/images/scb_easy.png'),
-    Bank("พร้อมเพย์", 'assets/images/promptpay.png'),
-    Bank("TrueMoney Wallet", 'assets/images/truemoney.png'),
+    Bank("เงินสด", 'assets/images/add-income.png'),
+    // Bank("บัตรเครดิต", 'assets/images/visa1.png'),
+    // Bank("โอนผ่านธนาคาร", 'assets/images/scb_easy.png'),
+    // Bank("พร้อมเพย์", 'assets/images/promptpay.png'),
+    // Bank("TrueMoney Wallet", 'assets/images/truemoney.png'),
   ];
   Bank? paymentSelected;
   ClassModel? classInOrder;
@@ -527,6 +528,7 @@ class _PaymentPageState extends State<PaymentPage> {
               paymentSelected?.name ?? "",
             );
             setState(() {});
+            Navigator.pop(context);
           }
         },
         child: Container(
