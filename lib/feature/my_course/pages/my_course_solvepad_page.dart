@@ -3,25 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:solve_student/constants/theme.dart';
 import 'package:solve_student/feature/calendar/constants/assets_manager.dart';
-import 'package:solve_student/feature/market_place/model/course_live_model.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
-import 'package:solve_student/feature/my_course/controller/my_course_controller.dart';
-import 'package:solve_student/feature/my_course/pages/my_course_detail_page.dart';
+import 'package:solve_student/feature/my_course/controller/my_course_solvepad_controller.dart';
+import 'package:solve_student/feature/my_course/pages/my_course_solvepad_detail_page.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
-class MyCoursePage extends StatefulWidget {
-  const MyCoursePage({super.key});
+class MyCourseSolvepadPage extends StatefulWidget {
+  const MyCourseSolvepadPage({super.key});
 
   @override
-  State<MyCoursePage> createState() => _MyCoursePageState();
+  State<MyCourseSolvepadPage> createState() => _MyCoursePageState();
 }
 
-class _MyCoursePageState extends State<MyCoursePage> {
-  MyCourseController? controller;
+class _MyCoursePageState extends State<MyCourseSolvepadPage> {
+  MyCourseSolvepadController? controller;
 
   @override
   void initState() {
-    controller = MyCourseController(context);
+    controller = MyCourseSolvepadController(context);
     controller!.init();
     super.initState();
   }
@@ -30,7 +29,7 @@ class _MyCoursePageState extends State<MyCoursePage> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: controller,
-      child: Consumer<MyCourseController>(builder: (context, con, _) {
+      child: Consumer<MyCourseSolvepadController>(builder: (context, con, _) {
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.white,
@@ -89,7 +88,7 @@ class _MyCoursePageState extends State<MyCoursePage> {
                         return GestureDetector(
                           onTap: () {
                             var route = MaterialPageRoute(
-                                builder: (context) => MyCourseDetailPage(
+                                builder: (context) => MyCourseSolveDetailPage(
                                     courseId: only.id ?? ""));
                             Navigator.push(context, route);
                           },
@@ -201,7 +200,7 @@ class _MyCoursePageState extends State<MyCoursePage> {
     );
   }
 
-  Widget subjectWidget(MyCourseController con, CourseMarketModel only) {
+  Widget subjectWidget(MyCourseSolvepadController con, CourseMarketModel only) {
     return FutureBuilder(
       future: con.getSubjectInfo(only.subjectId ?? ""),
       builder: (context, snap) {
@@ -225,7 +224,7 @@ class _MyCoursePageState extends State<MyCoursePage> {
     );
   }
 
-  Widget levelWidget(MyCourseController con, CourseMarketModel only) {
+  Widget levelWidget(MyCourseSolvepadController con, CourseMarketModel only) {
     return FutureBuilder(
       future: con.getLevelInfo(only.levelId ?? ""),
       builder: (context, snap) {
@@ -249,7 +248,7 @@ class _MyCoursePageState extends State<MyCoursePage> {
     );
   }
 
-  Widget tutorWidget(MyCourseController con, CourseMarketModel only) {
+  Widget tutorWidget(MyCourseSolvepadController con, CourseMarketModel only) {
     return FutureBuilder(
       future: con.getTutorInfo(only.tutorId ?? ""),
       builder: (context, snap) {

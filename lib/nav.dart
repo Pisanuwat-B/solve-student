@@ -10,7 +10,7 @@ import 'package:solve_student/feature/course_live/pages/course_live_page.dart';
 import 'package:solve_student/feature/manage_course/pages/manage_course_page.dart';
 import 'package:solve_student/feature/market_place/pages/market_home_page.dart';
 import 'package:solve_student/feature/my_course/pages/my_course_home.dart';
-import 'package:solve_student/feature/my_course/pages/my_course_page.dart';
+import 'package:solve_student/feature/my_course/pages/my_course_solvepad_page.dart';
 import 'package:solve_student/feature/notification/notification_page.dart';
 import 'package:solve_student/feature/profile/pages/profile_page.dart';
 

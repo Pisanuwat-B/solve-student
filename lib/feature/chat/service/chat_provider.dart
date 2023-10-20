@@ -143,66 +143,35 @@ class ChatProvider extends ChangeNotifier {
   //       .snapshots();
   // }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getMyOrderChat(String userId) {
+  Stream<QuerySnapshot<Map<String, dynamic>>> getMyChat(String userId) {
     log("getMyOrderChat : $userId");
-    calChatStack();
-    return firebaseFirestore
-        .collection('users')
-        .doc(userId)
-        .collection('my_order_chat')
-        .snapshots();
-  }
-
-  Stream<QuerySnapshot<Map<String, dynamic>>> getAllChat(List<String> chatIds) {
-    log('\nchatIds: $chatIds');
+    // calChatStack();
     return firebaseFirestore
         .collection('chats')
-        .where(
-          'chat_id',
-          // arrayContains: chatIds.isEmpty ? [''] : chatIds,
-          whereIn: chatIds.isEmpty ? [''] : chatIds,
-        ) //because empty list throws an error
-        // .where('id', isNotEqualTo: user.uid)
+        .where('customer_id', isEqualTo: userId)
+        .orderBy('updated_at', descending: true)
+        .limit(30)
         .snapshots();
   }
 
-  Future<List<ChatModel>> getAllChatV2(List<String> chatIds) async {
-    log('\nchatIds: $chatIds');
-    log('here 1111111 ${chatIds.length}');
-    List<ChatModel> chatList = [];
+  Future<ChatModel?> getChatInfoV2(String chatIds) async {
     try {
-      for (var i = 0; i < chatIds.length; i++) {
-        await firebaseFirestore
-            .collection('chats')
-            .doc(chatIds[i])
-            .get()
-            .then((value) {
-          log('here 2222 id : ${value.id}, data : ${value.data()}');
-          if (value.data() != null) {
-            ChatModel only = ChatModel.fromJson(value.data()!);
-            chatList.add(only);
-            log('here 3333 ${only.toJson()}');
-          }
-        });
-      }
-      log('chatList: ${chatList.length}');
-      chatList.sort((a, b) => b.updatedAt!.compareTo(a.updatedAt!));
-      return chatList;
+      // log('\nchatIds: $chatIds');
+      ChatModel? only;
+      var data = await firebaseFirestore.collection('chats').doc(chatIds).get();
+      // log("message112 ${json.encode(data.data())}");
+      var source = data.data();
+      only = ChatModel.fromJson(source!);
+      // log('success');
+      return only;
     } catch (e) {
-      log('error: $e');
-      return chatList;
+      log("e : $e");
+      return null;
     }
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getChatInfo(String chatId) {
-    return firebaseFirestore
-        .collection('chats')
-        .where('id', isEqualTo: chatId)
-        .snapshots();
-  }
-
   Future<Map<OrderClassModel, UserModel>?> getOrderInfo(String id) async {
-    log("getOrderInfo");
+    // log("getOrderInfo");
     OrderClassModel? order;
     await firebaseFirestore.collection('orders').doc(id).get().then((value) {
       order = OrderClassModel.fromJson(value.data()!);
@@ -272,32 +241,32 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  num stackChat = 0;
-  calChatStack() async {
-    stackChat = 0;
-    var chatPath = firebaseFirestore.collection('chats');
-    var data1 = await chatPath.get();
-    final List<DocumentSnapshot> doc1 = data1.docs;
-    for (var i = 0; i < doc1.length; i++) {
-      log("auth ------ ${auth?.user?.id ?? ""}");
-      var element1 = doc1[i];
-      var messagePath = chatPath.doc(element1.id).collection('messages');
-      var data3Read = await messagePath.where('read', isEqualTo: '').get();
-      var data3NoteME = await messagePath
-          .where('fromId', isNotEqualTo: auth?.user?.id ?? "")
-          .get();
-      data3Read.docs.addAll(data3NoteME.docs);
-      log("message id : ${element1.id}, read size : ${data3Read.size}");
-      stackChat += data3Read.size;
-    }
-    log("stackChat : $stackChat");
-  }
+  // num stackChat = 0;
+  // calChatStack() async {
+  //   stackChat = 0;
+  //   var chatPath = firebaseFirestore.collection('chats');
+  //   var data1 = await chatPath.get();
+  //   final List<DocumentSnapshot> doc1 = data1.docs;
+  //   for (var i = 0; i < doc1.length; i++) {
+  //     log("auth ------ ${auth?.user?.id ?? ""}");
+  //     var element1 = doc1[i];
+  //     var messagePath = chatPath.doc(element1.id).collection('messages');
+  //     var data3Read = await messagePath.where('read', isEqualTo: '').get();
+  //     var data3NoteME = await messagePath
+  //         .where('fromId', isNotEqualTo: auth?.user?.id ?? "")
+  //         .get();
+  //     data3Read.docs.addAll(data3NoteME.docs);
+  //     log("message id : ${element1.id}, read size : ${data3Read.size}");
+  //     stackChat += data3Read.size;
+  //   }
+  //   log("stackChat : $stackChat");
+  // }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getStackChat(String chatId) {
-    // log('\nchatIds: $chatId');
-    return firebaseFirestore
-        .collection('chats/$chatId/messages/')
-        .where('read', isEqualTo: '')
-        .snapshots();
-  }
+  // Stream<QuerySnapshot<Map<String, dynamic>>> getStackChat(String chatId) {
+  //   // log('\nchatIds: $chatId');
+  //   return firebaseFirestore
+  //       .collection('chats/$chatId/messages/')
+  //       .where('read', isEqualTo: '')
+  //       .snapshots();
+  // }
 }

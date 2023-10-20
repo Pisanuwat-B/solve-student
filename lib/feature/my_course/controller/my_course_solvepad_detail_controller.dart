@@ -12,9 +12,9 @@ import 'package:solve_student/feature/my_course/model/review_model.dart';
 import 'package:solve_student/feature/order/model/order_class_model.dart';
 import 'package:uuid/uuid.dart';
 
-class MyCourseDetailController extends ChangeNotifier {
+class MyCourseSolvepadDetailController extends ChangeNotifier {
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
-  MyCourseDetailController(this.context, {required this.courseId});
+  MyCourseSolvepadDetailController(this.context, {required this.courseId});
   BuildContext context;
   String courseId;
   AuthProvider? auth;

@@ -7,9 +7,9 @@ import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:solve_student/feature/market_place/model/course_live_model.dart';
 import 'package:solve_student/feature/market_place/model/course_market_model.dart';
 
-class MyCourseController extends ChangeNotifier {
+class MyCourseSolvepadController extends ChangeNotifier {
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
-  MyCourseController(this.context);
+  MyCourseSolvepadController(this.context);
   BuildContext context;
   AuthProvider? auth;
 

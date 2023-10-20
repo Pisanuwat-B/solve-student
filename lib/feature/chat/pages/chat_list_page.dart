@@ -71,81 +71,70 @@ class _ChatListPageState extends State<ChatListPage> {
               ),
             ),
           ),
-          body: SafeArea(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Consumer<ChatProvider>(builder: (context, con, _) {
-                    try {
-                      return StreamBuilder(
-                        stream: con.getMyOrderChat(auth.uid ?? ""),
-                        builder: (context, snapshot) {
-                          var dataSet =
-                              snapshot.data?.docs.map((e) => e.id).toList() ??
-                                  [];
-                          if (dataSet.isEmpty) {
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                Consumer<ChatProvider>(builder: (context, con, _) {
+                  return StreamBuilder(
+                    stream: con.getMyChat(auth.uid ?? ""),
+                    builder: (context, snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.waiting:
+                        case ConnectionState.none:
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        case ConnectionState.active:
+                        case ConnectionState.done:
+                          List<String> chatList = snapshot.data?.docs
+                                  .map<String>((e) => e.id)
+                                  .toList() ??
+                              [];
+                          if (chatList.isNotEmpty) {
+                            return ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: chatList.length,
+                                padding: EdgeInsets.only(
+                                    top: Sizer(context).h * .01),
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  String onlyId = chatList[index];
+                                  return FutureBuilder(
+                                      future: con.getChatInfoV2(onlyId),
+                                      builder: (context, snap) {
+                                        try {
+                                          ChatModel only = snap.data!;
+                                          return ChatOrderCard(only);
+                                        } catch (e) {
+                                          return const SizedBox();
+                                        }
+                                      });
+                                });
+                          } else if (chatList.isEmpty) {
                             return const Center(
-                              child: Text(
-                                'No Chat Found!',
-                                style: TextStyle(fontSize: 20),
-                              ),
+                              child: Text('No Chat Found!!',
+                                  style: TextStyle(fontSize: 20)),
                             );
                           }
-                          switch (snapshot.connectionState) {
-                            case ConnectionState.waiting:
-                            case ConnectionState.none:
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            case ConnectionState.active:
-                            case ConnectionState.done:
-                              if (dataSet.isNotEmpty) {
-                                return FutureBuilder(
-                                    future: con.getAllChatV2(dataSet),
-                                    builder: (context, snap) {
-                                      if (snap.data?.isNotEmpty ?? false) {
-                                        return ListView.builder(
-                                            shrinkWrap: true,
-                                            itemCount: snap.data?.length ?? 0,
-                                            padding: EdgeInsets.only(
-                                                top: Sizer(context).h * .01),
-                                            physics:
-                                                const NeverScrollableScrollPhysics(),
-                                            itemBuilder: (context, index) {
-                                              ChatModel only =
-                                                  snap.data![index];
-                                              return ChatOrderCard(only);
-                                            });
-                                      } else if (snap.data?.isEmpty ?? false) {
-                                        return const Center(
-                                          child: Text('No Chat Found!',
-                                              style: TextStyle(fontSize: 20)),
-                                        );
-                                      }
-                                      return const Center(
-                                        child: Text('',
-                                            style: TextStyle(fontSize: 20)),
-                                      );
-                                    });
-                              }
-                              return const Center(
-                                child: Text('', style: TextStyle(fontSize: 20)),
-                              );
-                          }
-                        },
-                      );
-                    } catch (e) {
-                      return const Center(
-                        child:
-                            Text('Error data', style: TextStyle(fontSize: 20)),
-                      );
-                    }
-                  }),
-                  const SizedBox(height: 80),
-                ],
-              ),
+                          return loadingWidget(context, 'Loading..');
+                      }
+                    },
+                  );
+                }),
+                const SizedBox(height: 80),
+              ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  SizedBox loadingWidget(BuildContext context, String text) {
+    return SizedBox(
+      width: Sizer(context).w,
+      height: Sizer(context).h * 0.8,
+      child: Center(
+        child: Text(text, style: const TextStyle(fontSize: 20)),
       ),
     );
   }

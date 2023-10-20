@@ -96,9 +96,17 @@ class _ChatOrderCardState extends State<ChatOrderCard> {
                                     [];
                                 if (list.isNotEmpty) _message = list[0];
                                 if (_message?.type == Type.image) {
-                                  return const Text("รูปภาพ");
+                                  return const Text(
+                                    "รูปภาพ",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  );
                                 }
-                                return Text("${_message?.msg ?? ""} ");
+                                return Text(
+                                  "${_message?.msg ?? ""} ",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                );
                               },
                             ),
                           ],

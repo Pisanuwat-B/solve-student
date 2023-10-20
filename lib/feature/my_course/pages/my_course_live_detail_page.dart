@@ -15,24 +15,25 @@ import 'package:solve_student/feature/market_place/model/course_market_model.dar
 import 'package:solve_student/feature/market_place/pages/market_course_detail_page.dart';
 import 'package:solve_student/feature/market_place/pages/tutor_course_page.dart';
 import 'package:solve_student/feature/market_place/model/lesson_market_model.dart';
-import 'package:solve_student/feature/my_course/controller/my_course_detail_controller.dart';
+import 'package:solve_student/feature/my_course/controller/my_course_live_detail_controller.dart';
 import 'package:solve_student/feature/my_course/model/review_model.dart';
 import 'package:solve_student/feature/order/model/order_class_model.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
-class MyCourseDetailPage extends StatefulWidget {
-  MyCourseDetailPage({super.key, required this.courseId});
+class MyCourseLiveDetailPage extends StatefulWidget {
+  MyCourseLiveDetailPage({super.key, required this.courseId});
   String courseId;
   @override
-  State<MyCourseDetailPage> createState() => _MyCourseDetailPageState();
+  State<MyCourseLiveDetailPage> createState() => _MyCourseDetailPageState();
 }
 
-class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
-  MyCourseDetailController? controller;
+class _MyCourseDetailPageState extends State<MyCourseLiveDetailPage> {
+  MyCourseLiveDetailController? controller;
 
   @override
   void initState() {
-    controller = MyCourseDetailController(context, courseId: widget.courseId);
+    controller =
+        MyCourseLiveDetailController(context, courseId: widget.courseId);
     controller!.init();
     super.initState();
   }
@@ -42,7 +43,7 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: controller,
-      child: Consumer<MyCourseDetailController>(builder: (context, con, _) {
+      child: Consumer<MyCourseLiveDetailController>(builder: (context, con, _) {
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.white,
@@ -186,71 +187,6 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
                                 ],
                               ),
                             ),
-                            Container(
-                              width: Sizer(context).w * 0.3,
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: greyColor2,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Wrap(
-                                spacing: 2,
-                                children: [
-                                  GestureDetector(
-                                    onTap: () async {
-                                      if (!con.isLoading) {
-                                        OrderClassModel orderNew =
-                                            await con.createMarketOrder(
-                                          widget.courseId,
-                                          con.courseDetail?.courseName ?? "",
-                                          con.courseDetail?.detailsText ?? "",
-                                          con.courseDetail?.createUser ?? "",
-                                        );
-                                        ChatModel? data =
-                                            await con.createMarketChat(
-                                          widget.courseId,
-                                          con.courseDetail?.createUser ?? "",
-                                        );
-                                        var route = MaterialPageRoute(
-                                          builder: (_) => ChatRoomPage(
-                                            chat: data!,
-                                            order: orderNew,
-                                          ),
-                                        );
-                                        Navigator.push(context, route);
-                                      }
-                                    },
-                                    onDoubleTap: () {},
-                                    child: Container(
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.chat,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(width: 5),
-                                          Text(
-                                            "แชท",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
                           ],
                         ),
                         const SizedBox(height: 10),
@@ -293,16 +229,9 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
                             ),
                           ],
                         ),
-                        Text(
-                          "แก้ไขครั้งล่าสุด ${FormatDate.dt(con.courseDetail?.updateTime)}",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                          ),
-                        ),
                         const SizedBox(height: 10),
                         Builder(builder: (context) {
-                          if (con.courseDetail?.lessons?.isEmpty ?? false) {
+                          if (con.courseDetail?.calendar?.isEmpty ?? false) {
                             return const SizedBox();
                           }
                           return Column(
@@ -322,10 +251,10 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemCount:
-                                    con.courseDetail?.lessons?.length ?? 0,
+                                    con.courseDetail?.calendar?.length ?? 0,
                                 itemBuilder: (context, index) {
-                                  Lesson only =
-                                      con.courseDetail!.lessons![index];
+                                  Calendar only =
+                                      con.courseDetail!.calendar![index];
                                   return GestureDetector(
                                     onTap: () {
                                       log("click");
@@ -347,7 +276,8 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
                                             color: greyColor,
                                           ),
                                           SizedBox(width: 5),
-                                          Text("${only.lessonName ?? ""}"),
+                                          Text(
+                                              "เริ่ม ${con.dateTimeFromTimeStamp(only.start?.toInt() ?? 0)} - สิ้นสุด ${con.dateTimeFromTimeStamp(only.end?.toInt() ?? 0)}"),
                                         ],
                                       ),
                                     ),
@@ -376,141 +306,6 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
                           maxLines: 10,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 10),
-                        Builder(builder: (context) {
-                          if (con.recommendCourse.isEmpty) {
-                            return const SizedBox();
-                          }
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "นอกจากนี้ผู้เรียนยังดู",
-                                style: TextStyle(
-                                  color: appTextPrimaryColor,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 10),
-                              ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: (con.recommendCourse.length) >= 3
-                                    ? 3
-                                    : con.recommendCourse.length,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  CourseMarketModel only =
-                                      con.recommendCourse[index];
-                                  return GestureDetector(
-                                    onTap: () {
-                                      var route = MaterialPageRoute(
-                                          builder: (context) =>
-                                              MarketCourseDetailPage(
-                                                  courseId: only.id ?? ""));
-                                      Navigator.push(context, route)
-                                          .then((value) {
-                                        con.init();
-                                      });
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.fromLTRB(
-                                          0, 10, 0, 0),
-                                      alignment: Alignment.center,
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                                color: Colors.grey.shade50,
-                                              ),
-                                              height: 150,
-                                              width: 200,
-                                              child: Image.network(
-                                                only.thumbnailUrl ?? "",
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (context, error,
-                                                    stackTrace) {
-                                                  return Image.asset(
-                                                    ImageAssets.emptyCourse,
-                                                    height: 150,
-                                                    width: 150,
-                                                    fit: BoxFit.fitHeight,
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  "${only.courseName ?? ""} ",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                  maxLines: 2,
-                                                ),
-                                                Text(
-                                                  "${only.detailsText ?? ""}",
-                                                  maxLines: 2,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                                tutorWidget(con),
-                                                const Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.account_circle,
-                                                      color: Colors.grey,
-                                                    ),
-                                                    VerticalDivider(),
-                                                    Icon(
-                                                      Icons.star,
-                                                      color: Colors.orange,
-                                                    ),
-                                                    Text(
-                                                      "5",
-                                                      style: TextStyle(
-                                                        color: Colors.orange,
-                                                      ),
-                                                    ),
-                                                    SizedBox(width: 5),
-                                                    Text("(0)"),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 5),
-                                                Row(
-                                                  children: [
-                                                    subjectWidget(con, only),
-                                                    levelWidget(con, only),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          );
-                        }),
                         const SizedBox(height: 30),
                         GestureDetector(
                           onTap: () {
@@ -1102,7 +897,8 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
     );
   }
 
-  Widget subjectWidget(MyCourseDetailController con, CourseMarketModel only) {
+  Widget subjectWidget(
+      MyCourseLiveDetailController con, CourseMarketModel only) {
     return FutureBuilder(
       future: con.getSubjectInfo(only.subjectId ?? ""),
       builder: (context, snap) {
@@ -1126,7 +922,7 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
     );
   }
 
-  Widget levelWidget(MyCourseDetailController con, CourseMarketModel only) {
+  Widget levelWidget(MyCourseLiveDetailController con, CourseMarketModel only) {
     return FutureBuilder(
       future: con.getLevelInfo(only.levelId ?? ""),
       builder: (context, snap) {
@@ -1150,7 +946,7 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
     );
   }
 
-  Widget tutorWidget(MyCourseDetailController con) {
+  Widget tutorWidget(MyCourseLiveDetailController con) {
     return Container(
       child: Text(
         con.tutor?.name ?? "",
@@ -1213,7 +1009,7 @@ class _MyCourseDetailPageState extends State<MyCourseDetailPage> {
     );
   }
 
-  Widget starSelectWidget(int selectedStar, MyCourseDetailController con) {
+  Widget starSelectWidget(int selectedStar, MyCourseLiveDetailController con) {
     return GestureDetector(
       onTap: () {
         con.updateRateSelected(selectedStar);
