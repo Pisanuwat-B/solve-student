@@ -80,7 +80,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   final List<Offset> _hostEraserPoints = [const Offset(-100, -100)];
   final SolveStopwatch stopwatch = SolveStopwatch();
   DrawingMode _mode = DrawingMode.drag;
-  DrawingMode _hostMode = DrawingMode.drag;
+  DrawingMode _hostMode = DrawingMode.pen;
   Size hostSolvepadSize = const Size(1059.0, 547.0);
   Size? mySolvepadSize;
   double hostImageRatio = 0.7373;
@@ -205,6 +205,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   late String courseName;
   bool isCourseLoaded = false;
   bool showHeader = false;
+  bool isStudentLeave = false;
 
   @override
   void initState() {
@@ -587,9 +588,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   void handleMessageEndMeeting(String data) {
     meeting.leave();
     if (!mounted) return;
-    // Navigator.pop(context);
-    // Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => Nav()));
+    if (isStudentLeave) return;
+    Navigator.pop(context);
+    Navigator.pop(context);
   }
 
   void handleMessageSetSolvepad(String data) {
@@ -2887,6 +2888,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               onTap: () {
                 showCloseDialog(context, () {
                   if (!widget.isMock) meeting.leave();
+                  isStudentLeave = true;
                   Navigator.push(
                       context, MaterialPageRoute(builder: (_) => Nav()));
                 });
