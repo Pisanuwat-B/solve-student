@@ -344,22 +344,22 @@ class _HomePageState extends State<MarketHomePage> {
                                                       subjectWidget(only),
                                                     ],
                                                   ),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        '9999 : 80',
-                                                        style: const TextStyle(
-                                                            fontSize: 14,
-                                                            color: Colors.grey),
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                    ],
-                                                  ),
+                                                  // Row(
+                                                  //   mainAxisAlignment:
+                                                  //       MainAxisAlignment
+                                                  //           .spaceBetween,
+                                                  //   children: [
+                                                  //     Text(
+                                                  //       '9999 : 80',
+                                                  //       style: const TextStyle(
+                                                  //           fontSize: 14,
+                                                  //           color: Colors.grey),
+                                                  //       maxLines: 1,
+                                                  //       overflow: TextOverflow
+                                                  //           .ellipsis,
+                                                  //     ),
+                                                  //   ],
+                                                  // ),
                                                 ],
                                               ),
                                             ),

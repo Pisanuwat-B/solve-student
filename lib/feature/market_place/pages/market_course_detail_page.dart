@@ -350,52 +350,52 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                       ),
                                     ),
                                     const SizedBox(height: 10),
-                                    GestureDetector(
-                                      onTap: () async {
-                                        if (!con.isLoading) {
-                                          OrderClassModel orderNew =
-                                              await con.createMarketOrder(
-                                            widget.courseId,
-                                            con.courseDetail?.courseName ?? "",
-                                            con.courseDetail?.detailsText ?? "",
-                                            con.courseDetail?.createUser ?? "",
-                                          );
-                                          var route = MaterialPageRoute(
-                                            builder: (_) => PaymentPage(
-                                              orderDetailId: orderNew.id ?? "",
-                                            ),
-                                          );
-                                          Navigator.push(context, route);
-                                        }
-                                      },
-                                      child: Container(
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.shopping_cart,
-                                              color: primaryColor,
-                                            ),
-                                            SizedBox(width: 5),
-                                            Text(
-                                              "ซื้อเลย",
-                                              style: TextStyle(
-                                                color: primaryColor,
-                                                fontSize: 15,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
+                                    // GestureDetector(
+                                    //   onTap: () async {
+                                    //     if (!con.isLoading) {
+                                    //       OrderClassModel orderNew =
+                                    //           await con.createMarketOrder(
+                                    //         widget.courseId,
+                                    //         con.courseDetail?.courseName ?? "",
+                                    //         con.courseDetail?.detailsText ?? "",
+                                    //         con.courseDetail?.createUser ?? "",
+                                    //       );
+                                    //       var route = MaterialPageRoute(
+                                    //         builder: (_) => PaymentPage(
+                                    //           orderDetailId: orderNew.id ?? "",
+                                    //         ),
+                                    //       );
+                                    //       Navigator.push(context, route);
+                                    //     }
+                                    //   },
+                                    //   child: Container(
+                                    //     height: 40,
+                                    //     decoration: BoxDecoration(
+                                    //       color: Colors.white,
+                                    //       borderRadius:
+                                    //           BorderRadius.circular(10),
+                                    //     ),
+                                    //     alignment: Alignment.center,
+                                    //     child: Row(
+                                    //       mainAxisAlignment:
+                                    //           MainAxisAlignment.center,
+                                    //       children: [
+                                    //         Icon(
+                                    //           Icons.shopping_cart,
+                                    //           color: primaryColor,
+                                    //         ),
+                                    //         SizedBox(width: 5),
+                                    //         Text(
+                                    //           "ซื้อเลย",
+                                    //           style: TextStyle(
+                                    //             color: primaryColor,
+                                    //             fontSize: 15,
+                                    //           ),
+                                    //         ),
+                                    //       ],
+                                    //     ),
+                                    //   ),
+                                    // ),
                                   ],
                                 ),
                               ),
@@ -597,10 +597,10 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                                 errorBuilder: (context, error,
                                                     stackTrace) {
                                                   return Image.asset(
-                                                    ImageAssets.emptyCourse,
+                                                    'assets/images/img_not_available.jpeg',
                                                     height: 150,
                                                     width: 150,
-                                                    fit: BoxFit.fitHeight,
+                                                    fit: BoxFit.cover,
                                                   );
                                                 },
                                               ),

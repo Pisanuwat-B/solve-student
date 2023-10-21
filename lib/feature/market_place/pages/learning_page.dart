@@ -105,6 +105,13 @@ class _LearningPageState extends State<LearningPage> {
     //   "image_dis": ImageAssets.laserPenDis,
     // }
   ];
+  final List _listToolsDisable = [
+    {"image": 'assets/images/hand-tran.png'},
+    {"image": 'assets/images/pencil-tran.png'},
+    {"image": 'assets/images/highlight-tran.png'},
+    {"image": 'assets/images/rubber-tran.png'},
+    // {"image": 'assets/images/laserPen-tran.png'},
+  ];
 
   FirebaseService firebaseService = FirebaseService();
 
@@ -655,7 +662,7 @@ class _LearningPageState extends State<LearningPage> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    tools(),
+                    tabFreestyle ? tools() : toolsDisable(),
                     solvePad(),
                   ],
                 ),
@@ -2474,6 +2481,117 @@ class _LearningPageState extends State<LearningPage> {
                     ),
                   )
                 ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget toolsDisable() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        if (Responsive.isDesktop(context)) S.w(10),
+        InkWell(
+          onTap: () {
+            final snackBar = SnackBar(
+              content: Text(
+                'เปลี่ยนเป็นโหมด “เขียนอิสระ” ก่อนเพื่อใช้ปากกา',
+                style: CustomStyles.bold16whitePrimary,
+              ),
+              action: SnackBarAction(
+                label: 'ไปที่โหมดเขียนอิสระ',
+                textColor: CustomColors.greenPrimary,
+                onPressed: () {
+                  // Some code to undo the change.
+                },
+              ),
+            );
+
+            // Find the ScaffoldMessenger in the widget tree
+            // and use it to show a SnackBar.
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          },
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: AnimatedContainer(
+                duration: const Duration(seconds: 1),
+                curve: Curves.fastOutSlowIn,
+                height: selectedTools ? 270 : 450,
+                width: 120,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: CustomColors.grayCFCFCF,
+                    style: BorderStyle.solid,
+                    width: 1.0,
+                  ),
+                  borderRadius: BorderRadius.circular(64),
+                  color: CustomColors.whitePrimary,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    S.h(12),
+                    Expanded(
+                      flex: 3,
+                      child: ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          scrollDirection: Axis.vertical,
+                          shrinkWrap: true,
+                          itemCount: _listToolsDisable.length,
+                          itemBuilder: (context, index) {
+                            return Column(
+                              children: [
+                                S.h(8),
+                                Image.asset(
+                                  _listToolsDisable[index]['image'],
+                                  width: 10.w,
+                                ),
+                              ],
+                            );
+                          }),
+                    ),
+                    Container(
+                        height: 2, width: 80, color: CustomColors.grayF3F3F3),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          S.h(defaultPadding),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 1),
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Image.asset(
+                                          'assets/images/pick-green-tran.png',
+                                          width: 38,
+                                        ),
+                                        Image.asset(
+                                          'assets/images/pick-line-tran.png',
+                                          width: 38,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  S.h(38),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
           ),

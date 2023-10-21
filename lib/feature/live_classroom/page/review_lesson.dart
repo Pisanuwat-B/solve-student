@@ -2479,8 +2479,7 @@ class _ReviewLessonState extends State<ReviewLesson>
               child: AnimatedContainer(
                 duration: const Duration(seconds: 1),
                 curve: Curves.fastOutSlowIn,
-                height:
-                    selectedTools ? 270 : MediaQuery.of(context).size.height,
+                height: selectedTools ? 270 : 450,
                 width: 120,
                 decoration: BoxDecoration(
                   border: Border.all(
@@ -2494,31 +2493,9 @@ class _ReviewLessonState extends State<ReviewLesson>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    S.h(8),
+                    S.h(12),
                     Expanded(
-                      flex: 1,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: defaultPadding, vertical: 1),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Image.asset(
-                              ImageAssets.undoTran,
-                              width: 38,
-                            ),
-                            Image.asset(
-                              ImageAssets.redoTran,
-                              width: 38,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Container(
-                        height: 2, width: 80, color: CustomColors.grayF3F3F3),
-                    Expanded(
-                      flex: 4,
+                      flex: 3,
                       child: ListView.builder(
                           physics: const NeverScrollableScrollPhysics(),
                           scrollDirection: Axis.vertical,
@@ -2539,7 +2516,6 @@ class _ReviewLessonState extends State<ReviewLesson>
                     Container(
                         height: 2, width: 80, color: CustomColors.grayF3F3F3),
                     Expanded(
-                      flex: 2,
                       child: Column(
                         children: [
                           S.h(defaultPadding),
@@ -2555,28 +2531,17 @@ class _ReviewLessonState extends State<ReviewLesson>
                                           MainAxisAlignment.spaceEvenly,
                                       children: [
                                         Image.asset(
-                                          ImageAssets.pickGreenTran,
+                                          'assets/images/pick-green-tran.png',
                                           width: 38,
                                         ),
                                         Image.asset(
-                                          ImageAssets.pickLineTran,
+                                          'assets/images/pick-line-tran.png',
                                           width: 38,
                                         ),
                                       ],
                                     ),
                                   ),
-                                  Expanded(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        Image.asset(
-                                          ImageAssets.clearTran,
-                                          width: 38,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                  S.h(38),
                                 ],
                               ),
                             ),

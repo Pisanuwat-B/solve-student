@@ -20,6 +20,8 @@ import 'package:solve_student/feature/my_course/model/review_model.dart';
 import 'package:solve_student/feature/order/model/order_class_model.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import '../../calendar/pages/course_history.dart';
+
 class MyCourseLiveDetailPage extends StatefulWidget {
   MyCourseLiveDetailPage({super.key, required this.courseId});
   String courseId;
@@ -237,7 +239,7 @@ class _MyCourseDetailPageState extends State<MyCourseLiveDetailPage> {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 "รายการเนื้อหา",
                                 style: TextStyle(
                                   color: appTextPrimaryColor,
@@ -257,7 +259,13 @@ class _MyCourseDetailPageState extends State<MyCourseLiveDetailPage> {
                                       con.courseDetail!.calendar![index];
                                   return GestureDetector(
                                     onTap: () {
-                                      log("click");
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const CourseHistory(),
+                                        ),
+                                      );
                                     },
                                     child: Container(
                                       width: Sizer(context).w,
@@ -271,13 +279,13 @@ class _MyCourseDetailPageState extends State<MyCourseLiveDetailPage> {
                                       ),
                                       child: Row(
                                         children: [
-                                          Icon(
+                                          const Icon(
                                             Icons.video_camera_back,
                                             color: greyColor,
                                           ),
-                                          SizedBox(width: 5),
+                                          const SizedBox(width: 5),
                                           Text(
-                                              "เริ่ม ${con.dateTimeFromTimeStamp(only.start?.toInt() ?? 0)} - สิ้นสุด ${con.dateTimeFromTimeStamp(only.end?.toInt() ?? 0)}"),
+                                              "เริ่ม ${FormatDate.dt(DateTime.fromMillisecondsSinceEpoch(only.start?.toInt() ?? 0))} - สิ้นสุด ${FormatDate.dt(DateTime.fromMillisecondsSinceEpoch(only.end?.toInt() ?? 0))}"),
                                         ],
                                       ),
                                     ),

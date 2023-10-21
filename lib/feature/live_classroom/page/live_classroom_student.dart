@@ -2751,8 +2751,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               ),
             );
 
-            // Find the ScaffoldMessenger in the widget tree
-            // and use it to show a SnackBar.
             ScaffoldMessenger.of(context).showSnackBar(snackBar);
           },
           child: Center(

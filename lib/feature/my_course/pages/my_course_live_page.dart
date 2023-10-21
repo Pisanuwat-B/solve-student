@@ -111,10 +111,10 @@ class _MyCourseLivePageState extends State<MyCourseLivePage> {
                                       if (only.thumbnailUrl == null ||
                                           only.thumbnailUrl == "") {
                                         return Image.asset(
-                                          ImageAssets.emptyCourse,
+                                          'assets/images/img_not_available.jpeg',
                                           height: 200,
                                           width: double.infinity,
-                                          fit: BoxFit.fitHeight,
+                                          fit: BoxFit.cover,
                                         );
                                       }
                                       return Image.network(
