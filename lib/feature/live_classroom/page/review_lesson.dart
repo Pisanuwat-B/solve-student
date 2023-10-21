@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,9 +17,11 @@ import 'package:speech_balloon/speech_balloon.dart';
 import '../../calendar/constants/assets_manager.dart';
 import '../../calendar/constants/custom_colors.dart';
 import '../../calendar/constants/custom_styles.dart';
+import '../../calendar/widgets/format_date.dart';
 import '../../calendar/widgets/sizebox.dart';
 import '../components/close_dialog.dart';
 import '../components/divider.dart';
+import '../components/room_loading_screen.dart';
 import '../quiz/quiz_model.dart';
 import '../solvepad/solve_watch.dart';
 import '../solvepad/solvepad_drawer.dart';
@@ -30,6 +33,7 @@ class ReviewLesson extends StatefulWidget {
   final String courseId, courseName, file, tutorId, userId, docId;
   final String? audio;
   final int start;
+  final DateTime end;
   const ReviewLesson({
     Key? key,
     required this.courseId,
@@ -40,6 +44,7 @@ class ReviewLesson extends StatefulWidget {
     required this.userId,
     required this.docId,
     required this.start,
+    required this.end,
   }) : super(key: key);
 
   @override
@@ -136,21 +141,22 @@ class _ReviewLessonState extends State<ReviewLesson>
   final List<List<SolvepadStroke?>> _penPoints = [[]];
   final List<List<SolvepadStroke?>> _laserPoints = [[]];
   final List<List<SolvepadStroke?>> _highlighterPoints = [[]];
-  final List<List<SolvepadStroke?>> _tutorPenPoints = [[]];
-  final List<List<SolvepadStroke?>> _tutorLaserPoints = [[]];
-  final List<List<SolvepadStroke?>> _tutorHighlighterPoints = [[]];
   final List<Offset> _eraserPoints = [const Offset(-100, -100)];
-  final List<Offset> _tutorEraserPoints = [const Offset(-100, -100)];
+  final List<List<SolvepadStroke?>> _replayPenPoints = [[]];
+  final List<List<SolvepadStroke?>> _replayLaserPoints = [[]];
+  final List<List<SolvepadStroke?>> _replayHighlighterPoints = [[]];
+  final List<Offset> _replayEraserPoints = [const Offset(-100, -100)];
   final List<List<Offset?>> _replayPoints = [[]];
   DrawingMode _mode = DrawingMode.drag;
-  DrawingMode _tutorMode = DrawingMode.drag;
   String _tutorCurrentScrollZoom = '';
-  final SolveStopwatch solvepadStopwatch = SolveStopwatch();
-  Size studentSolvepadSize = const Size(1059.0, 547.0);
-  Size? mySolvepadSize;
-  double sheetImageRatio = 0.7373;
-  double studentImageWidth = 0;
-  double studentExtraSpaceX = 0;
+  final SolveStopwatch solveStopwatch = SolveStopwatch();
+
+  // ---------- VARIABLE: Solve Size
+  Size mySolvepadSize = const Size(1059.0, 547.0);
+  Size tutorSolvepadSize = const Size(1059.0, 547.0);
+  double sheetImageRatio = 0.708;
+  double tutorImageWidth = 0;
+  double tutorExtraSpaceX = 0;
   double myImageWidth = 0;
   double myExtraSpaceX = 0;
   double scaleImageX = 0;
@@ -169,21 +175,21 @@ class _ReviewLessonState extends State<ReviewLesson>
   int replayIndex = 0;
 
   // ---------- VARIABLE: page control
-  // String _formattedElapsedTime = ' 00 : 00 : 00 ';
   Timer? _laserTimer;
   Timer? _tutorLaserTimer;
-  // Timer? _replayTimer;
   int _currentPage = 0;
   int _tutorCurrentPage = 0;
   final PageController _pageController = PageController();
   final List<TransformationController> _transformationController = [];
   late Map<String, Function(String)> handlers;
   List<dynamic> downloadedSolvepad = [];
-  bool tabFollowing = true;
-  bool tabFreestyle = false;
-  bool _isPause = true;
+  bool tabFollowing = false;
+  bool tabFreestyle = true;
   late AnimationController progressController;
   late Animation<double> animation;
+  bool isCourseLoaded = false;
+  bool isReplaying = false;
+  bool isReplayEnd = true;
 
   // ---------- VARIABLE: sound
   final FlutterSoundPlayer _audioPlayer = FlutterSoundPlayer();
@@ -193,6 +199,21 @@ class _ReviewLessonState extends State<ReviewLesson>
   int initialAudioTime = 0;
   int audioIndex = 0;
   int audioDelay = 0;
+
+  // ---------- VARIABLE: tutor solvepad data
+  late Map<String, dynamic> _data;
+  String jsonData = '';
+  List<StrokeStamp> currentStroke = [];
+  List<ScrollZoomStamp> currentScrollZoom = [];
+  int currentReplayIndex = 0;
+  int currentReplayPointIndex = 0;
+  int currentReplayScrollIndex = 0;
+  double currentScale = 2.0;
+  double currentScrollX = 0;
+  double currentScrollY = 0;
+  Timer? _sliderTimer;
+  double replayProgress = 0;
+  int replayDuration = 100;
 
   @override
   void initState() {
@@ -253,19 +274,17 @@ class _ReviewLessonState extends State<ReviewLesson>
         _addPage();
       }
       _isPageReady = true;
-      startInstantReplay();
       return;
     }
     var sheet = await getDocFiles(widget.tutorId, widget.docId);
+    _isPageReady = true;
+    setCourseLoadState();
     setState(() {
       _pages = sheet;
-      _isPageReady = true;
     });
     for (int i = 1; i < _pages.length; i++) {
       _addPage();
     }
-    log('load sheet complete');
-    if (widget.audio == null) startInstantReplay();
   }
 
   void initPagingBtn() {
@@ -282,27 +301,21 @@ class _ReviewLessonState extends State<ReviewLesson>
   }
 
   void initDownloadSolvepad() async {
-    try {
-      String url = widget.file;
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        downloadedSolvepad = jsonDecode(response.body);
-        _isSolvepadDataReady = true;
-        log('load solvepad complete');
-        if (widget.audio == null) {
-          startInstantReplay();
-        } else {
-          audioIndex = findReplayIndex('RECORDING_STARTED:0');
-          initialAudioTime = downloadedSolvepad[audioIndex]['time'];
-          audioDelay = 2000;
-          log('initialAudioTime $initialAudioTime');
-        }
-      } else {
-        log('Failed to download file');
-      }
-    } catch (e) {
-      log('Get file URL error: $e');
+    String url = widget.file;
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      _data = jsonDecode(response.body);
+      _isSolvepadDataReady = true;
+      setCourseLoadState();
+      setState(() {
+        tutorSolvepadSize =
+            Size(_data['solvepadWidth'], _data['solvepadHeight']);
+        replayDuration = _data['metadata']['duration'];
+      });
+      initSolvepadScaling();
+    } // success
+    else {
+      log('Failed to download file');
     }
   }
 
@@ -310,14 +323,12 @@ class _ReviewLessonState extends State<ReviewLesson>
     if (widget.audio == null) return;
     audioBuffer = await downloadAudio(widget.audio!);
     _isAudioReady = true;
+    setCourseLoadState();
   }
 
   void initAudioPlayer() async {
     if (widget.audio == null) return;
-    _audioPlayer.openPlayer().then((e) {
-      _isPlayerReady = true;
-      log('load player complete');
-    });
+    _audioPlayer.openPlayer();
   }
 
   void populateReviewNote(String jsonString) {
@@ -356,22 +367,32 @@ class _ReviewLessonState extends State<ReviewLesson>
     }
   }
 
-  void startInstantReplay() {
-    if (_isPageReady && _isSolvepadDataReady) {
-      log('function: startInstantReplay()');
-      instantReplay();
-    }
+  void initSolvepadScaling() {
+    tutorImageWidth = tutorSolvepadSize.height * sheetImageRatio;
+    tutorExtraSpaceX = (tutorSolvepadSize.width - tutorImageWidth) / 2;
+    myImageWidth = mySolvepadSize.height * sheetImageRatio;
+    myExtraSpaceX = (mySolvepadSize.width - myImageWidth) / 2;
+    scaleImageX = myImageWidth / tutorImageWidth;
+    scaleX = mySolvepadSize.width / tutorSolvepadSize.width;
+    scaleY = mySolvepadSize.height / tutorSolvepadSize.height;
   }
 
-  void initSolvepadScaling(double solvepadWidth, double solvepadHeight) {
-    studentImageWidth = studentSolvepadSize.height * sheetImageRatio;
-    studentExtraSpaceX = (studentSolvepadSize.width - studentImageWidth) / 2;
-    mySolvepadSize = Size(solvepadWidth, solvepadHeight);
-    myImageWidth = mySolvepadSize!.height * sheetImageRatio;
-    myExtraSpaceX = (mySolvepadSize!.width - myImageWidth) / 2;
-    scaleImageX = myImageWidth / studentImageWidth;
-    scaleX = mySolvepadSize!.width / studentSolvepadSize.width;
-    scaleY = mySolvepadSize!.height / studentSolvepadSize.height;
+  void setCourseLoadState() {
+    if (isCourseLoaded) return;
+    if (widget.audio == null) {
+      if (_isPageReady && _isSolvepadDataReady) {
+        setState(() {
+          isCourseLoaded = true;
+        });
+        _instantReplay();
+      }
+    } else {
+      if (_isPageReady && _isSolvepadDataReady && _isAudioReady) {
+        setState(() {
+          isCourseLoaded = true;
+        });
+      }
+    }
   }
 
   Offset convertToOffset(String offsetString) {
@@ -383,21 +404,7 @@ class _ReviewLessonState extends State<ReviewLesson>
   }
 
   Offset scaleOffset(Offset offset) {
-    double studentWidth = studentSolvepadSize.width;
-    double studentHeight = studentSolvepadSize.height;
-    double studentImageWidth = studentHeight * sheetImageRatio;
-    double studentExtraSpaceX = (studentWidth - studentImageWidth) / 2;
-
-    double myWidth = mySolvepadSize!.width;
-    double myHeight = mySolvepadSize!.height;
-    double myImageWidth = myHeight * sheetImageRatio;
-    double myExtraSpaceX = (myWidth - myImageWidth) / 2;
-
-    double scaleImageX = myImageWidth / studentImageWidth;
-    double scaleY = myHeight / studentHeight;
-
-    return Offset(
-        (offset.dx - studentExtraSpaceX) * scaleImageX + myExtraSpaceX,
+    return Offset((offset.dx - tutorExtraSpaceX) * scaleImageX + myExtraSpaceX,
         offset.dy * scaleY);
   }
 
@@ -417,6 +424,294 @@ class _ReviewLessonState extends State<ReviewLesson>
       log('Error: $e');
     }
     return null;
+  }
+
+  // ---------- FUNCTION: Replay
+  void clearReplayPoint() {
+    for (var point in _replayPenPoints) {
+      point.clear();
+    }
+    for (var point in _replayHighlighterPoints) {
+      point.clear();
+    }
+  }
+
+  void pauseReplay() {
+    log('pause replay');
+    setState(() {
+      isReplaying = false;
+    });
+    pauseAudioPlayer();
+    solveStopwatch.stop();
+  }
+
+  void resumeReplay() {
+    log('resume replay');
+    setState(() {
+      isReplaying = true;
+    });
+    resumeAudioPlayer();
+    solveStopwatch.start();
+  }
+
+  void _initReplay() {
+    log('init replay');
+    setState(() {
+      isReplaying = true;
+      isReplayEnd = false;
+      clearReplayPoint();
+    });
+    _replay();
+    playAudioPlayer();
+  }
+
+  Future<void> _replay() async {
+    solveStopwatch.start();
+    _sliderTimer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
+      setState(() {
+        replayProgress = solveStopwatch.elapsed.inMilliseconds.toDouble();
+        if (replayProgress >= replayDuration.toDouble()) {
+          replayProgress = replayDuration.toDouble();
+          timer.cancel();
+        }
+      });
+    });
+
+    while (currentReplayIndex < _data['actions'].length) {
+      await Future.delayed(const Duration(milliseconds: 0), () async {
+        if (solveStopwatch.elapsed.inMilliseconds >=
+            _data['actions'][currentReplayIndex]['time']) {
+          await executeReplayAction(_data['actions'][currentReplayIndex]);
+          currentReplayIndex++;
+        }
+      });
+    }
+
+    endReplay();
+  }
+
+  void endReplay() {
+    setState(() {
+      isReplaying = false;
+      isReplayEnd = true;
+    });
+    stopAudioPlayer();
+    _sliderTimer?.cancel();
+    solveStopwatch.reset();
+    currentReplayIndex = 0;
+  }
+
+  Future<void> executeReplayAction(Map<String, dynamic> action) async {
+    switch (action['type']) {
+      case 'start-recording':
+        var page = action['page'];
+        _pageController.animateToPage(
+          page,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+        _tutorCurrentPage = page;
+        _transformationController[page].value = Matrix4.identity()
+          ..translate(scaleScrollX(action['scrollX'] / 2),
+              scaleScrollY(action['scrollY']))
+          ..scale(action['scale']);
+        _tutorCurrentScrollZoom =
+            '${action['scrollX']}|${action['scrollY']}|${action['scale']}';
+        break;
+      case 'change-page':
+        if (tabFollowing) {
+          _pageController.animateToPage(
+            action['data'],
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+        _tutorCurrentPage = action['data'];
+        break;
+      case 'stop-recording':
+        break;
+      case 'scroll-zoom':
+        List<dynamic> scrollAction = action['data'];
+        while (currentReplayScrollIndex < scrollAction.length) {
+          await Future.delayed(const Duration(milliseconds: 0), () {
+            if (solveStopwatch.elapsed.inMilliseconds >=
+                scrollAction[currentReplayScrollIndex]['time']) {
+              if (tabFollowing) {
+                _transformationController[_currentPage]
+                    .value = Matrix4.identity()
+                  ..translate(
+                      scaleScrollX(scrollAction[currentReplayScrollIndex]['x']),
+                      scaleScrollY(scrollAction[currentReplayScrollIndex]['y']))
+                  ..scale(scrollAction[currentReplayScrollIndex]['scale']);
+              }
+              _tutorCurrentScrollZoom =
+                  '${scaleScrollX(scrollAction[currentReplayScrollIndex]['x'])}|${scaleScrollX(scrollAction[currentReplayScrollIndex]['y'])}|${scrollAction[currentReplayScrollIndex]['scale']}';
+              currentReplayScrollIndex++;
+            }
+          });
+        }
+        currentReplayScrollIndex = 0;
+        break;
+      case 'drawing':
+        List<dynamic> points = action['data']['points'];
+        while (currentReplayPointIndex < points.length) {
+          await Future.delayed(const Duration(milliseconds: 0), () {
+            if (solveStopwatch.elapsed.inMilliseconds >=
+                points[currentReplayPointIndex]['time']) {
+              drawReplayPoint(
+                  points[currentReplayPointIndex],
+                  action['data']['tool'],
+                  action['data']['color'],
+                  action['data']['strokeWidth']);
+              currentReplayPointIndex++;
+            }
+          });
+        }
+        currentReplayPointIndex = 0;
+        drawReplayNull(action['data']['tool']);
+        break;
+      case 'erasing':
+        for (var eraseAction in action['data']) {
+          if (eraseAction['action'] == 'moves') {
+            int movingIndex = 0;
+            while (movingIndex < eraseAction['points'].length) {
+              await Future.delayed(const Duration(milliseconds: 0), () {
+                if (solveStopwatch.elapsed.inMilliseconds >=
+                    eraseAction['points'][movingIndex]['time']) {
+                  setState(() {
+                    _replayEraserPoints[_tutorCurrentPage] = Offset(
+                        eraseAction['points'][movingIndex]['x'],
+                        eraseAction['points'][movingIndex]['y']);
+                  });
+                  movingIndex++;
+                }
+              });
+            }
+          } // move
+          else if (eraseAction['action'] == 'erase') {
+            while (
+                solveStopwatch.elapsed.inMilliseconds < eraseAction['time']) {
+              await Future.delayed(const Duration(milliseconds: 0), () {});
+            }
+            List<SolvepadStroke?> pointStack =
+                _replayPenPoints[_tutorCurrentPage];
+            if (eraseAction['mode'] == "DrawingMode.pen") {
+              pointStack = _replayPenPoints[_tutorCurrentPage];
+            } // erase pen
+            else if (eraseAction['mode'] == "DrawingMode.highlighter") {
+              pointStack = _replayHighlighterPoints[_tutorCurrentPage];
+            } // erase high
+            setState(() {
+              pointStack.removeRange(eraseAction['prev'], eraseAction['next']);
+            });
+          } // erase
+        }
+        setState(() {
+          _replayEraserPoints[_currentPage] = const Offset(-100, -100);
+        });
+        break;
+    }
+  }
+
+  Future<void> _instantReplay() async {
+    while (currentReplayIndex < _data['actions'].length) {
+      await instantReplayAction(_data['actions'][currentReplayIndex]);
+      currentReplayIndex++;
+    }
+
+    endReplay();
+  }
+
+  Future<void> instantReplayAction(Map<String, dynamic> action) async {
+    switch (action['type']) {
+      case 'start-recording':
+        var page = action['page'];
+        _tutorCurrentPage = page;
+        break;
+      case 'change-page':
+        _tutorCurrentPage = action['data'];
+        break;
+      case 'drawing':
+        List<dynamic> points = action['data']['points'];
+        while (currentReplayPointIndex < points.length) {
+          drawReplayPoint(
+              points[currentReplayPointIndex],
+              action['data']['tool'],
+              action['data']['color'],
+              action['data']['strokeWidth']);
+          currentReplayPointIndex++;
+        }
+        currentReplayPointIndex = 0;
+        drawReplayNull(action['data']['tool']);
+        break;
+      case 'erasing':
+        for (var eraseAction in action['data']) {
+          if (eraseAction['action'] == 'erase') {
+            List<SolvepadStroke?> pointStack =
+                _replayPenPoints[_tutorCurrentPage];
+            if (eraseAction['mode'] == "DrawingMode.pen") {
+              pointStack = _replayPenPoints[_tutorCurrentPage];
+            } // erase pen
+            else if (eraseAction['mode'] == "DrawingMode.highlighter") {
+              pointStack = _replayHighlighterPoints[_tutorCurrentPage];
+            } // erase high
+            setState(() {
+              pointStack.removeRange(eraseAction['prev'], eraseAction['next']);
+            });
+          } // erase
+        }
+        setState(() {
+          _replayEraserPoints[_currentPage] = const Offset(-100, -100);
+        });
+        break;
+    }
+  }
+
+  void drawReplayPoint(
+      Map<String, dynamic> point, String tool, String color, double stroke) {
+    if (tool == "DrawingMode.pen") {
+      _replayPenPoints[_tutorCurrentPage].add(SolvepadStroke(
+        scaleOffset(Offset(point['x'], point['y'])),
+        Color(int.parse(color, radix: 16)),
+        stroke,
+      ));
+      setState(() {});
+      // log(_replayPenPoints[_tutorCurrentPage].toString());
+    } // pen
+    else if (tool == "DrawingMode.highlighter") {
+      _replayHighlighterPoints[_tutorCurrentPage].add(SolvepadStroke(
+        scaleOffset(Offset(point['x'], point['y'])),
+        Color(int.parse(color, radix: 16)),
+        stroke,
+      ));
+      setState(() {});
+    } // high
+  }
+
+  void drawReplayNull(String tool) {
+    if (tool == "DrawingMode.pen") {
+      _replayPenPoints[_tutorCurrentPage].add(null);
+    } else if (tool == "DrawingMode.highlighter") {
+      _replayHighlighterPoints[_tutorCurrentPage].add(null);
+    }
+  }
+
+  // ---------- FUNCTION: recording and playback
+
+  void playAudioPlayer() {
+    _audioPlayer.startPlayer(fromDataBuffer: audioBuffer);
+  }
+
+  void stopAudioPlayer() {
+    _audioPlayer.stopPlayer();
+  }
+
+  void pauseAudioPlayer() {
+    _audioPlayer.pausePlayer();
+  }
+
+  void resumeAudioPlayer() {
+    _audioPlayer.resumePlayer();
   }
 
   @override
@@ -450,313 +745,20 @@ class _ReviewLessonState extends State<ReviewLesson>
     }
   }
 
-  void startReplayLoop({int startIndex = 0}) async {
-    log('function: startReplayLoop()');
-    log('start index: ${startIndex.toString()}');
-    _isReplaying = true;
-    // _replayTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-    //   if (mounted) {
-    //     setState(() {
-    //       _formattedElapsedTime = _formatElapsedTime(solvepadStopwatch.elapsed);
-    //     });
-    //   } else {
-    //     timer.cancel();
-    //   }
-    // });
-    for (int i = startIndex; i < downloadedSolvepad.length; i++) {
-      if (downloadedSolvepad[i]['uid'] != widget.tutorId) {
-        continue;
-      }
-      int actionTime = downloadedSolvepad[i]['time'];
-      String actionData = downloadedSolvepad[i]['data'];
-      while (solvepadStopwatch.elapsed.inMilliseconds +
-              initialAudioTime +
-              audioDelay <
-          actionTime) {
-        if (_isPause) {
-          replayIndex = i;
-          log('end replay loop due to pause');
-          return;
-        }
-        await Future.delayed(const Duration(milliseconds: 0), () {});
-      }
-      if (actionData.startsWith('Offset')) {
-        var offset = convertToOffset(actionData);
-        Color strokeColor = _strokeColors[_tutorColorIndex];
-        double strokeWidth = _strokeWidths[_tutorStrokeWidthIndex];
-        switch (_tutorMode) {
-          case DrawingMode.drag:
-            break;
-          case DrawingMode.pen:
-            setState(() {
-              _tutorPenPoints[_tutorCurrentPage] =
-                  List.from(_tutorPenPoints[_tutorCurrentPage])
-                    ..add(SolvepadStroke(offset, strokeColor, strokeWidth));
-            });
-            break;
-          case DrawingMode.laser:
-            setState(() {
-              _tutorLaserPoints[_tutorCurrentPage] =
-                  List.from(_tutorLaserPoints[_tutorCurrentPage])
-                    ..add(SolvepadStroke(offset, strokeColor, strokeWidth));
-              _tutorLaserDrawing();
-            });
-            break;
-          case DrawingMode.highlighter:
-            setState(() {
-              _tutorHighlighterPoints[_tutorCurrentPage] =
-                  List.from(_tutorHighlighterPoints[_tutorCurrentPage])
-                    ..add(SolvepadStroke(offset, strokeColor, strokeWidth));
-            });
-            _tutorHighlighterPoints[_tutorCurrentPage]
-                .add(SolvepadStroke(offset, strokeColor, strokeWidth));
-            break;
-          case DrawingMode.eraser:
-            setState(() {
-              _tutorEraserPoints[_tutorCurrentPage] = offset;
-            });
-            break;
-          default:
-            break;
-        }
-      } // Offset
-      else if (actionData.startsWith('null')) {
-        switch (_tutorMode) {
-          case DrawingMode.drag:
-            break;
-          case DrawingMode.pen:
-            _tutorPenPoints[_tutorCurrentPage].add(null);
-            break;
-          case DrawingMode.laser:
-            _tutorLaserPoints[_tutorCurrentPage].add(null);
-            _tutorLaserTimer = Timer(
-                const Duration(milliseconds: 1500), _tutorStopLaserDrawing);
-            break;
-          case DrawingMode.highlighter:
-            _tutorHighlighterPoints[_tutorCurrentPage].add(null);
-            break;
-          case DrawingMode.eraser:
-            _tutorEraserPoints[_tutorCurrentPage] = const Offset(-100, -100);
-            break;
-          default:
-            break;
-        }
-      } // Null
-      else if (actionData.startsWith('DrawingMode')) {
-        setDrawingMode(actionData);
-      } // Mode
-      else if (actionData.startsWith('Erase')) {
-        var parts = actionData.split('.');
-        var index = int.parse(parts.last);
-        if (actionData.startsWith('Erase.pen')) {
-          removePointStack(_tutorPenPoints[_tutorCurrentPage], index);
-        } else if (actionData.startsWith('Erase.high')) {
-          removePointStack(_tutorHighlighterPoints[_tutorCurrentPage], index);
-        }
-      } // Erase
-      else if (actionData.startsWith('StrokeColor')) {
-        setStrokeColor(actionData);
-      } // Color
-      else if (actionData.startsWith('StrokeWidth')) {
-        setStrokeWidth(actionData);
-      } // Width
-      else if (actionData.startsWith('ScrollZoom')) {
-        var parts = actionData.split(':');
-        var scrollX = double.parse(parts[1]);
-        var scrollY = double.parse(parts[2]);
-        var zoom = double.parse(parts.last);
-        _tutorCurrentScrollZoom = '${parts[1]}:${parts[2]}:${parts[3]}';
-        if (tabFreestyle) continue;
-        _transformationController[_tutorCurrentPage].value = Matrix4.identity()
-          ..translate(scaleScrollX(scrollX), scaleScrollY(scrollY))
-          ..scale(zoom);
-      } // ScrollZoom
-      else if (actionData.startsWith('ChangePage')) {
-        var parts = actionData.split(':');
-        var pageNumber = parts.last;
-        _tutorCurrentPage = int.parse(pageNumber);
-        if (tabFreestyle) continue;
-        _pageController.animateToPage(
-          _tutorCurrentPage,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      } // Paging
-    }
-    log('exit replay loop');
-    setState(() {
-      _isPause = !_isPause;
-      _isReplaying = false;
-    });
-  }
-
-  void setDrawingMode(String actionData) {
-    String modeString = actionData.replaceAll('DrawingMode.', '');
-    DrawingMode drawingMode = DrawingMode.values.firstWhere(
-        (e) => e.toString() == 'DrawingMode.$modeString',
-        orElse: () => DrawingMode.drag);
-    _tutorMode = drawingMode;
-  }
-
-  void setStrokeColor(String actionData) {
-    var parts = actionData.split('.');
-    var index = int.parse(parts.last);
-    _tutorColorIndex = index;
-  }
-
-  void setStrokeWidth(String actionData) {
-    var parts = actionData.split('.');
-    var index = int.parse(parts.last);
-    _tutorStrokeWidthIndex = index;
-  }
-
-  int findReplayIndex(String keyword) {
-    if (_currentPage == 0) return 0;
-    for (int i = 0; i < downloadedSolvepad.length; i++) {
-      if (downloadedSolvepad[i]['data'] == keyword) {
-        setModeAfterSkip(i);
-        setColorAfterSkip(i);
-        setWidthAfterSkip(i);
-        Duration indexTime = convertToDuration(
-            downloadedSolvepad[i]['time'] - initialAudioTime - audioDelay);
-        solvepadStopwatch.skip(indexTime);
-        _audioPlayer.seekToPlayer(convertToDuration(
-            downloadedSolvepad[i]['time'] - initialAudioTime - audioDelay));
-        return i;
-      }
-    }
-    return 0; // Return -1 if not found
-  }
-
   Duration convertToDuration(int timeInt) {
     int milliseconds = timeInt;
     return Duration(milliseconds: milliseconds);
   }
 
-  void setModeAfterSkip(int index) {
-    for (int i = index - 1; i >= 0; i--) {
-      if (downloadedSolvepad[i]['data'].startsWith('DrawingMode.')) {
-        setDrawingMode(downloadedSolvepad[i]['data']);
-        return;
-      }
-    }
-  }
-
-  void setColorAfterSkip(int index) {
-    for (int i = index - 1; i >= 0; i--) {
-      if (downloadedSolvepad[i]['data'].startsWith('StrokeColor.')) {
-        setStrokeColor(downloadedSolvepad[i]['data']);
-        return;
-      }
-    }
-  }
-
-  void setWidthAfterSkip(int index) {
-    for (int i = index - 1; i >= 0; i--) {
-      if (downloadedSolvepad[i]['data'].startsWith('StrokeWidth.')) {
-        setStrokeWidth(downloadedSolvepad[i]['data']);
-        return;
-      }
-    }
-  }
-
-  void instantReplay() async {
-    for (int i = 0; i < downloadedSolvepad.length; i++) {
-      if (downloadedSolvepad[i]['uid'] != widget.tutorId &&
-          downloadedSolvepad[i]['uid'] != widget.userId) {
-        continue;
-      }
-      String actionData = downloadedSolvepad[i]['data'];
-      if (actionData.startsWith('Offset')) {
-        var offset = convertToOffset(actionData);
-        Color strokeColor = _strokeColors[_tutorColorIndex];
-        double strokeWidth = _strokeWidths[_tutorStrokeWidthIndex];
-        switch (_tutorMode) {
-          case DrawingMode.drag:
-            break;
-          case DrawingMode.pen:
-            setState(() {
-              _tutorPenPoints[_tutorCurrentPage] =
-                  List.from(_tutorPenPoints[_tutorCurrentPage])
-                    ..add(SolvepadStroke(offset, strokeColor, strokeWidth));
-            });
-            break;
-          case DrawingMode.highlighter:
-            setState(() {
-              _tutorHighlighterPoints[_tutorCurrentPage] =
-                  List.from(_tutorHighlighterPoints[_tutorCurrentPage])
-                    ..add(SolvepadStroke(offset, strokeColor, strokeWidth));
-            });
-            _tutorHighlighterPoints[_tutorCurrentPage]
-                .add(SolvepadStroke(offset, strokeColor, strokeWidth));
-            break;
-          case DrawingMode.eraser:
-            setState(() {
-              _tutorEraserPoints[_tutorCurrentPage] = offset;
-            });
-            break;
-          default:
-            break;
-        }
-      } // Offset
-      else if (actionData.startsWith('null')) {
-        switch (_tutorMode) {
-          case DrawingMode.drag:
-            break;
-          case DrawingMode.pen:
-            _tutorPenPoints[_tutorCurrentPage].add(null);
-            break;
-          case DrawingMode.highlighter:
-            _tutorHighlighterPoints[_tutorCurrentPage].add(null);
-            break;
-          case DrawingMode.eraser:
-            _tutorEraserPoints[_tutorCurrentPage] = const Offset(-100, -100);
-            break;
-          default:
-            break;
-        }
-      } // Null
-      else if (actionData.startsWith('DrawingMode')) {
-        String modeString = actionData.replaceAll('DrawingMode.', '');
-        DrawingMode drawingMode = DrawingMode.values.firstWhere(
-            (e) => e.toString() == 'DrawingMode.$modeString',
-            orElse: () => DrawingMode.drag);
-        _tutorMode = drawingMode;
-      } // Mode
-      else if (actionData.startsWith('Erase')) {
-        var parts = actionData.split('.');
-        var index = int.parse(parts.last);
-        if (actionData.startsWith('Erase.pen')) {
-          removePointStack(_tutorPenPoints[_tutorCurrentPage], index);
-        } else if (actionData.startsWith('Erase.high')) {
-          removePointStack(_tutorHighlighterPoints[_tutorCurrentPage], index);
-        }
-      } // Erase
-      else if (actionData.startsWith('StrokeColor')) {
-        var parts = actionData.split('.');
-        var index = int.parse(parts.last);
-        _tutorColorIndex = index;
-      } // Color
-      else if (actionData.startsWith('StrokeWidth')) {
-        var parts = actionData.split('.');
-        var index = int.parse(parts.last);
-        _tutorStrokeWidthIndex = index;
-      } // Width
-      else if (actionData.startsWith('ChangePage')) {
-        var parts = actionData.split(':');
-        var pageNumber = parts.last;
-        _tutorCurrentPage = int.parse(pageNumber);
-      } // Paging
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return !Responsive.isMobile(context)
-        ? _buildTablet()
-        : fullScreen
-            ? _buildMobileFullScreen()
-            : _buildMobile();
+    return isCourseLoaded
+        ? Scaffold(
+            backgroundColor: CustomColors.grayCFCFCF,
+            body:
+                !Responsive.isMobile(context) ? _buildTablet() : _buildMobile(),
+          )
+        : const LoadingScreen();
   }
 
   _buildTablet() {
@@ -767,10 +769,8 @@ class _ReviewLessonState extends State<ReviewLesson>
           children: [
             Column(
               children: [
-                headerLayer1(),
+                headerLayer2(),
                 const DividerLine(),
-                // headerLayer2(),
-                // const DividerLine(),
 
                 //Body Layout
                 Expanded(
@@ -786,17 +786,9 @@ class _ReviewLessonState extends State<ReviewLesson>
             ),
             if (widget.audio != null)
               Positioned(
-                top: 80,
-                right: 40,
-                child: Column(
-                  children: [
-                    pagePlay(),
-                    S.h(12),
-                    play(),
-                    S.h(12),
-                    forward(),
-                  ],
-                ),
+                left: 140,
+                top: 160,
+                child: slider('tablet'),
               ),
             if (openColors)
               Positioned(
@@ -1030,24 +1022,17 @@ class _ReviewLessonState extends State<ReviewLesson>
           children: [
             Column(
               children: [
-                mobileReviewHeader(),
+                headerLayer2Mobile(),
                 const DividerLine(),
                 solvePad(),
               ],
             ),
-            Positioned(
-              top: 80,
-              right: 40,
-              child: Column(
-                children: [
-                  pagePlay(),
-                  S.h(12),
-                  play(),
-                  S.h(12),
-                  forward(),
-                ],
+            if (widget.audio != null)
+              Positioned(
+                left: 140,
+                top: 160,
+                child: slider('tablet'),
               ),
-            ),
             if (!selectedTools) toolsMobile(),
             if (selectedTools) toolsActiveMobile(),
 
@@ -1091,16 +1076,94 @@ class _ReviewLessonState extends State<ReviewLesson>
     );
   }
 
+  Widget slider(String mode) {
+    double height = 490;
+    double padding = 25;
+    double handler = 35;
+    double fontSize = 12;
+    double leftDuration = 12;
+    double leftTooltip = -40;
+    if (mode == 'mobile') {
+      height = 300;
+      padding = 15;
+      handler = 30;
+      fontSize = 10;
+      leftDuration = 19;
+      leftTooltip = -50;
+    }
+    return SizedBox(
+      width: 60,
+      height: height,
+      child: Stack(children: [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: padding),
+          child: FlutterSlider(
+            axis: Axis.vertical,
+            values: [replayProgress],
+            max: replayDuration.toDouble(),
+            min: 0,
+            handlerWidth: handler,
+            handlerHeight: handler,
+            handlerAnimation: const FlutterSliderHandlerAnimation(scale: 1.2),
+            tooltip: FlutterSliderTooltip(
+              alwaysShowTooltip: true,
+              textStyle: TextStyle(fontSize: fontSize, color: Colors.black),
+              direction: FlutterSliderTooltipDirection.top,
+              positionOffset: FlutterSliderTooltipPositionOffset(
+                  top: -5, left: leftTooltip),
+              boxStyle: FlutterSliderTooltipBox(
+                  decoration:
+                      BoxDecoration(color: Colors.white.withOpacity(0))),
+              format: (value) {
+                return _formatReplayElapsedTime(
+                    Duration(milliseconds: double.parse(value).round()));
+              },
+            ),
+            trackBar: FlutterSliderTrackBar(
+              activeTrackBarHeight: 5,
+              inactiveTrackBar: BoxDecoration(
+                color: const Color(0xff20B153).withOpacity(0.3),
+              ),
+              activeTrackBar: const BoxDecoration(
+                color: Color(0xff20B153),
+              ),
+            ),
+            onDragging: (handlerIndex, lowerValue, upperValue) {
+              var seekPosition = Duration(milliseconds: lowerValue.round());
+              if (lowerValue > replayProgress) {
+                solveStopwatch.jumpTo(seekPosition);
+                // _audioPlayer.seekToPlayer(seekPosition);
+                setState(() {});
+              }
+            },
+            // onDragCompleted: (handlerIndex, lowerValue, upperValue) {},
+          ),
+        ),
+        Positioned(
+          top: 0,
+          left: leftDuration,
+          child: Text('00:00', style: CustomStyles.med12GreenPrimary),
+        ),
+        Positioned(
+          bottom: 0,
+          left: leftDuration,
+          child: Text(
+              _formatReplayElapsedTime(Duration(milliseconds: replayDuration)),
+              style: CustomStyles.med12GreenPrimary),
+        ),
+      ]),
+    );
+  }
+
   Widget solvePad() {
     return Expanded(
       child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
         double solvepadWidth = constraints.maxWidth;
         double solvepadHeight = constraints.maxHeight;
-        if (mySolvepadSize?.width != solvepadWidth) {
-          initSolvepadScaling(solvepadWidth, solvepadHeight);
-          _tutorCurrentScrollZoom =
-              '${(-1 * solvepadWidth / 2).toStringAsFixed(2)}:0:2';
+        currentScrollX = (-1 * solvepadWidth);
+        if (mySolvepadSize.width != solvepadWidth) {
+          mySolvepadSize = Size(solvepadWidth, solvepadHeight);
         }
         return PageView.builder(
           onPageChanged: _onPageViewChange,
@@ -1328,10 +1391,10 @@ class _ReviewLessonState extends State<ReviewLesson>
                                 _eraserPoints[index],
                                 _laserPoints[index],
                                 _highlighterPoints[index],
-                                _tutorPenPoints[index],
-                                _tutorLaserPoints[index],
-                                _tutorHighlighterPoints[index],
-                                _tutorEraserPoints[index],
+                                _replayPenPoints[index],
+                                _replayLaserPoints[index],
+                                _replayHighlighterPoints[index],
+                                _replayEraserPoints[index],
                               ),
                             ),
                           ),
@@ -1345,6 +1408,49 @@ class _ReviewLessonState extends State<ReviewLesson>
           },
         );
       }),
+    );
+  }
+
+  Widget replayButton() {
+    return Center(
+      child: SizedBox(
+        width: 70,
+        height: 100,
+        child: GestureDetector(
+          onTap: () {
+            if (!isReplaying) {
+              if (isReplayEnd) {
+                _initReplay();
+              } else {
+                resumeReplay();
+              }
+            } // before replay
+            else {
+              pauseReplay();
+            }
+          },
+          child: Container(
+            margin: EdgeInsets.symmetric(
+                vertical: Responsive.isMobile(context) ? 6 : 14.0),
+            decoration: BoxDecoration(
+                color: isReplaying
+                    ? CustomColors.gray363636
+                    : CustomColors.redFF4201,
+                shape: BoxShape.circle),
+            child: isReplaying
+                ? const Icon(
+                    Icons.pause,
+                    size: 20,
+                    color: CustomColors.white,
+                  )
+                : const Icon(
+                    Icons.play_arrow,
+                    size: 20,
+                    color: Colors.white,
+                  ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1409,7 +1515,7 @@ class _ReviewLessonState extends State<ReviewLesson>
 
   void _tutorStopLaserDrawing() {
     setState(() {
-      _tutorLaserPoints[_currentPage].clear();
+      _replayLaserPoints[_currentPage].clear();
     });
   }
 
@@ -1421,10 +1527,10 @@ class _ReviewLessonState extends State<ReviewLesson>
       _highlighterPoints.add([]);
       _eraserPoints.add(const Offset(-100, -100));
       _replayPoints.add([]);
-      _tutorPenPoints.add([]);
-      _tutorLaserPoints.add([]);
-      _tutorHighlighterPoints.add([]);
-      _tutorEraserPoints.add(const Offset(-100, -100));
+      _replayPenPoints.add([]);
+      _replayLaserPoints.add([]);
+      _replayHighlighterPoints.add([]);
+      _replayEraserPoints.add(const Offset(-100, -100));
     });
   }
 
@@ -1438,12 +1544,17 @@ class _ReviewLessonState extends State<ReviewLesson>
     });
   }
 
-  String _formatElapsedTime(Duration duration) {
+  String _formatReplayElapsedTime(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     String hours = twoDigits(duration.inHours);
     String minutes = twoDigits(duration.inMinutes.remainder(60));
     String seconds = twoDigits(duration.inSeconds.remainder(60));
-    return ' $hours : $minutes : $seconds ';
+
+    if (duration.inHours > 0) {
+      return '$hours:$minutes:$seconds';
+    } else {
+      return '$minutes:$seconds';
+    }
   }
 
   void animateCircleProgress() {
@@ -1452,147 +1563,6 @@ class _ReviewLessonState extends State<ReviewLesson>
     } else {
       progressController.forward();
     }
-  }
-
-  Widget pagePlay() {
-    return Center(
-      child: GestureDetector(
-        onTap: () {
-          log('page play');
-          if (!_isPlayerReady && !_isAudioReady) return;
-          setState(() {
-            _isPause = false;
-          });
-          solvepadStopwatch.reset();
-          solvepadStopwatch.start();
-          _audioPlayer.startPlayer(fromDataBuffer: audioBuffer);
-          startReplayLoop(
-              startIndex: findReplayIndex('ChangePage:$_currentPage'));
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-          decoration: BoxDecoration(
-            color: CustomColors.redFF4201,
-            border: Border.all(
-              color: CustomColors.gray363636,
-              style: BorderStyle.solid,
-              width: 2.0,
-            ),
-            borderRadius: BorderRadius.circular(100),
-          ),
-          child: Row(
-            children: [
-              Text(
-                'เริ่มเล่นที่หน้า ${_currentPage + 1}',
-                style: const TextStyle(color: Colors.white),
-              ),
-              const Icon(
-                Icons.play_arrow,
-                size: 25,
-                color: CustomColors.white,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget play() {
-    return Center(
-      child: SizedBox(
-        width: 45,
-        height: 45,
-        child: GestureDetector(
-          onTap: () {
-            if (!_isPlayerReady && !_isAudioReady) return;
-            if (_isPause) {
-              setState(() {
-                _isPause = !_isPause;
-              });
-              if (!_isReplaying) {
-                solvepadStopwatch.reset();
-                solvepadStopwatch.start();
-                _audioPlayer.startPlayer(fromDataBuffer: audioBuffer);
-                startReplayLoop(startIndex: findReplayIndex('ChangePage:0'));
-              } // case: before start
-              else {
-                solvepadStopwatch.start();
-                _audioPlayer.resumePlayer();
-                log('time at resume');
-                log(solvepadStopwatch.elapsed.inMilliseconds.toString());
-                startReplayLoop(startIndex: replayIndex);
-              } // case: pausing
-            } // press while pausing or before start
-            else {
-              setState(() {
-                _isPause = !_isPause;
-              });
-              _audioPlayer.pausePlayer();
-              solvepadStopwatch.stop();
-              log('time at pausing');
-              log(solvepadStopwatch.elapsed.inMilliseconds.toString());
-            } // press while playing
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color:
-                  !_isPause ? CustomColors.gray363636 : CustomColors.redFF4201,
-              border: Border.all(
-                color: !_isPause
-                    ? CustomColors.redFF4201
-                    : CustomColors.gray363636,
-                style: BorderStyle.solid,
-                width: 2.0,
-              ),
-              borderRadius: BorderRadius.circular(100),
-            ),
-            child: !_isPause
-                ? const Icon(
-                    Icons.pause,
-                    size: 25,
-                    color: CustomColors.white,
-                  )
-                : const Icon(
-                    Icons.play_arrow,
-                    size: 25,
-                    color: CustomColors.white,
-                  ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget forward() {
-    return Center(
-      child: SizedBox(
-        width: 45,
-        height: 45,
-        child: GestureDetector(
-          onTap: () {
-            forwardPlayer(const Duration(seconds: 5));
-            solvepadStopwatch.skip(const Duration(seconds: 5));
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: CustomColors.redFF4201,
-              border: Border.all(
-                color: CustomColors.gray363636,
-                style: BorderStyle.solid,
-                width: 2.0,
-              ),
-              borderRadius: BorderRadius.circular(100),
-            ),
-            child: const Icon(
-              Icons.fast_forward,
-              size: 25,
-              color: CustomColors.white,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   void forwardPlayer(Duration duration) async {
@@ -1644,220 +1614,6 @@ class _ReviewLessonState extends State<ReviewLesson>
     });
   }
 
-  Widget headerLayer1() {
-    return Container(
-      height: 60,
-      color: CustomColors.whitePrimary,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          S.w(Responsive.isTablet(context) ? 5 : 24),
-          if (Responsive.isTablet(context))
-            Expanded(
-              flex: Responsive.isTablet(context) ? 4 : 3,
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.arrow_back,
-                    color: CustomColors.gray878787,
-                    size: 20.0,
-                  ),
-                  S.w(8),
-                  Text(
-                    widget.courseName,
-                    style: CustomStyles.bold16Black363636Overflow,
-                    maxLines: 1,
-                  ),
-                ],
-              ),
-            ),
-          if (Responsive.isDesktop(context))
-            Expanded(
-              flex: 3,
-              child: Row(
-                children: [
-                  InkWell(
-                    onTap: () {
-                      if (_isHasReviewNote) {
-                        showCloseDialog(
-                          context,
-                          () {
-                            saveReviewNote();
-                            Navigator.of(context).pop();
-                          },
-                          title: 'คุณกำลังจะออก โดยไม่บันทึกการเขียน',
-                          detail:
-                              'คุณต้องการบันทึกการเขียนที่เกิดขึ้นระหว่างที่คุณดูรีวิว หรือไม่ ?',
-                          confirm: 'บันทึก',
-                          cancel: 'ออกโดยไม่บันทึก',
-                          onCancel: () {
-                            Navigator.of(context).pop();
-                          },
-                        );
-                      } else {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    child: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Icon(
-                        Icons.arrow_back,
-                        color: CustomColors.gray878787,
-                        size: 20.0,
-                      ),
-                    ),
-                  ),
-                  S.w(defaultPadding),
-                  Text(
-                    widget.courseName,
-                    style: CustomStyles.bold16Black363636Overflow,
-                    maxLines: 1,
-                  ),
-                ],
-              ),
-            ),
-          Expanded(
-            flex: 3,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      if (tabFreestyle == true) {
-                        tabFollowing = !tabFollowing;
-                        tabFreestyle = false;
-                        var parts = _tutorCurrentScrollZoom.split(':');
-                        var scrollX = double.parse(parts[0]);
-                        var scrollY = double.parse(parts[1]);
-                        var zoom = double.parse(parts.last);
-                        if (_currentPage != _tutorCurrentPage) {
-                          _pageController.animateToPage(
-                            _tutorCurrentPage,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        } // re-correct page
-                        _transformationController[_tutorCurrentPage].value =
-                            Matrix4.identity()
-                              ..translate(
-                                  scaleScrollX(scrollX), scaleScrollY(scrollY))
-                              ..scale(zoom);
-                      }
-                    });
-                  },
-                  child: Container(
-                    height: 50,
-                    width: 120,
-                    decoration: BoxDecoration(
-                      color: tabFollowing
-                          ? CustomColors.greenE5F6EB
-                          : CustomColors.whitePrimary,
-                      shape: BoxShape.rectangle,
-                      border: Border.all(
-                        color: CustomColors.grayCFCFCF,
-                        style: BorderStyle.solid,
-                        width: 1.0,
-                      ),
-                      borderRadius: const BorderRadius.horizontal(
-                        left: Radius.circular(50.0),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Image.asset(
-                          tabFollowing
-                              ? ImageAssets.avatarMe
-                              : ImageAssets.avatarDisMen,
-                          width: 32,
-                        ),
-                        S.w(8),
-                        Text("เรียนรู้",
-                            style: tabFollowing
-                                ? CustomStyles.bold14greenPrimary
-                                : CustomStyles.bold14grayCFCFCF),
-                      ],
-                    ),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      if (tabFollowing == true) {
-                        tabFreestyle = !tabFreestyle;
-                        tabFollowing = false;
-                      }
-                    });
-                  },
-                  child: Container(
-                    height: 50,
-                    width: 120,
-                    decoration: BoxDecoration(
-                      color: tabFreestyle
-                          ? CustomColors.greenE5F6EB
-                          : CustomColors.whitePrimary,
-                      shape: BoxShape.rectangle,
-                      border: Border.all(
-                        color: CustomColors.grayCFCFCF,
-                        style: BorderStyle.solid,
-                        width: 1.0,
-                      ),
-                      borderRadius: const BorderRadius.horizontal(
-                        right: Radius.circular(50.0),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Image.asset(
-                          tabFreestyle
-                              ? ImageAssets.pencilActive
-                              : ImageAssets.penDisTab,
-                          width: 32,
-                        ),
-                        S.w(8),
-                        Text("เขียนอิสระ",
-                            style: tabFreestyle
-                                ? CustomStyles.bold14greenPrimary
-                                : CustomStyles.bold14grayCFCFCF),
-                      ],
-                    ),
-                  ),
-                ),
-                S.w(12),
-                // Container(
-                //   width: 1,
-                //   height: 32,
-                //   color: CustomColors.grayCFCFCF,
-                // ),
-                S.w(12),
-                // InkWell(
-                //   onTap: () {},
-                //   child: Container(
-                //     padding: const EdgeInsets.symmetric(
-                //       horizontal: 6,
-                //       vertical: 10,
-                //     ),
-                //     decoration: BoxDecoration(
-                //       color: CustomColors.greenPrimary,
-                //       borderRadius: BorderRadius.circular(8.0),
-                //     ),
-                //     child:
-                //         Text("ไปหน้าที่สอน", style: CustomStyles.bold14White),
-                //   ),
-                // ),
-                // S.w(12),
-              ],
-            ),
-          ),
-          Align(alignment: Alignment.centerRight, child: pagingTools()),
-        ],
-      ),
-    );
-  }
-
   Widget headerLayer2() {
     return Container(
       height: 70,
@@ -1870,9 +1626,13 @@ class _ReviewLessonState extends State<ReviewLesson>
       ]),
       child: Row(
         children: [
-          S.w(Responsive.isTablet(context) ? 5 : 24),
+          S.w(8),
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: CustomColors.gray878787),
+            onPressed: () => Navigator.pop(context),
+          ),
+          S.w(Responsive.isTablet(context) ? 5 : 12),
           Expanded(
-            flex: 3,
             child: Align(
               alignment: Alignment.centerLeft,
               child: Container(
@@ -1890,22 +1650,26 @@ class _ReviewLessonState extends State<ReviewLesson>
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    // Image.asset(
-                    //   ImageAssets.allPages,
-                    //   height: 30,
-                    //   width: 32,
-                    // ),
-                    // S.w(defaultPadding),
-                    // Container(
-                    //   width: 1,
-                    //   height: 24,
-                    //   color: CustomColors.grayCFCFCF,
-                    // ),
-                    // S.w(defaultPadding),
+                    InkWell(
+                      onTap: () => headerInfo(),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Image.asset(
+                          ImageAssets.iconInfoPage,
+                          height: 30,
+                          width: 30,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 1,
+                      height: 24,
+                      color: CustomColors.grayCFCFCF,
+                    ),
+                    S.w(6),
                     Material(
                       child: InkWell(
                         onTap: () {
-                          if (tabFollowing) return;
                           if (_pageController.hasClients &&
                               _pageController.page!.toInt() != 0) {
                             _pageController.animateToPage(
@@ -1928,7 +1692,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                         ),
                       ),
                     ),
-                    S.w(defaultPadding),
+                    S.w(6),
                     Container(
                       decoration: BoxDecoration(
                         border: Border.all(
@@ -1949,15 +1713,14 @@ class _ReviewLessonState extends State<ReviewLesson>
                         ],
                       ),
                     ),
-                    S.w(8.0),
+                    S.w(8),
                     Text("/ ${_pages.length}",
                         style: CustomStyles.med14Gray878787),
-                    S.w(8),
+                    S.w(6),
                     Material(
                       child: InkWell(
                         // splashColor: Colors.lightGreen,
                         onTap: () {
-                          if (tabFollowing) return;
                           if (_pages.length > 1) {
                             if (_pageController.hasClients &&
                                 _pageController.page!.toInt() !=
@@ -1983,239 +1746,158 @@ class _ReviewLessonState extends State<ReviewLesson>
                         ),
                       ),
                     ),
-                    S.w(6.0),
+                    S.w(6),
                   ],
                 ),
               ),
             ),
           ),
-          Expanded(
-            flex: 3,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      if (tabFreestyle == true) {
-                        tabFollowing = !tabFollowing;
-                        tabFreestyle = false;
-                        var parts = _tutorCurrentScrollZoom.split(':');
-                        var scrollX = double.parse(parts[0]);
-                        var scrollY = double.parse(parts[1]);
-                        var zoom = double.parse(parts.last);
-                        if (_currentPage != _tutorCurrentPage) {
-                          _pageController.animateToPage(
-                            _tutorCurrentPage,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        } // re-correct page
-                        _transformationController[_tutorCurrentPage].value =
-                            Matrix4.identity()
-                              ..translate(
-                                  scaleScrollX(scrollX), scaleScrollY(scrollY))
-                              ..scale(zoom);
-                      }
-                    });
-                  },
-                  child: Container(
-                    height: 50,
-                    width: 120,
-                    decoration: BoxDecoration(
-                      color: tabFollowing
-                          ? CustomColors.greenE5F6EB
-                          : CustomColors.whitePrimary,
-                      shape: BoxShape.rectangle,
-                      border: Border.all(
-                        color: CustomColors.grayCFCFCF,
-                        style: BorderStyle.solid,
-                        width: 1.0,
-                      ),
-                      borderRadius: const BorderRadius.horizontal(
-                        left: Radius.circular(50.0),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Image.asset(
-                          tabFollowing
-                              ? ImageAssets.avatarMe
-                              : ImageAssets.avatarDisMen,
-                          width: 32,
+          if (widget.audio != null)
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (tabFreestyle == true) {
+                          tabFollowing = !tabFollowing;
+                          tabFreestyle = false;
+                          if (_tutorCurrentScrollZoom != '') {
+                            var parts = _tutorCurrentScrollZoom.split('|');
+                            var scrollX = double.parse(parts[0]);
+                            var scrollY = double.parse(parts[1]);
+                            var zoom = double.parse(parts.last);
+                            if (_currentPage != _tutorCurrentPage) {
+                              _pageController.animateToPage(
+                                _tutorCurrentPage,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            } // re-correct page
+                            _transformationController[_tutorCurrentPage].value =
+                                Matrix4.identity()
+                                  ..translate(scrollX / 2, scrollY)
+                                  ..scale(zoom);
+                          }
+                        }
+                      });
+                    },
+                    child: Container(
+                      height: 50,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: tabFollowing
+                            ? CustomColors.greenE5F6EB
+                            : CustomColors.whitePrimary,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(
+                          color: CustomColors.grayCFCFCF,
+                          style: BorderStyle.solid,
+                          width: 1.0,
                         ),
-                        S.w(8),
-                        Text("เรียนรู้",
-                            style: tabFollowing
-                                ? CustomStyles.bold14greenPrimary
-                                : CustomStyles.bold14grayCFCFCF),
-                      ],
+                        borderRadius: const BorderRadius.horizontal(
+                          left: Radius.circular(50.0),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Image.asset(
+                            tabFollowing
+                                ? ImageAssets.avatarMen
+                                : ImageAssets.avatarDisMen,
+                            width: 32,
+                          ),
+                          S.w(8),
+                          Text("เรียนรู้",
+                              style: tabFollowing
+                                  ? CustomStyles.bold14greenPrimary
+                                  : CustomStyles.bold14grayCFCFCF),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      if (tabFollowing == true) {
-                        tabFreestyle = !tabFreestyle;
-                        tabFollowing = false;
-                      }
-                    });
-                  },
-                  child: Container(
-                    height: 50,
-                    width: 120,
-                    decoration: BoxDecoration(
-                      color: tabFreestyle
-                          ? CustomColors.greenE5F6EB
-                          : CustomColors.whitePrimary,
-                      shape: BoxShape.rectangle,
-                      border: Border.all(
-                        color: CustomColors.grayCFCFCF,
-                        style: BorderStyle.solid,
-                        width: 1.0,
-                      ),
-                      borderRadius: const BorderRadius.horizontal(
-                        right: Radius.circular(50.0),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Image.asset(
-                          tabFreestyle
-                              ? ImageAssets.pencilActive
-                              : ImageAssets.penDisTab,
-                          width: 32,
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (tabFollowing == true) {
+                          tabFreestyle = !tabFreestyle;
+                          tabFollowing = false;
+                        }
+                      });
+                    },
+                    child: Container(
+                      height: 50,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: tabFreestyle
+                            ? CustomColors.greenE5F6EB
+                            : CustomColors.whitePrimary,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(
+                          color: CustomColors.grayCFCFCF,
+                          style: BorderStyle.solid,
+                          width: 1.0,
                         ),
-                        S.w(8),
-                        Text("เขียนอิสระ",
-                            style: tabFreestyle
-                                ? CustomStyles.bold14greenPrimary
-                                : CustomStyles.bold14grayCFCFCF),
-                      ],
+                        borderRadius: const BorderRadius.horizontal(
+                          right: Radius.circular(50.0),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Image.asset(
+                            tabFreestyle
+                                ? ImageAssets.pencilActive
+                                : ImageAssets.penDisTab,
+                            width: 32,
+                          ),
+                          S.w(8),
+                          Text("เขียนอิสระ",
+                              style: tabFreestyle
+                                  ? CustomStyles.bold14greenPrimary
+                                  : CustomStyles.bold14grayCFCFCF),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                S.w(12),
-                // Container(
-                //   width: 1,
-                //   height: 32,
-                //   color: CustomColors.grayCFCFCF,
-                // ),
-                S.w(12),
-                // InkWell(
-                //   onTap: () {},
-                //   child: Container(
-                //     padding: const EdgeInsets.symmetric(
-                //       horizontal: 6,
-                //       vertical: 10,
-                //     ),
-                //     decoration: BoxDecoration(
-                //       color: CustomColors.greenPrimary,
-                //       borderRadius: BorderRadius.circular(8.0),
-                //     ),
-                //     child:
-                //         Text("ไปหน้าที่สอน", style: CustomStyles.bold14White),
-                //   ),
-                // ),
-                // S.w(12),
-              ],
+                ],
+              ),
             ),
-          ),
-          play(),
-          S.w(20),
-          // Expanded(
-          //     flex: 3,
-          //     child: Row(
-          //       mainAxisAlignment: MainAxisAlignment.center,
-          //       children: [
-          //         InkWell(
-          //           onTap: () {
-          //           },
-          //           child: Text(
-          //             "ทบทวนบทเรียน",
-          //             style: CustomStyles.bold18gray878787,
-          //           ),
-          //         )
-          //       ],
-          //     )),
-          /// Statistics
-          // Expanded(
-          //     flex: 2,
-          //     child: Align(
-          //       alignment: Alignment.centerRight,
-          //       child: InkWell(
-          //         onTap: () {
-          //           // showLeaderboard(context);
-          //         },
-          //         child: Container(
-          //           decoration: BoxDecoration(
-          //             border: Border.all(
-          //               color: CustomColors.grayCFCFCF,
-          //               style: BorderStyle.solid,
-          //               width: 1.0,
-          //             ),
-          //             borderRadius: BorderRadius.circular(8),
-          //             color: CustomColors.whitePrimary,
-          //           ),
-          //           padding:
-          //               const EdgeInsets.symmetric(horizontal: 1, vertical: 6),
-          //           child: Padding(
-          //             padding: const EdgeInsets.all(6.0),
-          //             child: Row(
-          //               mainAxisSize: MainAxisSize.min,
-          //               mainAxisAlignment: MainAxisAlignment.center,
-          //               children: <Widget>[
-          //                 Image.asset(
-          //                   ImageAssets.leaderboard,
-          //                   height: 23,
-          //                   width: 25,
-          //                 ),
-          //                 S.w(8),
-          //                 Container(
-          //                   width: 1,
-          //                   height: 24,
-          //                   color: CustomColors.grayCFCFCF,
-          //                 ),
-          //                 S.w(8),
-          //                 Image.asset(
-          //                   ImageAssets.checkTrue,
-          //                   height: 18,
-          //                   width: 18,
-          //                 ),
-          //                 if (!Responsive.isTablet(context)) S.w(8.0),
-          //                 Text("7", style: CustomStyles.bold14Gray878787),
-          //                 if (!Responsive.isTablet(context)) S.w(8.0),
-          //                 Image.asset(
-          //                   ImageAssets.x,
-          //                   height: 18,
-          //                   width: 18,
-          //                 ),
-          //                 if (!Responsive.isTablet(context)) S.w(8.0),
-          //                 Text("5", style: CustomStyles.bold14Gray878787),
-          //                 if (!Responsive.isTablet(context)) S.w(8.0),
-          //                 Image.asset(
-          //                   ImageAssets.icQa,
-          //                   height: 18,
-          //                   width: 18,
-          //                 ),
-          //                 if (!Responsive.isTablet(context)) S.w(8.0),
-          //                 Text("0", style: CustomStyles.bold14Gray878787),
-          //                 if (!Responsive.isTablet(context)) S.w(8.0),
-          //                 Image.asset(
-          //                   ImageAssets.arrowNextCircle,
-          //                   width: 21,
-          //                 ),
-          //               ],
-          //             ),
-          //           ),
-          //         ),
-          //       ),
-          //     )),
-          // S.w(Responsive.isTablet(context) ? 5 : 24),
+          if (widget.audio != null)
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // InkWell(
+                  //   onTap: () {
+                  //     setState(() {
+                  //       micEnable = !micEnable;
+                  //     });
+                  //     log(_data['metadata']['duration'].toString());
+                  //     log(_data['metadata']['duration'].runtimeType.toString());
+                  //   },
+                  //   child: Image.asset(
+                  //     micEnable ? ImageAssets.micEnable : ImageAssets.micDis,
+                  //     height: 44,
+                  //     width: 44,
+                  //   ),
+                  // ),
+                  // S.w(defaultPadding),
+                  // const DividerVer(),
+                  replayButton(),
+                  RichText(
+                    text: TextSpan(
+                      text: 'เริ่มเรียน',
+                      style: CustomStyles.bold14RedF44336,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          S.w(16.0),
         ],
       ),
     );
@@ -2309,286 +1991,66 @@ class _ReviewLessonState extends State<ReviewLesson>
     );
   }
 
-  Future<void> headerLayer1Mobile() {
+  Future<void> headerInfo() {
     return showDialog(
       useSafeArea: false,
       context: context,
       builder: (context) {
-        return SafeArea(
-          child: StatefulBuilder(
-            builder: (context, setState) {
-              return Column(
-                children: [
-                  Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      width: double.infinity,
-                      height: 60,
-                      color: CustomColors.whitePrimary,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          S.w(defaultPadding),
-                          if (Responsive.isMobile(context))
-                            Expanded(
-                              flex: 4,
-                              child: Row(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () => Navigator.of(context).pop(),
-                                    child: const Icon(
-                                      Icons.close,
-                                      color: CustomColors.gray878787,
-                                      size: 18,
-                                    ),
-                                  ),
-                                  S.w(8),
-                                  Flexible(
-                                    child: Text(
-                                      "คอร์สปรับพื้นฐานคณิตศาสตร์ ก่อนขึ้น ม.4  - 01 ม.ค. 2023",
-                                      style: CustomStyles
-                                          .bold16Black363636Overflow,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ],
+        final double statusBarHeight = MediaQuery.of(context).padding.top;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Column(
+              children: [
+                Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    margin: EdgeInsets.only(top: statusBarHeight),
+                    width: double.infinity,
+                    height: 60,
+                    color: CustomColors.whitePrimary,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        S.w(defaultPadding),
+                        Expanded(
+                          flex: 4,
+                          child: Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () => Navigator.of(context).pop(),
+                                child: const Icon(
+                                  Icons.close,
+                                  color: CustomColors.gray878787,
+                                  size: 18,
+                                ),
                               ),
-                            ),
-                          Expanded(
-                            flex: 2,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                S.w(16.0),
-                                Container(
-                                  height: 11,
-                                  width: 11,
-                                  decoration: BoxDecoration(
-                                      color: CustomColors.redF44336,
-                                      borderRadius: BorderRadius.circular(100)
-                                      //more than 50% of width makes circle
-                                      ),
-                                ),
-                                S.w(4.0),
-                                RichText(
-                                  text: TextSpan(
-                                    text: 'Live Time: ',
-                                    style: CustomStyles.med14redFF4201,
-                                    children: <TextSpan>[
-                                      TextSpan(
-                                        text: '01 : 59 : 59',
-                                        style: CustomStyles.med14Gray878787,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                S.w(defaultPadding),
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
+                              S.w(8),
+                              Text(
+                                '${widget.courseName} | ',
+                                style: CustomStyles.bold16Black363636Overflow,
+                              ),
+                              Text(
+                                '${FormatDate.timeOnlyNumber(DateTime.fromMillisecondsSinceEpoch(widget.start))} น. - ${FormatDate.timeOnlyNumber(widget.end)} น. | ',
+                                style: CustomStyles.bold16Black363636Overflow,
+                              ),
+                              Text(
+                                FormatDate.dayOnly(
+                                    DateTime.fromMillisecondsSinceEpoch(
+                                        widget.start)),
+                                style: CustomStyles.bold16Black363636Overflow,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              );
-            },
-          ),
+                ),
+              ],
+            );
+          },
         );
       },
-    );
-  }
-
-  Widget mobileReviewHeader() {
-    return SafeArea(
-      child: StatefulBuilder(
-        builder: (context, setState) {
-          return Column(
-            children: [
-              Material(
-                color: Colors.transparent,
-                child: Container(
-                  width: double.infinity,
-                  height: 55,
-                  color: CustomColors.whitePrimary,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Row(
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Icon(
-                                  Icons.arrow_back,
-                                  color: CustomColors.gray878787,
-                                  size: 20.0,
-                                ),
-                              ),
-                            ),
-                            S.w(defaultPadding),
-                            Text(
-                              widget.courseName,
-                              style: CustomStyles.bold16Black363636Overflow,
-                              maxLines: 1,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  if (tabFreestyle == true) {
-                                    tabFollowing = !tabFollowing;
-                                    tabFreestyle = false;
-                                    var parts =
-                                        _tutorCurrentScrollZoom.split(':');
-                                    var scrollX = double.parse(parts[0]);
-                                    var scrollY = double.parse(parts[1]);
-                                    var zoom = double.parse(parts.last);
-                                    if (_currentPage != _tutorCurrentPage) {
-                                      _pageController.animateToPage(
-                                        _tutorCurrentPage,
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        curve: Curves.easeInOut,
-                                      );
-                                    } // re-correct page
-                                    _transformationController[_tutorCurrentPage]
-                                        .value = Matrix4.identity()
-                                      ..translate(scaleScrollX(scrollX),
-                                          scaleScrollY(scrollY))
-                                      ..scale(zoom);
-                                  }
-                                });
-                              },
-                              child: Container(
-                                height: 50,
-                                width: 120,
-                                decoration: BoxDecoration(
-                                  color: tabFollowing
-                                      ? CustomColors.greenE5F6EB
-                                      : CustomColors.whitePrimary,
-                                  shape: BoxShape.rectangle,
-                                  border: Border.all(
-                                    color: CustomColors.grayCFCFCF,
-                                    style: BorderStyle.solid,
-                                    width: 1.0,
-                                  ),
-                                  borderRadius: const BorderRadius.horizontal(
-                                    left: Radius.circular(50.0),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Image.asset(
-                                      tabFollowing
-                                          ? ImageAssets.avatarMe
-                                          : ImageAssets.avatarDisMen,
-                                      width: 32,
-                                    ),
-                                    S.w(8),
-                                    Text("เรียนรู้",
-                                        style: tabFollowing
-                                            ? CustomStyles.bold14greenPrimary
-                                            : CustomStyles.bold14grayCFCFCF),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  if (tabFollowing == true) {
-                                    tabFreestyle = !tabFreestyle;
-                                    tabFollowing = false;
-                                  }
-                                });
-                              },
-                              child: Container(
-                                height: 50,
-                                width: 120,
-                                decoration: BoxDecoration(
-                                  color: tabFreestyle
-                                      ? CustomColors.greenE5F6EB
-                                      : CustomColors.whitePrimary,
-                                  shape: BoxShape.rectangle,
-                                  border: Border.all(
-                                    color: CustomColors.grayCFCFCF,
-                                    style: BorderStyle.solid,
-                                    width: 1.0,
-                                  ),
-                                  borderRadius: const BorderRadius.horizontal(
-                                    right: Radius.circular(50.0),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Image.asset(
-                                      tabFreestyle
-                                          ? ImageAssets.pencilActive
-                                          : ImageAssets.penDisTab,
-                                      width: 32,
-                                    ),
-                                    S.w(8),
-                                    Text("เขียนอิสระ",
-                                        style: tabFreestyle
-                                            ? CustomStyles.bold14greenPrimary
-                                            : CustomStyles.bold14grayCFCFCF),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            S.w(12),
-                            // Container(
-                            //   width: 1,
-                            //   height: 32,
-                            //   color: CustomColors.grayCFCFCF,
-                            // ),
-                            S.w(12),
-                            // InkWell(
-                            //   onTap: () {},
-                            //   child: Container(
-                            //     padding: const EdgeInsets.symmetric(
-                            //       horizontal: 6,
-                            //       vertical: 10,
-                            //     ),
-                            //     decoration: BoxDecoration(
-                            //       color: CustomColors.greenPrimary,
-                            //       borderRadius: BorderRadius.circular(8.0),
-                            //     ),
-                            //     child:
-                            //         Text("ไปหน้าที่สอน", style: CustomStyles.bold14White),
-                            //   ),
-                            // ),
-                            // S.w(12),
-                          ],
-                        ),
-                      ),
-                      Align(
-                          alignment: Alignment.centerRight,
-                          child: pagingTools()),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
     );
   }
 
@@ -2623,7 +2085,7 @@ class _ReviewLessonState extends State<ReviewLesson>
                   children: <Widget>[
                     S.w(8),
                     InkWell(
-                      onTap: () => headerLayer1Mobile(),
+                      onTap: () => headerInfo(),
                       child: Image.asset(
                         ImageAssets.iconInfoPage,
                         height: 24,

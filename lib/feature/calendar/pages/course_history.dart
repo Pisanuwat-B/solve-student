@@ -194,6 +194,7 @@ class _CourseHistoryState extends State<CourseHistory>
                           userId: authProvider!.user!.id!,
                           docId: reviewList[index].documentId!,
                           start: reviewList[index].rawStart!,
+                          end: reviewList[index].end!,
                         ),
                       ),
                     );
