@@ -595,10 +595,10 @@ class _ReviewLessonState extends State<ReviewLesson>
             }
             List<SolvepadStroke?> pointStack =
                 _replayPenPoints[_tutorCurrentPage];
-            if (eraseAction['mode'] == "DrawingMode.pen") {
+            if (eraseAction['mode'] == "pen") {
               pointStack = _replayPenPoints[_tutorCurrentPage];
             } // erase pen
-            else if (eraseAction['mode'] == "DrawingMode.highlighter") {
+            else if (eraseAction['mode'] == "high") {
               pointStack = _replayHighlighterPoints[_tutorCurrentPage];
             } // erase high
             setState(() {
@@ -1132,7 +1132,7 @@ class _ReviewLessonState extends State<ReviewLesson>
               var seekPosition = Duration(milliseconds: lowerValue.round());
               if (lowerValue > replayProgress) {
                 solveStopwatch.jumpTo(seekPosition);
-                // _audioPlayer.seekToPlayer(seekPosition);
+                _audioPlayer.seekToPlayer(seekPosition);
                 setState(() {});
               }
             },
@@ -1775,10 +1775,11 @@ class _ReviewLessonState extends State<ReviewLesson>
                                 curve: Curves.easeInOut,
                               );
                             } // re-correct page
-                            _transformationController[_tutorCurrentPage].value =
-                                Matrix4.identity()
-                                  ..translate(scrollX / 2, scrollY)
-                                  ..scale(zoom);
+                            _transformationController[_tutorCurrentPage]
+                                .value = Matrix4.identity()
+                              ..translate(
+                                  scaleScrollX(scrollX), scaleScrollX(scrollY))
+                              ..scale(zoom);
                           }
                         }
                       });

@@ -562,9 +562,9 @@ class _LearningPageState extends State<LearningPage> {
             }
             List<SolvepadStroke?> pointStack =
                 _replayPenPoints[_tutorCurrentPage];
-            if (eraseAction['mode'] == "DrawingMode.pen") {
+            if (eraseAction['mode'] == "pen") {
               pointStack = _replayPenPoints[_tutorCurrentPage];
-            } else if (eraseAction['mode'] == "DrawingMode.highlighter") {
+            } else if (eraseAction['mode'] == "high") {
               pointStack = _replayHighlighterPoints[_tutorCurrentPage];
             }
             setState(() {
@@ -1374,7 +1374,8 @@ class _LearningPageState extends State<LearningPage> {
                         } // re-correct page
                         _transformationController[_tutorCurrentPage].value =
                             Matrix4.identity()
-                              ..translate(scrollX / 2, scrollY)
+                              ..translate(
+                                  scaleScrollX(scrollX), scaleScrollX(scrollY))
                               ..scale(zoom);
                       }
                     });
