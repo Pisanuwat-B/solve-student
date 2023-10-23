@@ -1029,6 +1029,11 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                     setState(() {
                                       _selectedIndexColors = index;
                                       openColors = !openColors;
+                                      if (isAllowSharingScreen && isHostFocus) {
+                                        for (int i = 0; i <= 2; i++) {
+                                          sendMessage('StrokeColor.$index');
+                                        }
+                                      }
                                     });
                                   },
                                   child: Padding(
@@ -1073,11 +1078,14 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                             return InkWell(
                                 onTap: () {
                                   setState(() {
-                                    setState(() {
-                                      _selectedIndexLines = index;
-                                      openLines = !openLines;
-                                    });
+                                    _selectedIndexLines = index;
+                                    openLines = !openLines;
                                   });
+                                  if (isAllowSharingScreen && isHostFocus) {
+                                    for (int i = 0; i <= 2; i++) {
+                                      sendMessage('StrokeWidth.$index');
+                                    }
+                                  }
                                 },
                                 child: Column(
                                   children: [
@@ -1833,24 +1841,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                   ),
                   S.w(defaultPadding),
                   const DividerVer(),
-                  S.w(defaultPadding),
-                  InkWell(
-                    onTap: () {
-                      // sendCatchupMessage();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: CustomColors.greenPrimary,
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child:
-                          Text("ไปหน้าที่สอน", style: CustomStyles.bold14White),
-                    ),
-                  ),
                 ],
               ),
             ),
