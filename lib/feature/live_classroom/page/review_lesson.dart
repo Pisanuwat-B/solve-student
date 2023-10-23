@@ -1651,9 +1651,8 @@ class _ReviewLessonState extends State<ReviewLesson>
     await file.writeAsString(jsonString);
 
     // 2. Upload the text file to Firebase Storage
-    final Reference storageReference = FirebaseStorage.instance
-        .ref()
-        .child('self_review_note/${widget.courseId}-${widget.start}.txt');
+    final Reference storageReference = FirebaseStorage.instance.ref().child(
+        'self_review_note/${widget.userId}-${widget.courseId}-${widget.start}.txt');
     final UploadTask uploadTask = storageReference.putFile(file);
     await uploadTask.whenComplete(() async {
       // 3. Get the returned URL
