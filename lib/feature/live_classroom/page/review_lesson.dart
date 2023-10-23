@@ -695,16 +695,15 @@ class _ReviewLessonState extends State<ReviewLesson>
       _replayPenPoints[_tutorCurrentPage].add(SolvepadStroke(
         scaleOffset(Offset(point['x'], point['y'])),
         Color(int.parse(color, radix: 16)),
-        stroke,
+        Responsive.isMobile(context) ? (stroke * 0.75) : stroke,
       ));
       setState(() {});
-      // log(_replayPenPoints[_tutorCurrentPage].toString());
     } // pen
     else if (tool == "DrawingMode.highlighter") {
       _replayHighlighterPoints[_tutorCurrentPage].add(SolvepadStroke(
         scaleOffset(Offset(point['x'], point['y'])),
         Color(int.parse(color, radix: 16)),
-        stroke,
+        Responsive.isMobile(context) ? (stroke * 0.65) : stroke,
       ));
       setState(() {});
     } // high
@@ -2449,10 +2448,6 @@ class _ReviewLessonState extends State<ReviewLesson>
     );
   }
 
-  void updateDataHistory(dynamic updateMode) {
-    _mode = updateMode;
-  }
-
   Widget tools() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -2542,16 +2537,15 @@ class _ReviewLessonState extends State<ReviewLesson>
                                           _selectedIndexTools = index;
                                         });
                                         if (index == 0) {
-                                          updateDataHistory(DrawingMode.drag);
+                                          _mode = DrawingMode.drag;
                                         } else if (index == 1) {
-                                          updateDataHistory(DrawingMode.pen);
+                                          _mode = DrawingMode.pen;
                                         } else if (index == 2) {
-                                          updateDataHistory(
-                                              DrawingMode.highlighter);
+                                          _mode = DrawingMode.highlighter;
                                         } else if (index == 3) {
-                                          updateDataHistory(DrawingMode.eraser);
+                                          _mode = DrawingMode.eraser;
                                         } else if (index == 4) {
-                                          updateDataHistory(DrawingMode.laser);
+                                          _mode = DrawingMode.laser;
                                         }
                                       },
                                       child: Image.asset(
@@ -2912,112 +2906,16 @@ class _ReviewLessonState extends State<ReviewLesson>
 
   Widget toolsMobile() {
     return Positioned(
-        left: 15,
-        bottom: 5,
-        child: Align(
-          alignment: Alignment.bottomLeft,
-          child: Column(
-            children: [
-              if (openColors)
-                Container(
-                    height: 55,
-                    width: 260,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: CustomColors.grayCFCFCF,
-                        style: BorderStyle.solid,
-                        width: 1.0,
-                      ),
-                      borderRadius: BorderRadius.circular(64),
-                      color: CustomColors.whitePrimary,
-                    ),
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: ListView.builder(
-                          padding: const EdgeInsets.only(left: 1, right: 1),
-                          scrollDirection: Axis.horizontal,
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: _listColors.length,
-                          itemBuilder: (context, index) {
-                            return Row(
-                              // // crossAxisAlignment: CrossAxisAlignment.start,
-                              // mainAxisAlignment:
-                              //     MainAxisAlignment.center,
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedIndexColors = index;
-
-                                      // Close popup
-                                      openColors = !openColors;
-                                    });
-                                  },
-                                  child: Image.asset(
-                                      _listColors[index]['color'],
-                                      width: 48),
-                                ),
-                                S.w(4)
-                              ],
-                            );
-                          }),
-                    )),
-              if (openLines)
-                Container(
-                    height: 55,
-                    width: 200,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: CustomColors.grayCFCFCF,
-                        style: BorderStyle.solid,
-                        width: 1.0,
-                      ),
-                      borderRadius: BorderRadius.circular(64),
-                      color: CustomColors.whitePrimary,
-                    ),
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: ListView.builder(
-                          padding: const EdgeInsets.only(left: 1, right: 1),
-                          scrollDirection: Axis.horizontal,
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: _listLines.length,
-                          itemBuilder: (context, index) {
-                            return Row(
-                              children: [
-                                InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedIndexLines = index;
-
-                                        // Close popup
-                                        openLines = !openLines;
-                                      });
-                                    },
-                                    child: Row(
-                                      children: [
-                                        Image.asset(
-                                          _selectedIndexLines == index
-                                              ? _listLines[index]
-                                                  ['image_active']
-                                              : _listLines[index]['image_dis'],
-                                          width: 46,
-                                        ),
-                                        S.h(8)
-                                      ],
-                                    )),
-                                S.w(4)
-                              ],
-                            );
-                          }),
-                    )),
-              AnimatedContainer(
-                duration: const Duration(seconds: 1),
-                curve: Curves.fastOutSlowIn,
-                height: 65,
-                width: selectedTools ? 0 : 430,
+      left: 15,
+      bottom: 5,
+      child: Align(
+        alignment: Alignment.bottomLeft,
+        child: Column(
+          children: [
+            if (openColors)
+              Container(
+                height: 55,
+                width: 260,
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: CustomColors.grayCFCFCF,
@@ -3027,31 +2925,123 @@ class _ReviewLessonState extends State<ReviewLesson>
                   borderRadius: BorderRadius.circular(64),
                   color: CustomColors.whitePrimary,
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    S.h(8),
-                    selectedTools
-                        ? Expanded(
-                            flex: 2,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                child: Container(
+                  alignment: Alignment.center,
+                  child: ListView.builder(
+                      padding: const EdgeInsets.only(left: 1, right: 1),
+                      scrollDirection: Axis.horizontal,
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: _listColors.length,
+                      itemBuilder: (context, index) {
+                        return Row(
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedIndexColors = index;
+                                  openColors = !openColors;
+                                });
+                              },
+                              child: Image.asset(_listColors[index]['color'],
+                                  width: 48),
+                            ),
+                            S.w(4)
+                          ],
+                        );
+                      }),
+                ),
+              ),
+            if (openLines)
+              Container(
+                height: 55,
+                width: 200,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: CustomColors.grayCFCFCF,
+                    style: BorderStyle.solid,
+                    width: 1.0,
+                  ),
+                  borderRadius: BorderRadius.circular(64),
+                  color: CustomColors.whitePrimary,
+                ),
+                child: Container(
+                  alignment: Alignment.center,
+                  child: ListView.builder(
+                      padding: const EdgeInsets.only(left: 1, right: 1),
+                      scrollDirection: Axis.horizontal,
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: _listLines.length,
+                      itemBuilder: (context, index) {
+                        return Row(
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  setState(() {
+                                    _selectedIndexLines = index;
+                                    openLines = !openLines;
+                                  });
+                                });
+                              },
+                              child: Row(
                                 children: [
                                   Image.asset(
-                                    _listTools[_selectedIndexTools]
-                                        ['image_active'],
-                                    width: 10.w,
-                                  )
+                                    _selectedIndexLines == index
+                                        ? _listLines[index]['image_active']
+                                        : _listLines[index]['image_dis'],
+                                    width: 46,
+                                  ),
+                                  S.h(8)
                                 ],
                               ),
                             ),
-                          )
-                        : Expanded(
-                            // flex: 2,
-                            child: Row(
-                            // mainAxisAlignment: MainAxisAlignment.start,
+                            S.w(4)
+                          ],
+                        );
+                      }),
+                ),
+              ),
+            AnimatedContainer(
+              duration: const Duration(seconds: 1),
+              curve: Curves.fastOutSlowIn,
+              height: 65,
+              // TODO: change to 430 when laser ready
+              width: selectedTools ? 0 : 380,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: CustomColors.grayCFCFCF,
+                  style: BorderStyle.solid,
+                  width: 1.0,
+                ),
+                borderRadius: BorderRadius.circular(64),
+                color: CustomColors.whitePrimary,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  S.h(8),
+                  selectedTools
+                      ? Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  _listTools[_selectedIndexTools]
+                                      ['image_active'],
+                                  width: 10.w,
+                                )
+                              ],
+                            ),
+                          ),
+                        )
+                      : Expanded(
+                          // flex: 2,
+                          child: Row(
                             children: [
                               ListView.builder(
                                   padding:
@@ -3067,7 +3057,19 @@ class _ReviewLessonState extends State<ReviewLesson>
                                           onTap: () {
                                             setState(() {
                                               _selectedIndexTools = index;
+                                              selectedTools = !selectedTools;
                                             });
+                                            if (index == 0) {
+                                              _mode = DrawingMode.drag;
+                                            } else if (index == 1) {
+                                              _mode = DrawingMode.pen;
+                                            } else if (index == 2) {
+                                              _mode = DrawingMode.highlighter;
+                                            } else if (index == 3) {
+                                              _mode = DrawingMode.eraser;
+                                            } else if (index == 4) {
+                                              _mode = DrawingMode.laser;
+                                            }
                                           },
                                           child: Image.asset(
                                             _selectedIndexTools == index
@@ -3113,16 +3115,17 @@ class _ReviewLessonState extends State<ReviewLesson>
                                   width: 38,
                                 ),
                               ),
-                              S.w(defaultPadding),
-                              InkWell(
-                                onTap: () {
-                                  log("Clear");
-                                },
-                                child: Image.asset(
-                                  ImageAssets.bin,
-                                  width: 38,
-                                ),
-                              ),
+                              // TODO: Do we need clear btn ?
+                              // S.w(defaultPadding),
+                              // InkWell(
+                              //   onTap: () {
+                              //     log("Clear");
+                              //   },
+                              //   child: Image.asset(
+                              //     ImageAssets.bin,
+                              //     width: 38,
+                              //   ),
+                              // ),
                               S.w(4),
                               InkWell(
                                 onTap: () {
@@ -3139,13 +3142,15 @@ class _ReviewLessonState extends State<ReviewLesson>
                                 ),
                               ),
                             ],
-                          )),
-                  ],
-                ),
+                          ),
+                        ),
+                ],
               ),
-            ],
-          ),
-        ));
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget toolsUndoMobile() {

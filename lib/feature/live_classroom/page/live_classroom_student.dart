@@ -1,9 +1,13 @@
+import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:videosdk/videosdk.dart';
@@ -585,10 +589,12 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     }
   }
 
-  void handleMessageEndMeeting(String data) {
+  void handleMessageEndMeeting(String data) async {
     meeting.leave();
     if (!mounted) return;
     if (isStudentLeave) return;
+    await saveReviewNote();
+    if (!mounted) return;
     Navigator.pop(context);
     Navigator.pop(context);
   }
@@ -615,6 +621,49 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
 
   double scaleScrollX(double scrollX) => scrollX * scaleX;
   double scaleScrollY(double scrollY) => scrollY * scaleY;
+
+  Future<void> saveReviewNote() async {
+    // Convert the data to JSON format
+    Map<String, dynamic> data = {
+      'penPoints': _penPoints
+          .map((list) => list.map((stroke) => stroke?.toJson()).toList())
+          .toList(),
+      'laserPoints': _laserPoints
+          .map((list) => list.map((stroke) => stroke?.toJson()).toList())
+          .toList(),
+      'highlighterPoints': _highlighterPoints
+          .map((list) => list.map((stroke) => stroke?.toJson()).toList())
+          .toList(),
+    };
+    String jsonString = jsonEncode(data);
+
+    // 1. Save data to a text file
+    final directory = await getApplicationDocumentsDirectory();
+    final File file =
+        File('${directory.path}/${widget.courseId}-${widget.startTime}.txt');
+    await file.writeAsString(jsonString);
+
+    // 2. Upload the text file to Firebase Storage
+    final Reference storageReference = FirebaseStorage.instance
+        .ref()
+        .child('self_review_note/${widget.courseId}-${widget.startTime}.txt');
+    final UploadTask uploadTask = storageReference.putFile(file);
+    await uploadTask.whenComplete(() async {
+      // 3. Get the returned URL
+      final String downloadUrl = await storageReference.getDownloadURL();
+
+      // 4. Write to Firestore database
+      final CollectionReference reviewNotes =
+          FirebaseFirestore.instance.collection('review_note');
+      await reviewNotes.add({
+        'course_id': widget.courseId,
+        'note_file': downloadUrl,
+        'session_start': widget.startTime,
+        'student_id': widget.userId,
+        'update_time': FieldValue.serverTimestamp(),
+      });
+    });
+  }
 
   @override
   dispose() {
@@ -2884,9 +2933,11 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
           children: [
             InkWell(
               onTap: () {
-                showCloseDialog(context, () {
+                showCloseDialog(context, () async {
                   if (!widget.isMock) meeting.leave();
                   isStudentLeave = true;
+                  await saveReviewNote();
+                  if (!mounted) return;
                   Navigator.push(
                       context, MaterialPageRoute(builder: (_) => Nav()));
                 });
