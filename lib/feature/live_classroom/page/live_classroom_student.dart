@@ -981,11 +981,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  if (tabFollowing)
-                    statusShareScreen(
-                      "หน้าจอติวเตอร์",
-                      ImageAssets.shareGreen,
-                    ),
                   if (isAllowSharingScreen && isHostFocus)
                     statusShareNowScreen(
                       "กำลังแชร์หน้าจอ",
