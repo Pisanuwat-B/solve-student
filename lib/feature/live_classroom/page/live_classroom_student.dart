@@ -1654,10 +1654,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 S.w(16.0),
                 InkWell(
                   onTap: () {
-                    showCloseDialog(context, () {
-                      if (!widget.isMock) {
-                        meeting.leave();
-                      }
+                    showCloseDialog(context, () async {
+                      if (!widget.isMock) meeting.leave();
+                      isStudentLeave = true;
+                      await saveReviewNote();
+                      if (!mounted) return;
+                      Navigator.push(
+                          context, MaterialPageRoute(builder: (_) => Nav()));
                     });
                   },
                   child: Container(
