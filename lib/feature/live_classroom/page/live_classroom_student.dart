@@ -998,6 +998,105 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 ],
               ),
             ),
+            if (openColors)
+              Positioned(
+                left: 150,
+                bottom: 50,
+                child: Container(
+                  width: 55,
+                  height: 260,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: CustomColors.grayCFCFCF,
+                      style: BorderStyle.solid,
+                      width: 1.0,
+                    ),
+                    borderRadius: BorderRadius.circular(64),
+                    color: CustomColors.whitePrimary,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: _listColors.length,
+                          itemBuilder: (context, index) {
+                            return Column(
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedIndexColors = index;
+                                      openColors = !openColors;
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(3.0),
+                                    child: Image.asset(
+                                      _listColors[index]['color'],
+                                    ),
+                                  ),
+                                ),
+                                S.h(4)
+                              ],
+                            );
+                          })
+                    ],
+                  ),
+                ),
+              ),
+            if (openLines)
+              Positioned(
+                left: 150,
+                bottom: 50,
+                child: Container(
+                  width: 55,
+                  height: 220,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: CustomColors.grayCFCFCF,
+                      style: BorderStyle.solid,
+                      width: 1.0,
+                    ),
+                    borderRadius: BorderRadius.circular(64),
+                    color: CustomColors.whitePrimary,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: _listLines.length,
+                          itemBuilder: (context, index) {
+                            return InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    setState(() {
+                                      _selectedIndexLines = index;
+                                      openLines = !openLines;
+                                    });
+                                  });
+                                },
+                                child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(3.0),
+                                      child: Image.asset(
+                                        _selectedIndexLines == index
+                                            ? _listLines[index]['image_active']
+                                            : _listLines[index]['image_dis'],
+                                      ),
+                                    ),
+                                    S.h(8)
+                                  ],
+                                ));
+                          })
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -2677,98 +2776,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             ),
           ),
         ),
-        if (openColors)
-          Container(
-            width: 55,
-            height: 260,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: CustomColors.grayCFCFCF,
-                style: BorderStyle.solid,
-                width: 1.0,
-              ),
-              borderRadius: BorderRadius.circular(64),
-              color: CustomColors.whitePrimary,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: _listColors.length,
-                    itemBuilder: (context, index) {
-                      return Column(
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              setState(() {
-                                _selectedIndexColors = index;
-
-                                // Close popup
-                                openColors = !openColors;
-                              });
-                              log('Tap : index $index');
-                              log('Tap : _selectIndex $_selectedIndexColors');
-                            },
-                            child: Image.asset(
-                              _listColors[index]['color'],
-                            ),
-                          ),
-                          S.h(4)
-                        ],
-                      );
-                    })
-              ],
-            ),
-          ),
-        if (openLines)
-          Container(
-            width: 55,
-            height: 220,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: CustomColors.grayCFCFCF,
-                style: BorderStyle.solid,
-                width: 1.0,
-              ),
-              borderRadius: BorderRadius.circular(64),
-              color: CustomColors.whitePrimary,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: _listLines.length,
-                    itemBuilder: (context, index) {
-                      return InkWell(
-                        onTap: () {
-                          setState(() {
-                            setState(() {
-                              _selectedIndexLines = index;
-
-                              // Close popup
-                              openLines = !openLines;
-                            });
-                          });
-                        },
-                        child: Column(
-                          children: [
-                            Image.asset(
-                              _selectedIndexLines == index
-                                  ? _listLines[index]['image_active']
-                                  : _listLines[index]['image_dis'],
-                            ),
-                            S.h(8)
-                          ],
-                        ),
-                      );
-                    })
-              ],
-            ),
-          ),
       ],
     );
   }
