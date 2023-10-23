@@ -1058,9 +1058,9 @@ class _ReviewLessonState extends State<ReviewLesson>
             ),
             if (widget.audio != null)
               Positioned(
-                left: 140,
-                top: 160,
-                child: slider('tablet'),
+                right: 30,
+                top: 55,
+                child: slider('mobile'),
               ),
             if (!selectedTools) toolsMobile(),
             if (selectedTools) toolsActiveMobile(),
@@ -1114,7 +1114,7 @@ class _ReviewLessonState extends State<ReviewLesson>
     double leftTooltip = -40;
     if (mode == 'mobile') {
       height = 300;
-      padding = 15;
+      padding = 5;
       handler = 30;
       fontSize = 10;
       leftDuration = 19;
@@ -1673,6 +1673,94 @@ class _ReviewLessonState extends State<ReviewLesson>
     });
   }
 
+  Widget pagingTools() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Material(
+          child: InkWell(
+            onTap: () {
+              if (tabFollowing) return;
+              if (_pageController.hasClients &&
+                  _pageController.page!.toInt() != 0) {
+                _pageController.animateToPage(
+                  _pageController.page!.toInt() - 1,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Image.asset(
+                ImageAssets.backDis,
+                height: 16,
+                width: 17,
+                color: _isPrevBtnActive
+                    ? CustomColors.activePagingBtn
+                    : CustomColors.inactivePagingBtn,
+              ),
+            ),
+          ),
+        ),
+        S.w(defaultPadding),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: CustomColors.grayCFCFCF,
+              style: BorderStyle.solid,
+              width: 1.0,
+            ),
+            borderRadius: BorderRadius.circular(4),
+            color: CustomColors.whitePrimary,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text("Page ${_currentPage + 1}",
+                  style: CustomStyles.bold14greenPrimary),
+            ],
+          ),
+        ),
+        S.w(8.0),
+        Text("/ ${_pages.length}", style: CustomStyles.med14Gray878787),
+        S.w(8),
+        Material(
+          child: InkWell(
+            // splashColor: Colors.lightGreen,
+            onTap: () {
+              if (tabFollowing) return;
+              if (_pages.length > 1) {
+                if (_pageController.hasClients &&
+                    _pageController.page!.toInt() != _pages.length - 1) {
+                  _pageController.animateToPage(
+                    _pageController.page!.toInt() + 1,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                }
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Image.asset(
+                ImageAssets.forward,
+                height: 16,
+                width: 17,
+                color: _isNextBtnActive
+                    ? CustomColors.activePagingBtn
+                    : CustomColors.inactivePagingBtn,
+              ),
+            ),
+          ),
+        ),
+        S.w(6.0),
+      ],
+    );
+  }
+
   Widget headerLayer2() {
     return Container(
       height: 70,
@@ -1689,8 +1777,6 @@ class _ReviewLessonState extends State<ReviewLesson>
           IconButton(
             icon: const Icon(Icons.arrow_back, color: CustomColors.gray878787),
             onPressed: () {
-              log('press back icon');
-              log(_isHasReviewNote.toString());
               if (_isHasReviewNote) {
                 showCloseDialog(
                   context,
@@ -1991,94 +2077,6 @@ class _ReviewLessonState extends State<ReviewLesson>
     );
   }
 
-  Widget pagingTools() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Material(
-          child: InkWell(
-            onTap: () {
-              if (tabFollowing) return;
-              if (_pageController.hasClients &&
-                  _pageController.page!.toInt() != 0) {
-                _pageController.animateToPage(
-                  _pageController.page!.toInt() - 1,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Image.asset(
-                ImageAssets.backDis,
-                height: 16,
-                width: 17,
-                color: _isPrevBtnActive
-                    ? CustomColors.activePagingBtn
-                    : CustomColors.inactivePagingBtn,
-              ),
-            ),
-          ),
-        ),
-        S.w(defaultPadding),
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: CustomColors.grayCFCFCF,
-              style: BorderStyle.solid,
-              width: 1.0,
-            ),
-            borderRadius: BorderRadius.circular(4),
-            color: CustomColors.whitePrimary,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text("Page ${_currentPage + 1}",
-                  style: CustomStyles.bold14greenPrimary),
-            ],
-          ),
-        ),
-        S.w(8.0),
-        Text("/ ${_pages.length}", style: CustomStyles.med14Gray878787),
-        S.w(8),
-        Material(
-          child: InkWell(
-            // splashColor: Colors.lightGreen,
-            onTap: () {
-              if (tabFollowing) return;
-              if (_pages.length > 1) {
-                if (_pageController.hasClients &&
-                    _pageController.page!.toInt() != _pages.length - 1) {
-                  _pageController.animateToPage(
-                    _pageController.page!.toInt() + 1,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                }
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Image.asset(
-                ImageAssets.forward,
-                height: 16,
-                width: 17,
-                color: _isNextBtnActive
-                    ? CustomColors.activePagingBtn
-                    : CustomColors.inactivePagingBtn,
-              ),
-            ),
-          ),
-        ),
-        S.w(6.0),
-      ],
-    );
-  }
-
   Future<void> headerInfo() {
     return showDialog(
       useSafeArea: false,
@@ -2153,12 +2151,37 @@ class _ReviewLessonState extends State<ReviewLesson>
             spreadRadius: 1)
       ]),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
-            child: Container(
-                height: 38,
+          S.w(4),
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: CustomColors.gray878787),
+            onPressed: () {
+              if (_isHasReviewNote) {
+                showCloseDialog(
+                  context,
+                  () {
+                    saveReviewNote();
+                    Navigator.of(context).pop();
+                  },
+                  title: 'คุณกำลังจะออก โดยไม่บันทึกการเขียน',
+                  detail:
+                      'คุณต้องการบันทึกการเขียนที่เกิดขึ้นระหว่างที่คุณดูรีวิว หรือไม่ ?',
+                  confirm: 'บันทึก',
+                  cancel: 'ออกโดยไม่บันทึก',
+                  onCancel: () {
+                    Navigator.of(context).pop();
+                  },
+                );
+              } else {
+                Navigator.of(context).pop();
+              }
+            },
+          ),
+          S.w(4),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: CustomColors.grayCFCFCF,
@@ -2168,116 +2191,259 @@ class _ReviewLessonState extends State<ReviewLesson>
                   borderRadius: BorderRadius.circular(8),
                   color: CustomColors.whitePrimary,
                 ),
+                padding: const EdgeInsets.symmetric(horizontal: 1, vertical: 2),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    S.w(8),
                     InkWell(
                       onTap: () => headerInfo(),
-                      child: Image.asset(
-                        ImageAssets.iconInfoPage,
-                        height: 24,
-                        width: 24,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: Image.asset(
+                          ImageAssets.iconInfoPage,
+                          height: 30,
+                          width: 30,
+                        ),
                       ),
                     ),
-                    S.w(8),
                     Container(
                       width: 1,
-                      height: 32,
-                      color: CustomColors.grayCFCFCF,
-                    ),
-                    S.w(8),
-                    Image.asset(
-                      ImageAssets.allPages,
                       height: 24,
-                      width: 24,
-                    ),
-                    S.w(8),
-                    Container(
-                      width: 1,
-                      height: 32,
                       color: CustomColors.grayCFCFCF,
                     ),
-                    S.w(8),
-                    Transform.scale(
-                      scale: 0.6,
-                      child: CupertinoSwitch(
-                        value: _switchValue,
-                        onChanged: (bool value) {
-                          setState(() {
-                            _switchValue = value;
-                          });
-                          log(value.toString());
+                    S.w(4),
+                    Material(
+                      child: InkWell(
+                        onTap: () {
+                          if (_pageController.hasClients &&
+                              _pageController.page!.toInt() != 0) {
+                            _pageController.animateToPage(
+                              _pageController.page!.toInt() - 1,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          }
                         },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.asset(
+                            ImageAssets.backDis,
+                            height: 16,
+                            width: 17,
+                            color: _isPrevBtnActive
+                                ? CustomColors.activePagingBtn
+                                : CustomColors.inactivePagingBtn,
+                          ),
+                        ),
                       ),
                     ),
-                    Text("เลื่อนหน้าตามติวเตอร์",
-                        style: CustomStyles.bold12gray878787),
-                    S.w(8.0),
+                    S.w(4),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: CustomColors.grayCFCFCF,
+                          style: BorderStyle.solid,
+                          width: 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                        color: CustomColors.whitePrimary,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text("Page ${_currentPage + 1}",
+                              style: CustomStyles.bold14greenPrimary),
+                        ],
+                      ),
+                    ),
+                    S.w(4),
+                    Text("/ ${_pages.length}",
+                        style: CustomStyles.med14Gray878787),
+                    S.w(4),
+                    Material(
+                      child: InkWell(
+                        // splashColor: Colors.lightGreen,
+                        onTap: () {
+                          if (_pages.length > 1) {
+                            if (_pageController.hasClients &&
+                                _pageController.page!.toInt() !=
+                                    _pages.length - 1) {
+                              _pageController.animateToPage(
+                                _pageController.page!.toInt() + 1,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.asset(
+                            ImageAssets.forward,
+                            height: 16,
+                            width: 17,
+                            color: _isNextBtnActive
+                                ? CustomColors.activePagingBtn
+                                : CustomColors.inactivePagingBtn,
+                          ),
+                        ),
+                      ),
+                    ),
+                    S.w(4),
                   ],
-                )),
+                ),
+              ),
+            ),
           ),
-          // Expanded(
-          //   flex: 3,
-          //   child: Row(
-          //     mainAxisAlignment: MainAxisAlignment.end,
-          //     children: [
-          //       Image.asset(
-          //         ImageAssets.avatarMen,
-          //         height: 32,
-          //         width: 32,
-          //       ),
-          //       S.w(8),
-          //       Container(
-          //         height: 32,
-          //         decoration: BoxDecoration(
-          //           border: Border.all(
-          //             color: CustomColors.grayCFCFCF,
-          //             style: BorderStyle.solid,
-          //             width: 1.0,
-          //           ),
-          //           borderRadius: BorderRadius.circular(8),
-          //           color: CustomColors.whitePrimary,
-          //         ),
-          //         child: Row(
-          //           mainAxisAlignment: MainAxisAlignment.center,
-          //           children: <Widget>[
-          //             S.w(8),
-          //             InkWell(
-          //               onTap: () {
-          //                 // showLeader(context);
-          //               },
-          //               child: Image.asset(
-          //                 ImageAssets.leaderboard,
-          //                 height: 24,
-          //                 width: 24,
-          //               ),
-          //             ),
-          //             S.w(8),
-          //           ],
-          //         ),
-          //       ),
-          //       S.w(defaultPadding),
-          //       InkWell(
-          //         onTap: () {},
-          //         child: Container(
-          //           height: 32,
-          //           padding: const EdgeInsets.symmetric(
-          //             horizontal: 6,
-          //             vertical: 10,
-          //           ),
-          //           decoration: BoxDecoration(
-          //             color: CustomColors.greenPrimary,
-          //             borderRadius: BorderRadius.circular(8.0),
-          //           ),
-          //           child:
-          //               Text("ไปหน้าที่สอน", style: CustomStyles.bold11White),
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          S.w(28),
+          if (widget.audio != null)
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (tabFreestyle == true) {
+                          tabFollowing = !tabFollowing;
+                          tabFreestyle = false;
+                          if (_tutorCurrentScrollZoom != '') {
+                            var parts = _tutorCurrentScrollZoom.split('|');
+                            var scrollX = double.parse(parts[0]);
+                            var scrollY = double.parse(parts[1]);
+                            var zoom = double.parse(parts.last);
+                            if (_currentPage != _tutorCurrentPage) {
+                              _pageController.animateToPage(
+                                _tutorCurrentPage,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            } // re-correct page
+                            _transformationController[_tutorCurrentPage].value =
+                                Matrix4.identity()
+                                  ..translate(scrollX, scrollY)
+                                  ..scale(zoom);
+                          }
+                        }
+                      });
+                    },
+                    child: Container(
+                      height: 40,
+                      width: 110,
+                      decoration: BoxDecoration(
+                        color: tabFollowing
+                            ? CustomColors.greenE5F6EB
+                            : CustomColors.whitePrimary,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(
+                          color: CustomColors.grayCFCFCF,
+                          style: BorderStyle.solid,
+                          width: 1.0,
+                        ),
+                        borderRadius: const BorderRadius.horizontal(
+                          left: Radius.circular(40.0),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Image.asset(
+                            tabFollowing
+                                ? ImageAssets.avatarMe
+                                : ImageAssets.avatarDisMe,
+                            width: 32,
+                          ),
+                          S.w(8),
+                          Text("เรียนรู้",
+                              style: tabFollowing
+                                  ? CustomStyles.bold14greenPrimary
+                                  : CustomStyles.bold14grayCFCFCF),
+                        ],
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (tabFollowing == true) {
+                          tabFreestyle = !tabFreestyle;
+                          tabFollowing = false;
+                        }
+                      });
+                    },
+                    child: Container(
+                      height: 40,
+                      width: 110,
+                      decoration: BoxDecoration(
+                        color: tabFreestyle
+                            ? CustomColors.greenE5F6EB
+                            : CustomColors.whitePrimary,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(
+                          color: CustomColors.grayCFCFCF,
+                          style: BorderStyle.solid,
+                          width: 1.0,
+                        ),
+                        borderRadius: const BorderRadius.horizontal(
+                          right: Radius.circular(40.0),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Image.asset(
+                            tabFreestyle
+                                ? ImageAssets.pencilActive
+                                : ImageAssets.penDisTab,
+                            width: 32,
+                          ),
+                          S.w(8),
+                          Text("เขียนอิสระ",
+                              style: tabFreestyle
+                                  ? CustomStyles.bold14greenPrimary
+                                  : CustomStyles.bold14grayCFCFCF),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (widget.audio != null)
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // InkWell(
+                  //   onTap: () {
+                  //     setState(() {
+                  //       micEnable = !micEnable;
+                  //     });
+                  //     log(_data['metadata']['duration'].toString());
+                  //     log(_data['metadata']['duration'].runtimeType.toString());
+                  //   },
+                  //   child: Image.asset(
+                  //     micEnable ? ImageAssets.micEnable : ImageAssets.micDis,
+                  //     height: 44,
+                  //     width: 44,
+                  //   ),
+                  // ),
+                  // S.w(defaultPadding),
+                  // const DividerVer(),
+                  replayButton(),
+                  RichText(
+                    text: TextSpan(
+                      text: 'เริ่มเรียน',
+                      style: CustomStyles.bold14RedF44336,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          S.w(16.0),
         ],
       ),
     );
