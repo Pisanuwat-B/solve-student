@@ -194,7 +194,6 @@ class _ReviewLessonState extends State<ReviewLesson>
 
   // ---------- VARIABLE: sound
   final FlutterSoundPlayer _audioPlayer = FlutterSoundPlayer();
-  bool _isPlayerReady = false;
   bool _isAudioReady = false;
   Uint8List? audioBuffer;
   int initialAudioTime = 0;
@@ -1689,7 +1688,29 @@ class _ReviewLessonState extends State<ReviewLesson>
           S.w(8),
           IconButton(
             icon: const Icon(Icons.arrow_back, color: CustomColors.gray878787),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              log('press back icon');
+              log(_isHasReviewNote.toString());
+              if (_isHasReviewNote) {
+                showCloseDialog(
+                  context,
+                  () {
+                    saveReviewNote();
+                    Navigator.of(context).pop();
+                  },
+                  title: 'คุณกำลังจะออก โดยไม่บันทึกการเขียน',
+                  detail:
+                      'คุณต้องการบันทึกการเขียนที่เกิดขึ้นระหว่างที่คุณดูรีวิว หรือไม่ ?',
+                  confirm: 'บันทึก',
+                  cancel: 'ออกโดยไม่บันทึก',
+                  onCancel: () {
+                    Navigator.of(context).pop();
+                  },
+                );
+              } else {
+                Navigator.of(context).pop();
+              }
+            },
           ),
           S.w(Responsive.isTablet(context) ? 5 : 12),
           Expanded(
