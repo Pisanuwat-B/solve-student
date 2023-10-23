@@ -21,6 +21,7 @@ import 'package:solve_student/feature/order/model/order_class_model.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
 import '../../calendar/pages/course_history.dart';
+import '../../live_classroom/utils/responsive.dart';
 
 class MyCourseLiveDetailPage extends StatefulWidget {
   MyCourseLiveDetailPage({super.key, required this.courseId});
@@ -284,8 +285,24 @@ class _MyCourseDetailPageState extends State<MyCourseLiveDetailPage> {
                                             color: greyColor,
                                           ),
                                           const SizedBox(width: 5),
-                                          Text(
-                                              "เริ่ม ${FormatDate.dt(DateTime.fromMillisecondsSinceEpoch(only.start?.toInt() ?? 0))} - สิ้นสุด ${FormatDate.dt(DateTime.fromMillisecondsSinceEpoch(only.end?.toInt() ?? 0))}"),
+                                          if (!Responsive.isMobile(context))
+                                            Text(
+                                                "เริ่ม ${FormatDate.dt(DateTime.fromMillisecondsSinceEpoch(only.start?.toInt() ?? 0))} - สิ้นสุด ${FormatDate.dt(DateTime.fromMillisecondsSinceEpoch(only.end?.toInt() ?? 0))}"),
+                                          if (Responsive.isMobile(context))
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 6.0),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: <Widget>[
+                                                  Text(
+                                                      "เริ่ม ${FormatDate.dt(DateTime.fromMillisecondsSinceEpoch(only.start?.toInt() ?? 0))}"),
+                                                  Text(
+                                                      "สิ้นสุด ${FormatDate.dt(DateTime.fromMillisecondsSinceEpoch(only.end?.toInt() ?? 0))}"),
+                                                ],
+                                              ),
+                                            ),
                                         ],
                                       ),
                                     ),
