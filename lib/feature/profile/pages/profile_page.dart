@@ -294,27 +294,27 @@ class _ProfilePageState extends State<ProfilePage> {
                   Center(
                     child: Column(
                       children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const StudentLiveClassroom(
-                                  meetingId: 'test',
-                                  userId: 'test',
-                                  token: 'test',
-                                  displayName: 'TEST TEST',
-                                  isHost: false,
-                                  courseId: 'test',
-                                  startTime: 0,
-                                  isMock: true,
-                                ),
-                              ),
-                            );
-                          },
-                          child: const Text('TEST'),
-                        ),
+                        // ElevatedButton(
+                        //   onPressed: () {
+                        //     Navigator.push(
+                        //       context,
+                        //       MaterialPageRoute(
+                        //         builder: (context) =>
+                        //             const StudentLiveClassroom(
+                        //           meetingId: 'test',
+                        //           userId: 'test',
+                        //           token: 'test',
+                        //           displayName: 'TEST TEST',
+                        //           isHost: false,
+                        //           courseId: 'test',
+                        //           startTime: 0,
+                        //           isMock: true,
+                        //         ),
+                        //       ),
+                        //     );
+                        //   },
+                        //   child: const Text('TEST'),
+                        // ),
                         TextButton(
                           onPressed: () async {
                             showDialog(
@@ -350,7 +350,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         S.h(10),
                         const Text(
-                          'SOLVE v 0.2.49',
+                          'SOLVE v 0.2.50',
                           style: TextStyle(
                             color: greyColor,
                           ),
