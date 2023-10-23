@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
@@ -165,13 +166,13 @@ class _ReviewLessonState extends State<ReviewLesson>
 
   // ---------- VARIABLE: Solve Pad features
   bool _isReplaying = false;
-  // bool _isStarted = true;
   bool _isPrevBtnActive = false;
   bool _isNextBtnActive = true;
   int? activePointerId;
   bool _isPageReady = false;
   bool _isSolvepadDataReady = false;
   bool _isHasReviewNote = false;
+  bool _isStylusActive = false;
   int replayIndex = 0;
 
   // ---------- VARIABLE: page control
@@ -1252,6 +1253,13 @@ class _ReviewLessonState extends State<ReviewLesson>
                               if (tabFollowing) return;
                               if (activePointerId != null) return;
                               activePointerId = details.pointer;
+                              if (details.kind == PointerDeviceKind.stylus) {
+                                _isStylusActive = true;
+                              }
+                              if (_isStylusActive &&
+                                  details.kind == PointerDeviceKind.touch) {
+                                return;
+                              }
                               switch (_mode) {
                                 case DrawingMode.pen:
                                   _penPoints[_currentPage].add(
@@ -1310,6 +1318,13 @@ class _ReviewLessonState extends State<ReviewLesson>
                               if (tabFollowing) return;
                               if (activePointerId != details.pointer) return;
                               activePointerId = details.pointer;
+                              if (details.kind == PointerDeviceKind.stylus) {
+                                _isStylusActive = true;
+                              }
+                              if (_isStylusActive &&
+                                  details.kind == PointerDeviceKind.touch) {
+                                return;
+                              }
                               switch (_mode) {
                                 case DrawingMode.pen:
                                   setState(() {
@@ -1374,6 +1389,10 @@ class _ReviewLessonState extends State<ReviewLesson>
                               if (tabFollowing) return;
                               if (activePointerId != details.pointer) return;
                               activePointerId = null;
+                              if (_isStylusActive &&
+                                  details.kind == PointerDeviceKind.touch) {
+                                return;
+                              }
                               switch (_mode) {
                                 case DrawingMode.pen:
                                   _penPoints[_currentPage].add(null);
@@ -1401,6 +1420,10 @@ class _ReviewLessonState extends State<ReviewLesson>
                               if (tabFollowing) return;
                               if (activePointerId != details.pointer) return;
                               activePointerId = null;
+                              if (_isStylusActive &&
+                                  details.kind == PointerDeviceKind.touch) {
+                                return;
+                              }
                               switch (_mode) {
                                 case DrawingMode.pen:
                                   _penPoints[_currentPage].add(null);
@@ -1670,123 +1693,130 @@ class _ReviewLessonState extends State<ReviewLesson>
           ),
           S.w(Responsive.isTablet(context) ? 5 : 12),
           Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: CustomColors.grayCFCFCF,
-                    style: BorderStyle.solid,
-                    width: 1.0,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                  color: CustomColors.whitePrimary,
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 1, vertical: 8),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    InkWell(
-                      onTap: () => headerInfo(),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: Image.asset(
-                          ImageAssets.iconInfoPage,
-                          height: 30,
-                          width: 30,
-                        ),
+            child: Row(
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: CustomColors.grayCFCFCF,
+                        style: BorderStyle.solid,
+                        width: 1.0,
                       ),
+                      borderRadius: BorderRadius.circular(8),
+                      color: CustomColors.whitePrimary,
                     ),
-                    Container(
-                      width: 1,
-                      height: 24,
-                      color: CustomColors.grayCFCFCF,
-                    ),
-                    S.w(6),
-                    Material(
-                      child: InkWell(
-                        onTap: () {
-                          if (_pageController.hasClients &&
-                              _pageController.page!.toInt() != 0) {
-                            _pageController.animateToPage(
-                              _pageController.page!.toInt() - 1,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image.asset(
-                            ImageAssets.backDis,
-                            height: 16,
-                            width: 17,
-                            color: _isPrevBtnActive
-                                ? CustomColors.activePagingBtn
-                                : CustomColors.inactivePagingBtn,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 1, vertical: 8),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        InkWell(
+                          onTap: () => headerInfo(),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: Image.asset(
+                              ImageAssets.iconInfoPage,
+                              height: 30,
+                              width: 30,
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    S.w(6),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
+                        Container(
+                          width: 1,
+                          height: 24,
                           color: CustomColors.grayCFCFCF,
-                          style: BorderStyle.solid,
-                          width: 1.0,
                         ),
-                        borderRadius: BorderRadius.circular(4),
-                        color: CustomColors.whitePrimary,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Text("Page ${_currentPage + 1}",
-                              style: CustomStyles.bold14greenPrimary),
-                        ],
-                      ),
-                    ),
-                    S.w(8),
-                    Text("/ ${_pages.length}",
-                        style: CustomStyles.med14Gray878787),
-                    S.w(6),
-                    Material(
-                      child: InkWell(
-                        // splashColor: Colors.lightGreen,
-                        onTap: () {
-                          if (_pages.length > 1) {
-                            if (_pageController.hasClients &&
-                                _pageController.page!.toInt() !=
-                                    _pages.length - 1) {
-                              _pageController.animateToPage(
-                                _pageController.page!.toInt() + 1,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            }
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image.asset(
-                            ImageAssets.forward,
-                            height: 16,
-                            width: 17,
-                            color: _isNextBtnActive
-                                ? CustomColors.activePagingBtn
-                                : CustomColors.inactivePagingBtn,
+                        S.w(6),
+                        Material(
+                          child: InkWell(
+                            onTap: () {
+                              if (_pageController.hasClients &&
+                                  _pageController.page!.toInt() != 0) {
+                                _pageController.animateToPage(
+                                  _pageController.page!.toInt() - 1,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset(
+                                ImageAssets.backDis,
+                                height: 16,
+                                width: 17,
+                                color: _isPrevBtnActive
+                                    ? CustomColors.activePagingBtn
+                                    : CustomColors.inactivePagingBtn,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        S.w(6),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: CustomColors.grayCFCFCF,
+                              style: BorderStyle.solid,
+                              width: 1.0,
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                            color: CustomColors.whitePrimary,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text("Page ${_currentPage + 1}",
+                                  style: CustomStyles.bold14greenPrimary),
+                            ],
+                          ),
+                        ),
+                        S.w(8),
+                        Text("/ ${_pages.length}",
+                            style: CustomStyles.med14Gray878787),
+                        S.w(6),
+                        Material(
+                          child: InkWell(
+                            // splashColor: Colors.lightGreen,
+                            onTap: () {
+                              if (_pages.length > 1) {
+                                if (_pageController.hasClients &&
+                                    _pageController.page!.toInt() !=
+                                        _pages.length - 1) {
+                                  _pageController.animateToPage(
+                                    _pageController.page!.toInt() + 1,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                }
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset(
+                                ImageAssets.forward,
+                                height: 16,
+                                width: 17,
+                                color: _isNextBtnActive
+                                    ? CustomColors.activePagingBtn
+                                    : CustomColors.inactivePagingBtn,
+                              ),
+                            ),
+                          ),
+                        ),
+                        S.w(6),
+                      ],
                     ),
-                    S.w(6),
-                  ],
+                  ),
                 ),
-              ),
+                S.w(8),
+                statusTouchModeIcon(),
+              ],
             ),
           ),
           if (widget.audio != null)
@@ -2240,7 +2270,6 @@ class _ReviewLessonState extends State<ReviewLesson>
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        if (Responsive.isDesktop(context)) S.w(10),
         Center(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -3038,6 +3067,23 @@ class _ReviewLessonState extends State<ReviewLesson>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget statusTouchModeIcon() {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _isStylusActive = !_isStylusActive;
+        });
+      },
+      child: Image.asset(
+        _isStylusActive
+            ? 'assets/images/stylus-icon.png'
+            : 'assets/images/touch-icon.png',
+        height: 44,
+        width: 44,
       ),
     );
   }
