@@ -436,13 +436,21 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   void handleMessageErase(String data) {
-    var parts = data.split('.');
-    var index = int.parse(parts.last);
     if (data.startsWith('Erase.pen')) {
-      removePointStack(_hostPenPoints[_currentHostPage], index);
+      var parts = data.split('Erase.pen.');
+      var index = parts.last;
+      List<String> stringValues = index.substring(1, index.length - 1).split(',');
+      List<dynamic> del = stringValues.map((value) => value).toList();
+      List<SolvepadStroke> scaledStrokes = scaleSolvepadStrokeOffsets(del);
+      removePointStackWithoutIndex(_hostPenPoints[_currentHostPage], scaledStrokes);
     } // pen
     else if (data.startsWith('Erase.high')) {
-      removePointStack(_hostHighlighterPoints[_currentHostPage], index);
+      var parts = data.split('Erase.high.');
+      var index = parts.last;
+      List<String> stringValues = index.substring(1, index.length - 1).split(',');
+      List<dynamic> del = stringValues.map((value) => value).toList();
+      List<SolvepadStroke> scaledStrokes = scaleSolvepadStrokeOffsets(del);
+      removePointStackWithoutIndex(_hostHighlighterPoints[_currentHostPage], scaledStrokes);
     } // highlighter
   }
 
@@ -605,6 +613,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       hostSolvepadSize = Size(double.parse(parts[1]), double.parse(parts[2]));
       initVariableSetup(mySolvepadSize!.width, mySolvepadSize!.height);
     });
+  }
+
+  List<SolvepadStroke> scaleSolvepadStrokeOffsets(List<SolvepadStroke> strokes) {
+    return strokes.map((stroke) {
+      Offset newOffset = scaleOffset(stroke.offset);
+      return SolvepadStroke(newOffset, stroke.color, stroke.width);
+    }).toList();
   }
 
   Offset convertToOffset(String offsetString) {
@@ -859,6 +874,12 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
         pointStack.removeRange(prevNullIndex, nextNullIndex);
       });
     }
+  }
+
+  void removePointStackWithoutIndex(List<SolvepadStroke?> pointStack,List del){
+      setState(() {
+        pointStack.removeWhere((element) => del.contains(element));
+      });
   }
 
   void _laserDrawing() {
