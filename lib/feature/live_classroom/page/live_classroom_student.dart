@@ -278,6 +278,16 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       micEnable = widget.micEnabled;
       isCourseLoaded = true;
     });
+    setNullStart();
+  }
+
+  void setNullStart() {
+    _penPoints[0].add(null);
+    _highlighterPoints[0].add(null);
+    _laserPoints[0].add(null);
+    _hostPenPoints[0].add(null);
+    _hostHighlighterPoints[0].add(null);
+    _hostLaserPoints[0].add(null);
   }
 
   void initTimer() {
@@ -346,8 +356,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       if (!mounted) return;
       setState(() {
         var decodedMessage = json.decode(message);
-        log('json message');
-        log(decodedMessage.toString());
+        // log('json message');
+        // log(decodedMessage.toString());
 
         for (int i = 0; i < decodedMessage.length; i++) {
           var item = decodedMessage[i];
@@ -439,11 +449,42 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     var parts = data.split('.');
     var index = int.parse(parts.last);
     if (data.startsWith('Erase.pen')) {
-      removePointStack(_hostPenPoints[_currentHostPage], index);
+      // removePointStack(_hostPenPoints[_currentHostPage], index);
+      log('Message Erase index $index');
+      removeStrokeByCount(_hostPenPoints[_currentHostPage], index);
     } // pen
     else if (data.startsWith('Erase.high')) {
-      removePointStack(_hostHighlighterPoints[_currentHostPage], index);
+      // removePointStack(_hostHighlighterPoints[_currentHostPage], index);
+      removeStrokeByCount(_hostHighlighterPoints[_currentHostPage], index);
     } // highlighter
+  }
+
+  void removeStrokeByCount(List<SolvepadStroke?> strokeArray, int count) {
+    int nullOccurrences = 0;
+    int startIndex = 0;
+    int endIndex = 0;
+
+    for (int i = 0; i < strokeArray.length; i++) {
+      log(nullOccurrences.toString());
+      if (strokeArray[i] == null) {
+        // If we're still counting duplicate nulls, continue
+        if (i < strokeArray.length - 1 && strokeArray[i + 1] == null) {
+          continue;
+        }
+
+        nullOccurrences++;
+
+        if (nullOccurrences == count + 1) {
+          log('start remove');
+          endIndex = i;
+          strokeArray.removeRange(startIndex, endIndex + 1);
+          break;
+        }
+
+        startIndex = i + 1;
+      }
+    }
+    log('end remove');
   }
 
   void handleMessageNull(String data) {
@@ -919,6 +960,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       }
       _currentPage = page;
       _penPoints[_currentPage].add(null);
+      _highlighterPoints[_currentPage].add(null);
+      _hostPenPoints[_currentPage].add(null);
+      _hostHighlighterPoints[_currentPage].add(null);
     });
   }
 
@@ -2278,10 +2322,15 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                         color: CustomColors.grayCFCFCF,
                       ),
                       S.w(8),
-                      Image.asset(
-                        ImageAssets.allPages,
-                        height: 24,
-                        width: 24,
+                      InkWell(
+                        onTap: () {
+                          log(_hostPenPoints[_currentHostPage].toString());
+                        },
+                        child: Image.asset(
+                          ImageAssets.allPages,
+                          height: 24,
+                          width: 24,
+                        ),
                       ),
                       S.w(8),
                       // Container(

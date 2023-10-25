@@ -41,7 +41,9 @@ class ShowCourseStudent {
     detailsText = json['details_text'];
     documentId = json['document_id'];
     file = json['review_file'] ?? '';
-    audio = json['audio_file']?.first;
+    audio = (json['audio_file'] as List?)?.isNotEmpty == true
+        ? json['audio_file'].first
+        : null;
   }
 
   Map<String, dynamic> toJson() {
