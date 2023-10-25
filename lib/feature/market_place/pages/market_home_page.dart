@@ -215,6 +215,26 @@ class _HomePageState extends State<MarketHomePage> {
                       try {
                         if (snapshot.hasData) {
                           List<CourseMarketModel>? dataSet = snapshot.data;
+                          if (dataSet?.isEmpty ?? false) {
+                            return Container(
+                              width: Sizer(context).w,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    CupertinoIcons.cube_box,
+                                    size: 100,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  Text(
+                                    "ไม่พบข้อมูล",
+                                    style:
+                                        TextStyle(color: Colors.grey.shade400),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
                           return Container(
                             height: 320,
                             padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
