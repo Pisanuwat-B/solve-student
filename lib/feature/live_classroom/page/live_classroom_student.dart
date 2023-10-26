@@ -1820,6 +1820,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                               //   ),
                               InkWell(
                                 onTap: () {
+                                  if (isHostFocus) return;
                                   if (_pageController.hasClients &&
                                       _pageController.page!.toInt() != 0 &&
                                       !tabFollowing) {
@@ -1876,6 +1877,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                   style: CustomStyles.med14Gray878787),
                               InkWell(
                                 onTap: () {
+                                  if (isHostFocus) return;
                                   if (_pages.length > 1 && !tabFollowing) {
                                     if (_pageController.hasClients &&
                                         _pageController.page!.toInt() !=
