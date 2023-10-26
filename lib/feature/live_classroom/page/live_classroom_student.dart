@@ -452,7 +452,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     var index = int.parse(parts.last);
     if (data.startsWith('Erase.pen')) {
       // removePointStack(_hostPenPoints[_currentHostPage], index);
-      log('Message Erase index $index');
       removeStrokeByCount(_hostPenPoints[_currentHostPage], index);
     } // pen
     else if (data.startsWith('Erase.high')) {

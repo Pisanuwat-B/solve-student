@@ -368,6 +368,7 @@ class _ReviewLessonState extends State<ReviewLesson>
     for (var list in highlighterPointsData) {
       _highlighterPoints.add(convertToStrokeList(list));
     }
+    setState(() {});
   }
 
   void initSolvepadScaling() {
@@ -378,6 +379,7 @@ class _ReviewLessonState extends State<ReviewLesson>
     scaleImageX = myImageWidth / tutorImageWidth;
     scaleX = mySolvepadSize.width / tutorSolvepadSize.width;
     scaleY = mySolvepadSize.height / tutorSolvepadSize.height;
+    _instantReplay();
   }
 
   void setCourseLoadState() {
@@ -387,7 +389,6 @@ class _ReviewLessonState extends State<ReviewLesson>
         setState(() {
           isCourseLoaded = true;
         });
-        _instantReplay();
       }
     } else {
       if (_isPageReady && _isSolvepadDataReady && _isAudioReady) {
