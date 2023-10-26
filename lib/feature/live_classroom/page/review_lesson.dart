@@ -226,6 +226,10 @@ class _ReviewLessonState extends State<ReviewLesson>
     initDownloadSolvepad();
     initAudioBuffer();
     initAudioPlayer();
+    if (widget.audio == null) {
+      tabFreestyle = true;
+      tabFollowing = false;
+    }
   }
 
   void fetchReviewNote() async {
