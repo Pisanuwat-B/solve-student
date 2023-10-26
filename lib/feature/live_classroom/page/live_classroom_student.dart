@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -100,6 +101,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   int? activePointerId;
   bool _isPrevBtnActive = false;
   bool _isNextBtnActive = true;
+  bool _isStylusActive = false;
 
   // ---------- VARIABLE: page control
   final PageController _pageController = PageController();
@@ -1369,6 +1371,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                               onPointerDown: (details) {
                                 if (activePointerId != null) return;
                                 activePointerId = details.pointer;
+                                if (details.kind == PointerDeviceKind.stylus) {
+                                  _isStylusActive = true;
+                                }
+                                if (_isStylusActive &&
+                                    details.kind == PointerDeviceKind.touch) {
+                                  return;
+                                }
                                 if (isAllowSharingScreen && isHostFocus) {
                                   sendMessage(details.localPosition.toString());
                                 }
@@ -1431,6 +1440,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                               onPointerMove: (details) {
                                 if (activePointerId != details.pointer) return;
                                 activePointerId = details.pointer;
+                                if (details.kind == PointerDeviceKind.stylus) {
+                                  _isStylusActive = true;
+                                }
+                                if (_isStylusActive &&
+                                    details.kind == PointerDeviceKind.touch) {
+                                  return;
+                                }
                                 if (isAllowSharingScreen && isHostFocus) {
                                   sendMessage(details.localPosition.toString());
                                 }
@@ -1502,6 +1518,10 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                               onPointerUp: (details) {
                                 if (activePointerId != details.pointer) return;
                                 activePointerId = null;
+                                if (_isStylusActive &&
+                                    details.kind == PointerDeviceKind.touch) {
+                                  return;
+                                }
                                 if (isAllowSharingScreen && isHostFocus) {
                                   for (int i = 0; i <= 2; i++) {
                                     sendMessage('null');
@@ -1533,6 +1553,10 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                               onPointerCancel: (details) {
                                 if (activePointerId != details.pointer) return;
                                 activePointerId = null;
+                                if (_isStylusActive &&
+                                    details.kind == PointerDeviceKind.touch) {
+                                  return;
+                                }
                                 if (isAllowSharingScreen && isHostFocus) {
                                   for (int i = 0; i <= 2; i++) {
                                     sendMessage('null');
@@ -1760,133 +1784,141 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
           S.w(Responsive.isTablet(context) ? 5 : 12),
           Expanded(
             flex: 3,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: CustomColors.grayCFCFCF,
-                          style: BorderStyle.solid,
-                          width: 1.0,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                        color: CustomColors.whitePrimary,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          // Image.asset(
-                          //   ImageAssets.allPages,
-                          //   height: 30,
-                          //   width: 32,
-                          // ),
-                          // if (Responsive.isDesktop(context)) S.w(8),
-                          // if (Responsive.isDesktop(context))
-                          //   Container(
-                          //     width: 1,
-                          //     height: 24,
-                          //     color: CustomColors.grayCFCFCF,
-                          //   ),
-                          InkWell(
-                            onTap: () {
-                              if (_pageController.hasClients &&
-                                  _pageController.page!.toInt() != 0 &&
-                                  !tabFollowing) {
-                                if (isAllowSharingScreen && isHostFocus) {
-                                  for (int i = 0; i <= 2; i++) {
-                                    sendMessage(
-                                        'ChangePage:${_currentPage - 1}');
+            child: Row(
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: CustomColors.grayCFCFCF,
+                              style: BorderStyle.solid,
+                              width: 1.0,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                            color: CustomColors.whitePrimary,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              // Image.asset(
+                              //   ImageAssets.allPages,
+                              //   height: 30,
+                              //   width: 32,
+                              // ),
+                              // if (Responsive.isDesktop(context)) S.w(8),
+                              // if (Responsive.isDesktop(context))
+                              //   Container(
+                              //     width: 1,
+                              //     height: 24,
+                              //     color: CustomColors.grayCFCFCF,
+                              //   ),
+                              InkWell(
+                                onTap: () {
+                                  if (_pageController.hasClients &&
+                                      _pageController.page!.toInt() != 0 &&
+                                      !tabFollowing) {
+                                    if (isAllowSharingScreen && isHostFocus) {
+                                      for (int i = 0; i <= 2; i++) {
+                                        sendMessage(
+                                            'ChangePage:${_currentPage - 1}');
+                                      }
+                                    }
+                                    _pageController.animateToPage(
+                                      _pageController.page!.toInt() - 1,
+                                      duration:
+                                          const Duration(milliseconds: 300),
+                                      curve: Curves.easeInOut,
+                                    );
                                   }
-                                }
-                                _pageController.animateToPage(
-                                  _pageController.page!.toInt() - 1,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              }
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Image.asset(
-                                ImageAssets.backDis,
-                                height: 16,
-                                width: 17,
-                                color: _isPrevBtnActive
-                                    ? CustomColors.activePagingBtn
-                                    : CustomColors.inactivePagingBtn,
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Image.asset(
+                                    ImageAssets.backDis,
+                                    height: 16,
+                                    width: 17,
+                                    color: _isPrevBtnActive
+                                        ? CustomColors.activePagingBtn
+                                        : CustomColors.inactivePagingBtn,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          if (Responsive.isDesktop(context)) S.w(8),
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: CustomColors.grayCFCFCF,
-                                style: BorderStyle.solid,
-                                width: 1.0,
+                              if (Responsive.isDesktop(context)) S.w(8),
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: CustomColors.grayCFCFCF,
+                                    style: BorderStyle.solid,
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: BorderRadius.circular(4),
+                                  color: CustomColors.whitePrimary,
+                                ),
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Text("Page ${_currentPage + 1}",
+                                        style: CustomStyles.bold14greenPrimary),
+                                  ],
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(4),
-                              color: CustomColors.whitePrimary,
-                            ),
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                Text("Page ${_currentPage + 1}",
-                                    style: CustomStyles.bold14greenPrimary),
-                              ],
-                            ),
-                          ),
-                          S.w(8.0),
-                          Text("/ ${_pages.length}",
-                              style: CustomStyles.med14Gray878787),
-                          InkWell(
-                            onTap: () {
-                              if (_pages.length > 1 && !tabFollowing) {
-                                if (_pageController.hasClients &&
-                                    _pageController.page!.toInt() !=
-                                        _pages.length - 1) {
-                                  if (isAllowSharingScreen && isHostFocus) {
-                                    for (int i = 0; i <= 2; i++) {
-                                      sendMessage(
-                                          'ChangePage:${_currentPage + 1}');
+                              S.w(8.0),
+                              Text("/ ${_pages.length}",
+                                  style: CustomStyles.med14Gray878787),
+                              InkWell(
+                                onTap: () {
+                                  if (_pages.length > 1 && !tabFollowing) {
+                                    if (_pageController.hasClients &&
+                                        _pageController.page!.toInt() !=
+                                            _pages.length - 1) {
+                                      if (isAllowSharingScreen && isHostFocus) {
+                                        for (int i = 0; i <= 2; i++) {
+                                          sendMessage(
+                                              'ChangePage:${_currentPage + 1}');
+                                        }
+                                      }
+                                      _pageController.animateToPage(
+                                        _pageController.page!.toInt() + 1,
+                                        duration:
+                                            const Duration(milliseconds: 300),
+                                        curve: Curves.easeInOut,
+                                      );
                                     }
                                   }
-                                  _pageController.animateToPage(
-                                    _pageController.page!.toInt() + 1,
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut,
-                                  );
-                                }
-                              }
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Image.asset(
-                                ImageAssets.forward,
-                                height: 16,
-                                width: 17,
-                                color: _isNextBtnActive
-                                    ? CustomColors.activePagingBtn
-                                    : CustomColors.inactivePagingBtn,
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Image.asset(
+                                    ImageAssets.forward,
+                                    height: 16,
+                                    width: 17,
+                                    color: _isNextBtnActive
+                                        ? CustomColors.activePagingBtn
+                                        : CustomColors.inactivePagingBtn,
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                      S.w(defaultPadding),
+                      const DividerVer(),
+                    ],
                   ),
-                  S.w(defaultPadding),
-                  const DividerVer(),
-                ],
-              ),
+                ),
+                S.w(8),
+                statusTouchModeIcon(),
+              ],
             ),
           ),
           Expanded(
@@ -3703,6 +3735,23 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
           ),
           S.w(16),
         ],
+      ),
+    );
+  }
+
+  Widget statusTouchModeIcon() {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _isStylusActive = !_isStylusActive;
+        });
+      },
+      child: Image.asset(
+        _isStylusActive
+            ? 'assets/images/stylus-icon.png'
+            : 'assets/images/touch-icon.png',
+        height: 44,
+        width: 44,
       ),
     );
   }
