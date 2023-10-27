@@ -448,14 +448,17 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   void handleMessageErase(String data) {
+    log('ERASE message data $data');
     var parts = data.split('.');
     var index = int.parse(parts.last);
     if (data.startsWith('Erase.pen')) {
       // removePointStack(_hostPenPoints[_currentHostPage], index);
+      log('In erase pen: $index');
       removeStrokeByCount(_hostPenPoints[_currentHostPage], index);
     } // pen
     else if (data.startsWith('Erase.high')) {
       // removePointStack(_hostHighlighterPoints[_currentHostPage], index);
+      log('In erase high: $index');
       removeStrokeByCount(_hostHighlighterPoints[_currentHostPage], index);
     } // highlighter
   }
@@ -466,7 +469,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     int endIndex = 0;
 
     for (int i = 0; i < strokeArray.length; i++) {
-      log(nullOccurrences.toString());
       if (strokeArray[i] == null) {
         // If we're still counting duplicate nulls, continue
         if (i < strokeArray.length - 1 && strokeArray[i + 1] == null) {
@@ -943,13 +945,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   // ---------- FUNCTION: page control
   void _addPage() {
     setState(() {
-      _penPoints.add([]);
-      _laserPoints.add([]);
-      _highlighterPoints.add([]);
+      _penPoints.add([null]);
+      _laserPoints.add([null]);
+      _highlighterPoints.add([null]);
       _eraserPoints.add(const Offset(-100, -100));
-      _hostPenPoints.add([]);
-      _hostLaserPoints.add([]);
-      _hostHighlighterPoints.add([]);
+      _hostPenPoints.add([null]);
+      _hostLaserPoints.add([null]);
+      _hostHighlighterPoints.add([null]);
       _hostEraserPoints.add(const Offset(-100, -100));
     });
   }
@@ -960,10 +962,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
         point.clear();
       }
       _currentPage = page;
-      _penPoints[_currentPage].add(null);
-      _highlighterPoints[_currentPage].add(null);
-      _hostPenPoints[_currentPage].add(null);
-      _hostHighlighterPoints[_currentPage].add(null);
     });
   }
 
