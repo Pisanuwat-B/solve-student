@@ -281,6 +281,7 @@ class _ReviewLessonState extends State<ReviewLesson>
       return;
     }
     var sheet = await getDocFiles(widget.tutorId, widget.docId);
+    updateRatio(sheet[0]);
     _isPageReady = true;
     setCourseLoadState();
     setState(() {
@@ -316,6 +317,7 @@ class _ReviewLessonState extends State<ReviewLesson>
             Size(_data['solvepadWidth'], _data['solvepadHeight']);
         replayDuration = _data['metadata']['duration'];
       });
+      log('set tutor solvepad');
     } // success
     else {
       log('Failed to download file');
@@ -335,10 +337,9 @@ class _ReviewLessonState extends State<ReviewLesson>
   }
 
   void populateReviewNote(String jsonString) {
-    // Decode the JSON string
+    log('populate Review Note');
     Map<String, dynamic> jsonData = jsonDecode(jsonString);
 
-    // Helper function to convert a list of maps to a list of SolvepadStroke objects
     List<SolvepadStroke?> convertToStrokeList(List<dynamic> list) {
       return list.map((item) {
         if (item == null) {
@@ -347,6 +348,28 @@ class _ReviewLessonState extends State<ReviewLesson>
         return SolvepadStroke.fromJson(item as Map<String, dynamic>);
       }).toList();
     }
+
+    // List<SolvepadStroke?> convertToStrokeList(List<dynamic> list) {
+    //   return list.map((item) {
+    //     if (item == null) {
+    //       return null;
+    //     }
+    //     // Extract the offset from the item
+    //     Offset originalOffset =
+    //         Offset(item['offset']['dx'], item['offset']['dy']);
+    //
+    //     // Scale the offset
+    //     Offset scaledOffset = scaleOffset(originalOffset);
+    //
+    //     // Create a new map with the scaled offset
+    //     Map<String, dynamic> modifiedItem = {
+    //       ...item,
+    //       'offset': {'dx': scaledOffset.dx, 'dy': scaledOffset.dy}
+    //     };
+    //
+    //     return SolvepadStroke.fromJson(modifiedItem);
+    //   }).toList();
+    // }
 
     // Populate _penPoints
     List<dynamic> penPointsData = jsonData['penPoints'];
@@ -372,6 +395,7 @@ class _ReviewLessonState extends State<ReviewLesson>
   }
 
   void initSolvepadScaling() {
+    log('solvepad scaling');
     tutorImageWidth = tutorSolvepadSize.height * sheetImageRatio;
     tutorExtraSpaceX = (tutorSolvepadSize.width - tutorImageWidth) / 2;
     myImageWidth = mySolvepadSize.height * sheetImageRatio;
@@ -414,6 +438,17 @@ class _ReviewLessonState extends State<ReviewLesson>
 
   double scaleScrollX(double scrollX) => scrollX * scaleX;
   double scaleScrollY(double scrollY) => scrollY * scaleY;
+
+  void updateRatio(String url) {
+    log('update ratio');
+    Image image = Image.network(url);
+    image.image
+        .resolve(const ImageConfiguration())
+        .addListener(ImageStreamListener((ImageInfo info, bool _) {
+      double ratio = info.image.width / info.image.height;
+      sheetImageRatio = ratio;
+    }));
+  }
 
   Future<Uint8List?> downloadAudio(String url) async {
     try {
