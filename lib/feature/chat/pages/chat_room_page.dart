@@ -84,9 +84,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         },
         child: Scaffold(
           appBar: PreferredSize(
-            preferredSize: (!widget.order.paymentOn)
-                ? const Size.fromHeight(70)
-                : const Size.fromHeight(110),
+            preferredSize: const Size.fromHeight(70),
+            // preferredSize: (!widget.order.paymentOn)
+            //     ? const Size.fromHeight(70)
+            //     : const Size.fromHeight(110),
             child: SafeArea(
               child: AppBar(
                 backgroundColor: Colors.white,
@@ -256,87 +257,87 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Builder(builder: (context) {
-                    if (!widget.order.paymentOn) {
-                      return const SizedBox();
-                    }
-                    if (orderDetail?.paymentStatus == "paid") {
-                      return Container(
-                        width: 100,
-                        margin: const EdgeInsets.fromLTRB(0, 10, 10, 10),
-                        padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: greyColor2,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Text(
-                          "ชำระเรียบร้อย",
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                          ),
-                        ),
-                      );
-                    }
-                    return GestureDetector(
-                      onTap: () {
-                        var route = MaterialPageRoute(
-                          builder: (_) => PaymentPage(
-                            orderDetailId: widget.order.id ?? "",
-                          ),
-                        );
-                        Navigator.push(context, route).then((value) {
-                          init();
-                        });
-                      },
-                      child: Container(
-                        width: 100,
-                        margin: const EdgeInsets.fromLTRB(0, 10, 10, 10),
-                        padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: primaryColor,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Text(
-                          "ชำระค่าบริการ",
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
+                  // Builder(builder: (context) {
+                  //   if (!widget.order.paymentOn) {
+                  //     return const SizedBox();
+                  //   }
+                  //   if (orderDetail?.paymentStatus == "paid") {
+                  //     return Container(
+                  //       width: 100,
+                  //       margin: const EdgeInsets.fromLTRB(0, 10, 10, 10),
+                  //       padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+                  //       alignment: Alignment.center,
+                  //       decoration: BoxDecoration(
+                  //         color: greyColor2,
+                  //         borderRadius: BorderRadius.circular(10),
+                  //       ),
+                  //       child: const Text(
+                  //         "ชำระเรียบร้อย",
+                  //         style: TextStyle(
+                  //           fontSize: 15,
+                  //           color: Colors.white,
+                  //         ),
+                  //       ),
+                  //     );
+                  //   }
+                  //   return GestureDetector(
+                  //     onTap: () {
+                  //       var route = MaterialPageRoute(
+                  //         builder: (_) => PaymentPage(
+                  //           orderDetailId: widget.order.id ?? "",
+                  //         ),
+                  //       );
+                  //       Navigator.push(context, route).then((value) {
+                  //         init();
+                  //       });
+                  //     },
+                  //     child: Container(
+                  //       width: 100,
+                  //       margin: const EdgeInsets.fromLTRB(0, 10, 10, 10),
+                  //       padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+                  //       alignment: Alignment.center,
+                  //       decoration: BoxDecoration(
+                  //         color: primaryColor,
+                  //         borderRadius: BorderRadius.circular(10),
+                  //       ),
+                  //       child: const Text(
+                  //         "ชำระค่าบริการ",
+                  //         style: TextStyle(
+                  //           fontSize: 15,
+                  //           color: Colors.white,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   );
+                  // }),
                 ],
               ),
-              Builder(builder: (context) {
-                if (!widget.order.paymentOn) {
-                  return const SizedBox();
-                }
-                return Container(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-                  child: Row(
-                    children: [
-                      Expanded(child: SizedBox()),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Builder(builder: (context) {
-                            String text = "ยังไม่ชำระเงิน";
-                            if (orderDetail?.paymentStatus == "paid") {
-                              text = "ชำระเรียบร้อยแล้ว";
-                            }
-                            return Text("สถานะการชำระเงิน : $text");
-                          }),
-                          Text("คอร์สเรียน : ${orderDetail?.title ?? ""}"),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              }),
+              // Builder(builder: (context) {
+              //   if (!widget.order.paymentOn) {
+              //     return const SizedBox();
+              //   }
+              //   return Container(
+              //     padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+              //     child: Row(
+              //       children: [
+              //         Expanded(child: SizedBox()),
+              //         Column(
+              //           crossAxisAlignment: CrossAxisAlignment.end,
+              //           children: [
+              //             Builder(builder: (context) {
+              //               String text = "ยังไม่ชำระเงิน";
+              //               if (orderDetail?.paymentStatus == "paid") {
+              //                 text = "ชำระเรียบร้อยแล้ว";
+              //               }
+              //               return Text("สถานะการชำระเงิน : $text");
+              //             }),
+              //             Text("คอร์สเรียน : ${orderDetail?.title ?? ""}"),
+              //           ],
+              //         ),
+              //       ],
+              //     ),
+              //   );
+              // }),
             ],
           );
         },
