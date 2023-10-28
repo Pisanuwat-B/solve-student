@@ -258,7 +258,11 @@ class _ReviewLessonState extends State<ReviewLesson>
         log('load review note complete');
         if (response.statusCode == 200) {
           reviewNote = jsonDecode(response.body);
-          studentNoteSolvepadScaling();
+          if (reviewNote['solvepadWidth'] != null) {
+            studentNoteSolvepadScaling();
+          } else {
+            populateReviewNoteNoScaling(reviewNote);
+          }
         } else {
           throw Exception('Failed to load review note');
         }
@@ -369,6 +373,41 @@ class _ReviewLessonState extends State<ReviewLesson>
         };
 
         return SolvepadStroke.fromJson(modifiedItem);
+      }).toList();
+    }
+
+    // Populate _penPoints
+    List<dynamic> penPointsData = jsonData['penPoints'];
+    _penPoints.clear();
+    for (var list in penPointsData) {
+      _penPoints.add(convertToStrokeList(list));
+    }
+
+    // Populate _laserPoints
+    List<dynamic> laserPointsData = jsonData['laserPoints'];
+    _laserPoints.clear();
+    for (var list in laserPointsData) {
+      _laserPoints.add(convertToStrokeList(list));
+    }
+
+    // Populate _highlighterPoints
+    List<dynamic> highlighterPointsData = jsonData['highlighterPoints'];
+    _highlighterPoints.clear();
+    for (var list in highlighterPointsData) {
+      _highlighterPoints.add(convertToStrokeList(list));
+    }
+    setState(() {});
+  }
+
+  void populateReviewNoteNoScaling(Map<String, dynamic> jsonData) {
+    log('No scaling');
+
+    List<SolvepadStroke?> convertToStrokeList(List<dynamic> list) {
+      return list.map((item) {
+        if (item == null) {
+          return null;
+        }
+        return SolvepadStroke.fromJson(item as Map<String, dynamic>);
       }).toList();
     }
 
