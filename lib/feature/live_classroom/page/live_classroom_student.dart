@@ -669,6 +669,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   Future<void> saveReviewNote() async {
     // Convert the data to JSON format
     Map<String, dynamic> data = {
+      "solvepadWidth": mySolvepadSize!.width,
+      "solvepadHeight": mySolvepadSize!.height,
       'penPoints': _penPoints
           .map((list) => list.map((stroke) => stroke?.toJson()).toList())
           .toList(),
@@ -2611,7 +2613,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             child: AnimatedContainer(
               duration: const Duration(seconds: 1),
               curve: Curves.fastOutSlowIn,
-              height: selectedTools ? 350 : MediaQuery.of(context).size.height,
+              height: selectedTools ? 270 : 470,
               width: 120,
               decoration: BoxDecoration(
                 border: Border.all(
@@ -2644,7 +2646,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                           ),
                         )
                       : Expanded(
-                          flex: 4,
+                          flex: 7,
                           child: ListView.builder(
                               scrollDirection: Axis.vertical,
                               shrinkWrap: true,
