@@ -448,14 +448,17 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   void handleMessageErase(String data) {
+    log('ERASE message data $data');
     var parts = data.split('.');
     var index = int.parse(parts.last);
     if (data.startsWith('Erase.pen')) {
       // removePointStack(_hostPenPoints[_currentHostPage], index);
+      log('In erase pen: $index');
       removeStrokeByCount(_hostPenPoints[_currentHostPage], index);
     } // pen
     else if (data.startsWith('Erase.high')) {
       // removePointStack(_hostHighlighterPoints[_currentHostPage], index);
+      log('In erase high: $index');
       removeStrokeByCount(_hostHighlighterPoints[_currentHostPage], index);
     } // highlighter
   }
@@ -466,7 +469,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     int endIndex = 0;
 
     for (int i = 0; i < strokeArray.length; i++) {
-      log(nullOccurrences.toString());
       if (strokeArray[i] == null) {
         // If we're still counting duplicate nulls, continue
         if (i < strokeArray.length - 1 && strokeArray[i + 1] == null) {
@@ -667,6 +669,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   Future<void> saveReviewNote() async {
     // Convert the data to JSON format
     Map<String, dynamic> data = {
+      "solvepadWidth": mySolvepadSize!.width,
+      "solvepadHeight": mySolvepadSize!.height,
       'penPoints': _penPoints
           .map((list) => list.map((stroke) => stroke?.toJson()).toList())
           .toList(),
@@ -943,13 +947,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   // ---------- FUNCTION: page control
   void _addPage() {
     setState(() {
-      _penPoints.add([]);
-      _laserPoints.add([]);
-      _highlighterPoints.add([]);
+      _penPoints.add([null]);
+      _laserPoints.add([null]);
+      _highlighterPoints.add([null]);
       _eraserPoints.add(const Offset(-100, -100));
-      _hostPenPoints.add([]);
-      _hostLaserPoints.add([]);
-      _hostHighlighterPoints.add([]);
+      _hostPenPoints.add([null]);
+      _hostLaserPoints.add([null]);
+      _hostHighlighterPoints.add([null]);
       _hostEraserPoints.add(const Offset(-100, -100));
     });
   }
@@ -960,10 +964,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
         point.clear();
       }
       _currentPage = page;
-      _penPoints[_currentPage].add(null);
-      _highlighterPoints[_currentPage].add(null);
-      _hostPenPoints[_currentPage].add(null);
-      _hostHighlighterPoints[_currentPage].add(null);
     });
   }
 
@@ -1791,126 +1791,268 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(10.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: CustomColors.grayCFCFCF,
-                              style: BorderStyle.solid,
-                              width: 1.0,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                            color: CustomColors.whitePrimary,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              // Image.asset(
-                              //   ImageAssets.allPages,
-                              //   height: 30,
-                              //   width: 32,
-                              // ),
-                              // if (Responsive.isDesktop(context)) S.w(8),
-                              // if (Responsive.isDesktop(context))
-                              //   Container(
-                              //     width: 1,
-                              //     height: 24,
-                              //     color: CustomColors.grayCFCFCF,
-                              //   ),
-                              InkWell(
-                                onTap: () {
-                                  if (isHostFocus) return;
-                                  if (_pageController.hasClients &&
-                                      _pageController.page!.toInt() != 0 &&
-                                      !tabFollowing) {
-                                    if (isAllowSharingScreen && isHostFocus) {
-                                      for (int i = 0; i <= 2; i++) {
-                                        sendMessage(
-                                            'ChangePage:${_currentPage - 1}');
-                                      }
-                                    }
-                                    _pageController.animateToPage(
-                                      _pageController.page!.toInt() - 1,
-                                      duration:
-                                          const Duration(milliseconds: 300),
-                                      curve: Curves.easeInOut,
-                                    );
-                                  }
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Image.asset(
-                                    ImageAssets.backDis,
-                                    height: 16,
-                                    width: 17,
-                                    color: _isPrevBtnActive
-                                        ? CustomColors.activePagingBtn
-                                        : CustomColors.inactivePagingBtn,
+                        child: isAllowSharingScreen
+                            ? ColorFiltered(
+                                colorFilter: ColorFilter.mode(
+                                    Colors.grey.withOpacity(0.3),
+                                    BlendMode.modulate),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: CustomColors.grayCFCFCF,
+                                      style: BorderStyle.solid,
+                                      width: 1.0,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: CustomColors.whitePrimary,
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      // Image.asset(
+                                      //   ImageAssets.allPages,
+                                      //   height: 30,
+                                      //   width: 32,
+                                      // ),
+                                      // if (Responsive.isDesktop(context)) S.w(8),
+                                      // if (Responsive.isDesktop(context))
+                                      //   Container(
+                                      //     width: 1,
+                                      //     height: 24,
+                                      //     color: CustomColors.grayCFCFCF,
+                                      //   ),
+                                      InkWell(
+                                        onTap: () {
+                                          if (isHostFocus) return;
+                                          if (_pageController.hasClients &&
+                                              _pageController.page!.toInt() !=
+                                                  0 &&
+                                              !tabFollowing) {
+                                            if (isAllowSharingScreen &&
+                                                isHostFocus) {
+                                              for (int i = 0; i <= 2; i++) {
+                                                sendMessage(
+                                                    'ChangePage:${_currentPage - 1}');
+                                              }
+                                            }
+                                            _pageController.animateToPage(
+                                              _pageController.page!.toInt() - 1,
+                                              duration: const Duration(
+                                                  milliseconds: 300),
+                                              curve: Curves.easeInOut,
+                                            );
+                                          }
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Image.asset(
+                                            ImageAssets.backDis,
+                                            height: 16,
+                                            width: 17,
+                                            color: _isPrevBtnActive
+                                                ? CustomColors.activePagingBtn
+                                                : CustomColors
+                                                    .inactivePagingBtn,
+                                          ),
+                                        ),
+                                      ),
+                                      if (Responsive.isDesktop(context)) S.w(8),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: CustomColors.grayCFCFCF,
+                                            style: BorderStyle.solid,
+                                            width: 1.0,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                          color: CustomColors.whitePrimary,
+                                        ),
+                                        margin: const EdgeInsets.symmetric(
+                                            vertical: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 4),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: <Widget>[
+                                            Text("Page ${_currentPage + 1}",
+                                                style: CustomStyles
+                                                    .bold14greenPrimary),
+                                          ],
+                                        ),
+                                      ),
+                                      S.w(8.0),
+                                      Text("/ ${_pages.length}",
+                                          style: CustomStyles.med14Gray878787),
+                                      InkWell(
+                                        onTap: () {
+                                          if (isHostFocus) return;
+                                          if (_pages.length > 1 &&
+                                              !tabFollowing) {
+                                            if (_pageController.hasClients &&
+                                                _pageController.page!.toInt() !=
+                                                    _pages.length - 1) {
+                                              if (isAllowSharingScreen &&
+                                                  isHostFocus) {
+                                                for (int i = 0; i <= 2; i++) {
+                                                  sendMessage(
+                                                      'ChangePage:${_currentPage + 1}');
+                                                }
+                                              }
+                                              _pageController.animateToPage(
+                                                _pageController.page!.toInt() +
+                                                    1,
+                                                duration: const Duration(
+                                                    milliseconds: 300),
+                                                curve: Curves.easeInOut,
+                                              );
+                                            }
+                                          }
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Image.asset(
+                                            ImageAssets.forward,
+                                            height: 16,
+                                            width: 17,
+                                            color: _isNextBtnActive
+                                                ? CustomColors.activePagingBtn
+                                                : CustomColors
+                                                    .inactivePagingBtn,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                              if (Responsive.isDesktop(context)) S.w(8),
-                              Container(
+                              )
+                            : Container(
                                 decoration: BoxDecoration(
                                   border: Border.all(
                                     color: CustomColors.grayCFCFCF,
                                     style: BorderStyle.solid,
                                     width: 1.0,
                                   ),
-                                  borderRadius: BorderRadius.circular(4),
+                                  borderRadius: BorderRadius.circular(8),
                                   color: CustomColors.whitePrimary,
                                 ),
-                                margin: const EdgeInsets.symmetric(vertical: 4),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: <Widget>[
-                                    Text("Page ${_currentPage + 1}",
-                                        style: CustomStyles.bold14greenPrimary),
+                                    // Image.asset(
+                                    //   ImageAssets.allPages,
+                                    //   height: 30,
+                                    //   width: 32,
+                                    // ),
+                                    // if (Responsive.isDesktop(context)) S.w(8),
+                                    // if (Responsive.isDesktop(context))
+                                    //   Container(
+                                    //     width: 1,
+                                    //     height: 24,
+                                    //     color: CustomColors.grayCFCFCF,
+                                    //   ),
+                                    InkWell(
+                                      onTap: () {
+                                        if (isHostFocus) return;
+                                        if (_pageController.hasClients &&
+                                            _pageController.page!.toInt() !=
+                                                0 &&
+                                            !tabFollowing) {
+                                          if (isAllowSharingScreen &&
+                                              isHostFocus) {
+                                            for (int i = 0; i <= 2; i++) {
+                                              sendMessage(
+                                                  'ChangePage:${_currentPage - 1}');
+                                            }
+                                          }
+                                          _pageController.animateToPage(
+                                            _pageController.page!.toInt() - 1,
+                                            duration: const Duration(
+                                                milliseconds: 300),
+                                            curve: Curves.easeInOut,
+                                          );
+                                        }
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Image.asset(
+                                          ImageAssets.backDis,
+                                          height: 16,
+                                          width: 17,
+                                          color: _isPrevBtnActive
+                                              ? CustomColors.activePagingBtn
+                                              : CustomColors.inactivePagingBtn,
+                                        ),
+                                      ),
+                                    ),
+                                    if (Responsive.isDesktop(context)) S.w(8),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: CustomColors.grayCFCFCF,
+                                          style: BorderStyle.solid,
+                                          width: 1.0,
+                                        ),
+                                        borderRadius: BorderRadius.circular(4),
+                                        color: CustomColors.whitePrimary,
+                                      ),
+                                      margin: const EdgeInsets.symmetric(
+                                          vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          Text("Page ${_currentPage + 1}",
+                                              style: CustomStyles
+                                                  .bold14greenPrimary),
+                                        ],
+                                      ),
+                                    ),
+                                    S.w(8.0),
+                                    Text("/ ${_pages.length}",
+                                        style: CustomStyles.med14Gray878787),
+                                    InkWell(
+                                      onTap: () {
+                                        if (isHostFocus) return;
+                                        if (_pages.length > 1 &&
+                                            !tabFollowing) {
+                                          if (_pageController.hasClients &&
+                                              _pageController.page!.toInt() !=
+                                                  _pages.length - 1) {
+                                            if (isAllowSharingScreen &&
+                                                isHostFocus) {
+                                              for (int i = 0; i <= 2; i++) {
+                                                sendMessage(
+                                                    'ChangePage:${_currentPage + 1}');
+                                              }
+                                            }
+                                            _pageController.animateToPage(
+                                              _pageController.page!.toInt() + 1,
+                                              duration: const Duration(
+                                                  milliseconds: 300),
+                                              curve: Curves.easeInOut,
+                                            );
+                                          }
+                                        }
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Image.asset(
+                                          ImageAssets.forward,
+                                          height: 16,
+                                          width: 17,
+                                          color: _isNextBtnActive
+                                              ? CustomColors.activePagingBtn
+                                              : CustomColors.inactivePagingBtn,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
-                              S.w(8.0),
-                              Text("/ ${_pages.length}",
-                                  style: CustomStyles.med14Gray878787),
-                              InkWell(
-                                onTap: () {
-                                  if (isHostFocus) return;
-                                  if (_pages.length > 1 && !tabFollowing) {
-                                    if (_pageController.hasClients &&
-                                        _pageController.page!.toInt() !=
-                                            _pages.length - 1) {
-                                      if (isAllowSharingScreen && isHostFocus) {
-                                        for (int i = 0; i <= 2; i++) {
-                                          sendMessage(
-                                              'ChangePage:${_currentPage + 1}');
-                                        }
-                                      }
-                                      _pageController.animateToPage(
-                                        _pageController.page!.toInt() + 1,
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        curve: Curves.easeInOut,
-                                      );
-                                    }
-                                  }
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Image.asset(
-                                    ImageAssets.forward,
-                                    height: 16,
-                                    width: 17,
-                                    color: _isNextBtnActive
-                                        ? CustomColors.activePagingBtn
-                                        : CustomColors.inactivePagingBtn,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ),
                       S.w(defaultPadding),
                       const DividerVer(),
@@ -2613,7 +2755,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             child: AnimatedContainer(
               duration: const Duration(seconds: 1),
               curve: Curves.fastOutSlowIn,
-              height: selectedTools ? 350 : MediaQuery.of(context).size.height,
+              height: selectedTools ? 270 : 470,
               width: 120,
               decoration: BoxDecoration(
                 border: Border.all(
@@ -2646,7 +2788,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                           ),
                         )
                       : Expanded(
-                          flex: 4,
+                          flex: 7,
                           child: ListView.builder(
                               scrollDirection: Axis.vertical,
                               shrinkWrap: true,
@@ -2664,7 +2806,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                           updateDataHistory(DrawingMode.drag);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            for (int i = 0; i <= 2; i++) {
+                                            for (int i = 0; i <= 4; i++) {
                                               sendMessage('DrawingMode.drag');
                                             }
                                           }
@@ -2672,7 +2814,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                           updateDataHistory(DrawingMode.pen);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            for (int i = 0; i <= 2; i++) {
+                                            for (int i = 0; i <= 4; i++) {
                                               sendMessage('DrawingMode.pen');
                                             }
                                           }
@@ -2681,7 +2823,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                               DrawingMode.highlighter);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            for (int i = 0; i <= 2; i++) {
+                                            for (int i = 0; i <= 4; i++) {
                                               sendMessage(
                                                   'DrawingMode.highlighter');
                                             }
@@ -2690,7 +2832,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                           updateDataHistory(DrawingMode.eraser);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            for (int i = 0; i <= 2; i++) {
+                                            for (int i = 0; i <= 4; i++) {
                                               sendMessage('DrawingMode.eraser');
                                             }
                                           }
@@ -2698,7 +2840,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                           updateDataHistory(DrawingMode.laser);
                                           if (isAllowSharingScreen &&
                                               isHostFocus) {
-                                            for (int i = 0; i <= 2; i++) {
+                                            for (int i = 0; i <= 4; i++) {
                                               sendMessage('DrawingMode.laser');
                                             }
                                           }

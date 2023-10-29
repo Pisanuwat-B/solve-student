@@ -172,7 +172,7 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
           ),
         ),
         title: Text(
-          'รอเข้าห้องสอน',
+          'รอเข้าห้องเรียน',
           style: CustomStyles.bold22Black363636,
         ),
       ),
@@ -428,7 +428,7 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
             children: [
               S.w(10),
               Text(
-                "ยังไม่ถึงเวลาสอน",
+                "ยังไม่ถึงเวลาเรียน",
                 style: CustomStyles.bold14White.copyWith(
                   fontSize: _util.addMinusFontSize(18),
                 ),

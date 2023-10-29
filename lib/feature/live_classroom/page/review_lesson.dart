@@ -67,7 +67,6 @@ class _ReviewLessonState extends State<ReviewLesson>
   int _selectedIndexLines = 0;
   late bool isSelected;
   bool isChecked = false;
-  bool _switchValue = true;
   bool fullScreen = false;
   bool openShowDisplay = false;
   bool showSpeechBalloon = true;
@@ -134,8 +133,6 @@ class _ReviewLessonState extends State<ReviewLesson>
     SelectQuizModel("ชุดที่#4 สมการเชิงเส้นตัวแปรเดียว", "5 ข้อ", false),
     SelectQuizModel("ชุดที่#5 สมการเชิงเส้นตัวแปรเดียว", "5 ข้อ", false),
   ];
-  int _tutorColorIndex = 0;
-  int _tutorStrokeWidthIndex = 0;
 
   // ---------- VARIABLE: Solve Pad data
   late List<String> _pages = [];
@@ -155,6 +152,7 @@ class _ReviewLessonState extends State<ReviewLesson>
   // ---------- VARIABLE: Solve Size
   Size mySolvepadSize = const Size(1059.0, 547.0);
   Size tutorSolvepadSize = const Size(1059.0, 547.0);
+  Size noteSolvepadSize = const Size(1059.0, 547.0);
   double sheetImageRatio = 0.708;
   double tutorImageWidth = 0;
   double tutorExtraSpaceX = 0;
@@ -163,6 +161,10 @@ class _ReviewLessonState extends State<ReviewLesson>
   double scaleImageX = 0;
   double scaleX = 0;
   double scaleY = 0;
+  double noteImageWidth = 0;
+  double noteExtraSpaceX = 0;
+  double noteScaleImageX = 0;
+  double noteScaleY = 0;
 
   // ---------- VARIABLE: Solve Pad features
   bool _isReplaying = false;
@@ -174,6 +176,10 @@ class _ReviewLessonState extends State<ReviewLesson>
   bool _isHasReviewNote = false;
   bool _isStylusActive = false;
   int replayIndex = 0;
+  bool _isRatioReady = false;
+  bool _isScalingReady = false;
+  bool _isNoteScalingReady = false;
+  bool _isInstantReplayStarted = false;
 
   // ---------- VARIABLE: page control
   Timer? _laserTimer;
@@ -202,7 +208,7 @@ class _ReviewLessonState extends State<ReviewLesson>
 
   // ---------- VARIABLE: tutor solvepad data
   late Map<String, dynamic> _data;
-  String jsonData = '';
+  late Map<String, dynamic> reviewNote;
   List<StrokeStamp> currentStroke = [];
   List<ScrollZoomStamp> currentScrollZoom = [];
   int currentReplayIndex = 0;
@@ -251,7 +257,12 @@ class _ReviewLessonState extends State<ReviewLesson>
         final response = await http.get(Uri.parse(noteFileUrl));
         log('load review note complete');
         if (response.statusCode == 200) {
-          populateReviewNote(response.body);
+          reviewNote = jsonDecode(response.body);
+          if (reviewNote['solvepadWidth'] != null) {
+            studentNoteSolvepadScaling();
+          } else {
+            populateReviewNoteNoScaling(reviewNote);
+          }
         } else {
           throw Exception('Failed to load review note');
         }
@@ -284,9 +295,7 @@ class _ReviewLessonState extends State<ReviewLesson>
     updateRatio(sheet[0]);
     _isPageReady = true;
     setCourseLoadState();
-    setState(() {
-      _pages = sheet;
-    });
+    _pages = sheet;
     for (int i = 1; i < _pages.length; i++) {
       _addPage();
     }
@@ -300,7 +309,6 @@ class _ReviewLessonState extends State<ReviewLesson>
       _pageController.addListener(() {
         _isPrevBtnActive = (_pageController.page! > 0);
         _isNextBtnActive = _pageController.page! < (_pages.length - 1);
-        setState(() {});
       });
     }
   }
@@ -312,12 +320,10 @@ class _ReviewLessonState extends State<ReviewLesson>
       _data = jsonDecode(response.body);
       _isSolvepadDataReady = true;
       setCourseLoadState();
-      setState(() {
-        tutorSolvepadSize =
-            Size(_data['solvepadWidth'], _data['solvepadHeight']);
-        replayDuration = _data['metadata']['duration'];
-      });
-      log('set tutor solvepad');
+      setScalingStatus();
+      tutorSolvepadSize = Size(_data['solvepadWidth'], _data['solvepadHeight']);
+      replayDuration = _data['metadata']['duration'];
+      log('load & set tutor solvepad');
     } // success
     else {
       log('Failed to download file');
@@ -336,9 +342,65 @@ class _ReviewLessonState extends State<ReviewLesson>
     _audioPlayer.openPlayer();
   }
 
-  void populateReviewNote(String jsonString) {
-    log('populate Review Note');
-    Map<String, dynamic> jsonData = jsonDecode(jsonString);
+  void populateReviewNote(Map<String, dynamic> jsonData) {
+    log('start populate review Note');
+
+    // List<SolvepadStroke?> convertToStrokeList(List<dynamic> list) {
+    //   return list.map((item) {
+    //     if (item == null) {
+    //       return null;
+    //     }
+    //     return SolvepadStroke.fromJson(item as Map<String, dynamic>);
+    //   }).toList();
+    // }
+
+    List<SolvepadStroke?> convertToStrokeList(List<dynamic> list) {
+      return list.map((item) {
+        if (item == null) {
+          return null;
+        }
+        // Extract the offset from the item
+        Offset originalOffset =
+            Offset(item['offset']['dx'], item['offset']['dy']);
+
+        // Scale the offset
+        Offset scaledOffset = scaleNoteOffset(originalOffset);
+
+        // Create a new map with the scaled offset
+        Map<String, dynamic> modifiedItem = {
+          ...item,
+          'offset': {'dx': scaledOffset.dx, 'dy': scaledOffset.dy}
+        };
+
+        return SolvepadStroke.fromJson(modifiedItem);
+      }).toList();
+    }
+
+    // Populate _penPoints
+    List<dynamic> penPointsData = jsonData['penPoints'];
+    _penPoints.clear();
+    for (var list in penPointsData) {
+      _penPoints.add(convertToStrokeList(list));
+    }
+
+    // Populate _laserPoints
+    List<dynamic> laserPointsData = jsonData['laserPoints'];
+    _laserPoints.clear();
+    for (var list in laserPointsData) {
+      _laserPoints.add(convertToStrokeList(list));
+    }
+
+    // Populate _highlighterPoints
+    List<dynamic> highlighterPointsData = jsonData['highlighterPoints'];
+    _highlighterPoints.clear();
+    for (var list in highlighterPointsData) {
+      _highlighterPoints.add(convertToStrokeList(list));
+    }
+    setState(() {});
+  }
+
+  void populateReviewNoteNoScaling(Map<String, dynamic> jsonData) {
+    log('No scaling');
 
     List<SolvepadStroke?> convertToStrokeList(List<dynamic> list) {
       return list.map((item) {
@@ -348,28 +410,6 @@ class _ReviewLessonState extends State<ReviewLesson>
         return SolvepadStroke.fromJson(item as Map<String, dynamic>);
       }).toList();
     }
-
-    // List<SolvepadStroke?> convertToStrokeList(List<dynamic> list) {
-    //   return list.map((item) {
-    //     if (item == null) {
-    //       return null;
-    //     }
-    //     // Extract the offset from the item
-    //     Offset originalOffset =
-    //         Offset(item['offset']['dx'], item['offset']['dy']);
-    //
-    //     // Scale the offset
-    //     Offset scaledOffset = scaleOffset(originalOffset);
-    //
-    //     // Create a new map with the scaled offset
-    //     Map<String, dynamic> modifiedItem = {
-    //       ...item,
-    //       'offset': {'dx': scaledOffset.dx, 'dy': scaledOffset.dy}
-    //     };
-    //
-    //     return SolvepadStroke.fromJson(modifiedItem);
-    //   }).toList();
-    // }
 
     // Populate _penPoints
     List<dynamic> penPointsData = jsonData['penPoints'];
@@ -395,7 +435,7 @@ class _ReviewLessonState extends State<ReviewLesson>
   }
 
   void initSolvepadScaling() {
-    log('solvepad scaling');
+    log('scaling tutor solvepad');
     tutorImageWidth = tutorSolvepadSize.height * sheetImageRatio;
     tutorExtraSpaceX = (tutorSolvepadSize.width - tutorImageWidth) / 2;
     myImageWidth = mySolvepadSize.height * sheetImageRatio;
@@ -403,7 +443,22 @@ class _ReviewLessonState extends State<ReviewLesson>
     scaleImageX = myImageWidth / tutorImageWidth;
     scaleX = mySolvepadSize.width / tutorSolvepadSize.width;
     scaleY = mySolvepadSize.height / tutorSolvepadSize.height;
-    _instantReplay();
+    _isScalingReady = true;
+    setScalingStatus();
+  }
+
+  void studentNoteSolvepadScaling() {
+    log('scaling note solvepad');
+    noteSolvepadSize =
+        Size(reviewNote['solvepadWidth'], reviewNote['solvepadHeight']);
+    noteImageWidth = noteSolvepadSize.height * sheetImageRatio;
+    noteExtraSpaceX = (noteSolvepadSize.width - noteImageWidth) / 2;
+    myImageWidth = mySolvepadSize.height * sheetImageRatio;
+    myExtraSpaceX = (mySolvepadSize.width - myImageWidth) / 2;
+    noteScaleImageX = myImageWidth / noteImageWidth;
+    noteScaleY = mySolvepadSize.height / noteSolvepadSize.height;
+    _isNoteScalingReady = true;
+    setScalingStatus();
   }
 
   void setCourseLoadState() {
@@ -436,6 +491,12 @@ class _ReviewLessonState extends State<ReviewLesson>
         offset.dy * scaleY);
   }
 
+  Offset scaleNoteOffset(Offset offset) {
+    return Offset(
+        (offset.dx - noteExtraSpaceX) * noteScaleImageX + myExtraSpaceX,
+        offset.dy * noteScaleY);
+  }
+
   double scaleScrollX(double scrollX) => scrollX * scaleX;
   double scaleScrollY(double scrollY) => scrollY * scaleY;
 
@@ -448,6 +509,19 @@ class _ReviewLessonState extends State<ReviewLesson>
       double ratio = info.image.width / info.image.height;
       sheetImageRatio = ratio;
     }));
+    _isRatioReady = true;
+    setScalingStatus();
+  }
+
+  void setScalingStatus() {
+    log('setScalingStatus');
+    if (!_isRatioReady || !_isScalingReady || !_isSolvepadDataReady) return;
+    if (!_isInstantReplayStarted) {
+      _instantReplay();
+      _isInstantReplayStarted = true;
+    }
+    if (!_isNoteScalingReady) return;
+    populateReviewNote(reviewNote);
   }
 
   Future<Uint8List?> downloadAudio(String url) async {
@@ -676,6 +750,7 @@ class _ReviewLessonState extends State<ReviewLesson>
   }
 
   Future<void> _instantReplay() async {
+    log('start instant replay');
     while (currentReplayIndex < _data['actions'].length) {
       await instantReplayAction(_data['actions'][currentReplayIndex]);
       currentReplayIndex++;
