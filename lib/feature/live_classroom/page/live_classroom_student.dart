@@ -209,6 +209,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
 
   var courseController = CourseLiveController();
   late String courseName;
+  late String courseType;
   bool isCourseLoaded = false;
   bool showHeader = false;
   bool isStudentLeave = false;
@@ -230,14 +231,23 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     initTimer();
     initPagingBtn();
     if (!widget.isMock) {
-      initPagesData();
-      initMessageHandler();
-      initConference();
+      startDataPreparation();
     } else {
       _joined = true;
       mockInitPageData();
     }
     authProvider = Provider.of<AuthProvider>(context, listen: false);
+  }
+
+  void startDataPreparation() async {
+    await initPagesData();
+    initMessageHandler();
+    if(courseType == 'live') {
+      initConference();
+    }else{
+      _joined = true;
+      initWss();
+    }
   }
 
   void mockInitPageData() {
@@ -277,6 +287,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
         }
       }
       courseName = courseController.courseData!.courseName!;
+      courseType = courseController.courseData!.courseType!;
       micEnable = widget.micEnabled;
       isCourseLoaded = true;
     });
@@ -634,7 +645,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   void handleMessageEndMeeting(String data) async {
-    meeting.leave();
+    if (courseType == 'live') {
+      meeting.leave();
+    }
     if (!mounted) return;
     if (isStudentLeave) return;
     await saveReviewNote();
@@ -723,7 +736,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     _meetingTimer?.cancel();
     log('somehow I disposed');
     closeChanel();
-    meeting.leave();
+    if (courseType == 'live') {
+      meeting.leave();
+    }
     super.dispose();
   }
 
@@ -848,7 +863,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       Navigator.pop(context);
     }
     closeChanel();
-    meeting.leave();
+    if (courseType == 'live') {
+      meeting.leave();
+    }
     return true;
   }
 
@@ -1730,7 +1747,10 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 InkWell(
                   onTap: () {
                     showCloseDialog(context, () async {
-                      if (!widget.isMock) meeting.leave();
+                      if (!widget.isMock)
+                        if (courseType == 'live') {
+                          meeting.leave();
+                        }
                       isStudentLeave = true;
                       await saveReviewNote();
                       if (!mounted) return;
@@ -3152,7 +3172,10 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             InkWell(
               onTap: () {
                 showCloseDialog(context, () async {
-                  if (!widget.isMock) meeting.leave();
+                  if (!widget.isMock)
+                    if (courseType == 'live') {
+                      meeting.leave();
+                    }
                   isStudentLeave = true;
                   await saveReviewNote();
                   if (!mounted) return;

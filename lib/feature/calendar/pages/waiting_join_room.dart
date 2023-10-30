@@ -126,30 +126,51 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
       showSnackBarMessage(message: "Invalid Meeting ID", context: context);
       return;
     }
-    var validMeeting = await validateMeeting(_token, meetingId);
-    if (validMeeting) {
-      if (mounted) {
-        print('JOIN ROOM');
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => StudentLiveClassroom(
-              token: _token,
-              userId: authProvider.uid!,
-              courseId: widget.course.courseId!,
-              startTime: widget.course.start!.millisecondsSinceEpoch,
-              meetingId: meetingId,
-              displayName: displayName,
-              isHost: false,
-              micEnabled: isMicOn,
-              camEnabled: false,
+    if(meetingId == 'hybrid'){
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              StudentLiveClassroom(
+                token: 'hybrid',
+                userId: authProvider.uid!,
+                courseId: widget.course.courseId!,
+                startTime: widget.course.start!.millisecondsSinceEpoch,
+                meetingId: meetingId,
+                displayName: displayName,
+                isHost: false,
+                micEnabled: isMicOn,
+                camEnabled: false,
+              ),
+        ),
+      );
+    }else{
+      var validMeeting = await validateMeeting(_token, meetingId);
+      if (validMeeting) {
+        if (mounted) {
+          print('JOIN ROOM');
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  StudentLiveClassroom(
+                    token: _token,
+                    userId: authProvider.uid!,
+                    courseId: widget.course.courseId!,
+                    startTime: widget.course.start!.millisecondsSinceEpoch,
+                    meetingId: meetingId,
+                    displayName: displayName,
+                    isHost: false,
+                    micEnabled: isMicOn,
+                    camEnabled: false,
+                  ),
             ),
-          ),
-        );
-      }
-    } else {
-      if (mounted) {
-        showSnackBarMessage(message: "Invalid Meeting ID", context: context);
+          );
+        }
+      } else {
+        if (mounted) {
+          showSnackBarMessage(message: "Invalid Meeting ID", context: context);
+        }
       }
     }
   }
