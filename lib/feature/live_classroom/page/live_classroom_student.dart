@@ -57,6 +57,8 @@ class StudentLiveClassroom extends StatefulWidget {
 
 class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   // Conference
+  bool isAudioMode = true;
+  bool isHostAudioMode = false;
   bool isRecordingOn = false;
   bool showChatSnackbar = false;
   String recordingState = "RECORDING_STOPPED";
@@ -210,6 +212,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   var courseController = CourseLiveController();
   late String courseName;
   late String courseType;
+  late String meetingId;
   bool isCourseLoaded = false;
   bool showHeader = false;
   bool isStudentLeave = false;
@@ -288,6 +291,11 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       }
       courseName = courseController.courseData!.courseName!;
       courseType = courseController.courseData!.courseType!;
+      if(courseType != 'live'){
+        setState(() {
+          isAudioMode = false;
+        });
+      }
       micEnable = widget.micEnabled;
       isCourseLoaded = true;
     });
@@ -379,6 +387,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
           if (data.startsWith('RequestScreenShare') ||
               data.startsWith('FocusStudentScreen') ||
               data.startsWith('HostLeaveScreen') ||
+              data.startsWith('AudioMode') ||
               data.startsWith('EndMeeting')) {
             for (var entry in handlers.entries) {
               if (data.startsWith(entry.key)) {
@@ -427,6 +436,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       'HostLeaveScreen': handleMessageHostLeaveScreen,
       'EndMeeting': handleMessageEndMeeting,
       'SetSolvepad': handleMessageSetSolvepad,
+      'AudioMode': handleMessageAudioMode,
     };
   }
 
@@ -645,7 +655,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   void handleMessageEndMeeting(String data) async {
-    if (courseType == 'live') {
+    if (isAudioMode) {
       meeting.leave();
     }
     if (!mounted) return;
@@ -662,6 +672,21 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       hostSolvepadSize = Size(double.parse(parts[1]), double.parse(parts[2]));
       initVariableSetup(mySolvepadSize!.width, mySolvepadSize!.height);
     });
+  }
+
+  void handleMessageAudioMode(String data) {
+    var parts = data.split(':');
+    if(parts.last == 'OFF'){
+      setState(() {
+        isHostAudioMode = false;
+        isAudioMode = false;
+      });
+    }else {
+      setState(() {
+        meetingId = parts.last;
+        isHostAudioMode = true;
+      });
+    }
   }
 
   Offset convertToOffset(String offsetString) {
@@ -723,6 +748,34 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     });
   }
 
+  void switchAudioMode(){
+    if(isAudioMode){
+      meeting.leave();
+    }else{
+      Room room = VideoSDK.createRoom(
+          roomId: meetingId,
+          token: widget.token,
+          displayName: widget.displayName,
+          micEnabled: false,
+          camEnabled: false,
+          maxResolution: 'hd',
+          multiStream: true,
+          defaultCameraIndex: 1,
+          notification: const NotificationInfo(
+            title: "Video SDK",
+            message: "Video SDK is sharing screen in the meeting",
+            icon: "notification_share", // drawable icon name
+          ),
+          mode: Mode.CONFERENCE);
+      registerMeetingEvents(room);
+      room.join();
+    }
+    setState(() {
+      micEnable = false;
+      isAudioMode = !isAudioMode;
+    });
+  }
+
   @override
   dispose() {
     // SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -736,7 +789,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     _meetingTimer?.cancel();
     log('somehow I disposed');
     closeChanel();
-    if (courseType == 'live') {
+    if (isAudioMode) {
       meeting.leave();
     }
     super.dispose();
@@ -863,7 +916,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       Navigator.pop(context);
     }
     closeChanel();
-    if (courseType == 'live') {
+    if (isAudioMode) {
       meeting.leave();
     }
     return true;
@@ -1748,7 +1801,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                   onTap: () {
                     showCloseDialog(context, () async {
                       if (!widget.isMock)
-                        if (courseType == 'live') {
+                        if (isAudioMode) {
                           meeting.leave();
                         }
                       isStudentLeave = true;
@@ -2081,6 +2134,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 ),
                 S.w(8),
                 statusTouchModeIcon(),
+                courseType == 'live' && !isHostAudioMode ? const SizedBox() : S.w(8),
+                courseType == 'live' && !isHostAudioMode ? const SizedBox() : audioModeIcon(),
               ],
             ),
           ),
@@ -2287,6 +2342,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                  isAudioMode ?
                   Material(
                     child: InkWell(
                       onTap: () {
@@ -2305,8 +2361,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                         width: 44,
                       ),
                     ),
-                  ),
-                  S.w(defaultPadding),
+                  ) : const Material(),
+                  isAudioMode ? S.w(defaultPadding) : const SizedBox(),
                   const DividerVer(),
                   S.w(defaultPadding),
                   Container(
@@ -3173,7 +3229,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               onTap: () {
                 showCloseDialog(context, () async {
                   if (!widget.isMock)
-                    if (courseType == 'live') {
+                    if (isAudioMode) {
                       meeting.leave();
                     }
                   isStudentLeave = true;
@@ -3275,7 +3331,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 ),
               ),
             ),
-            S.h(8),
+            isAudioMode ? S.h(8) : const SizedBox(),
+            isAudioMode ?
             InkWell(
               onTap: () {
                 setState(() {
@@ -3291,8 +3348,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 micEnable ? ImageAssets.micEnable : ImageAssets.micDis,
                 width: 44,
               ),
-            ),
-            S.h(8),
+            ) : const SizedBox(),
+            isAudioMode ? S.h(8) : const SizedBox(),
+            isAudioMode ?
             InkWell(
               onTap: () {
                 showDialog(
@@ -3335,7 +3393,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                   color: Colors.white,
                 ),
               ),
-            ),
+            ) : const SizedBox(),
+            courseType == 'live' ? const SizedBox() : isHostAudioMode ? S.w(8) : const SizedBox(),
+            courseType == 'live' ? const SizedBox() : isHostAudioMode ? audioModeIcon() : const SizedBox(),
 
             /// TODO: Reconsider fullscreen option
             // InkWell(
@@ -3921,6 +3981,22 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       ),
     );
   }
+
+  Widget audioModeIcon() {
+    return InkWell(
+      onTap: () {
+        switchAudioMode();
+      },
+      child: Image.asset(
+        isAudioMode
+            ? 'assets/images/power-button-icon.png'
+            : 'assets/images/video-conference-icon.png',
+        height: 44,
+        width: 44,
+      ),
+    );
+  }
+
 
   Future<void> shareQuizModal() {
     return showDialog(

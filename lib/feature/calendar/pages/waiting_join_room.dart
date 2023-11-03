@@ -132,7 +132,7 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
         MaterialPageRoute(
           builder: (context) =>
               StudentLiveClassroom(
-                token: 'hybrid',
+                token: _token,
                 userId: authProvider.uid!,
                 courseId: widget.course.courseId!,
                 startTime: widget.course.start!.millisecondsSinceEpoch,
@@ -244,8 +244,8 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
                 S.h(10),
                 _timeJoin(),
                 S.h(10),
-                SizedBox(height: 100, child: _microphone()),
-                S.h(10),
+                widget.course.courseType == 'live' ? SizedBox(height: 100, child: _microphone()) : const SizedBox(),
+                widget.course.courseType == 'live' ? S.h(10) : const SizedBox(),
                 _tutorTitle(),
                 S.h(30),
 
@@ -257,8 +257,8 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
                 isActive ? _buttonJoinRoom() : _buttonNotYet(),
                 S.h(20),
               ] else ...[
-                SizedBox(height: 70, child: _microphone()),
-                S.h(10),
+                widget.course.courseType == 'live' ? SizedBox(height: 70, child: _microphone()) : const SizedBox(),
+                widget.course.courseType == 'live' ? S.h(10) : const SizedBox(),
                 if (!isActive) Countdown(courseStart: widget.course.start!),
               ],
             ],
