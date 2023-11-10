@@ -1597,22 +1597,24 @@ class _LearningPageState extends State<LearningPage> {
                       if (tabFreestyle == true) {
                         tabFollowing = !tabFollowing;
                         tabFreestyle = false;
-                        var parts = _tutorCurrentScrollZoom.split('|');
-                        var scrollX = double.parse(parts[0]);
-                        var scrollY = double.parse(parts[1]);
-                        var zoom = double.parse(parts.last);
-                        if (_currentPage != _tutorCurrentPage) {
-                          _pageController.animateToPage(
-                            _tutorCurrentPage,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        } // re-correct page
-                        _transformationController[_tutorCurrentPage].value =
-                            Matrix4.identity()
-                              ..translate(
-                                  scaleScrollX(scrollX), scaleScrollX(scrollY))
-                              ..scale(zoom);
+                        if (_tutorCurrentScrollZoom != '') {
+                          var parts = _tutorCurrentScrollZoom.split('|');
+                          var scrollX = double.parse(parts[0]);
+                          var scrollY = double.parse(parts[1]);
+                          var zoom = double.parse(parts.last);
+                          if (_currentPage != _tutorCurrentPage) {
+                            _pageController.animateToPage(
+                              _tutorCurrentPage,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          } // re-correct page
+                          _transformationController[_tutorCurrentPage]
+                              .value = Matrix4.identity()
+                            ..translate(
+                                scaleScrollX(scrollX), scaleScrollX(scrollY))
+                            ..scale(zoom);
+                        }
                       }
                     });
                   },
