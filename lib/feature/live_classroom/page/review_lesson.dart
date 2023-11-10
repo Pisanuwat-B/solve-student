@@ -738,7 +738,7 @@ class _ReviewLessonState extends State<ReviewLesson>
               try {
                 setState(() {
                   var start = eraseAction['prev'].clamp(0, pointStack.length);
-                  var end = eraseAction['prev'].clamp(start, pointStack.length);
+                  var end = eraseAction['next'].clamp(start, pointStack.length);
                   pointStack.removeRange(start, end);
                 });
               } catch (e) {
@@ -803,7 +803,7 @@ class _ReviewLessonState extends State<ReviewLesson>
             } // erase high
             setState(() {
               var start = eraseAction['prev'].clamp(0, pointStack.length);
-              var end = eraseAction['prev'].clamp(start, pointStack.length);
+              var end = eraseAction['next'].clamp(start, pointStack.length);
               pointStack.removeRange(start, end);
             });
           } // erase
@@ -909,8 +909,9 @@ class _ReviewLessonState extends State<ReviewLesson>
     return isCourseLoaded
         ? Scaffold(
             backgroundColor: CustomColors.grayCFCFCF,
-            body:
-                !Responsive.isMobile(context) ? _buildTablet() : _buildMobile(),
+            body: !Responsive.isMobileLandscape(context)
+                ? _buildTablet()
+                : _buildMobile(),
           )
         : const LoadingScreen();
   }

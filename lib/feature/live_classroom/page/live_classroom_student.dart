@@ -238,6 +238,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     } else {
       _joined = true;
       mockInitPageData();
+      courseType = 'live';
     }
     authProvider = Provider.of<AuthProvider>(context, listen: false);
   }
@@ -245,9 +246,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   void startDataPreparation() async {
     await initPagesData();
     initMessageHandler();
-    if(courseType == 'live') {
+    if (courseType == 'live') {
       initConference();
-    }else{
+    } else {
       _joined = true;
       initWss();
     }
@@ -291,7 +292,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       }
       courseName = courseController.courseData!.courseName!;
       courseType = courseController.courseData!.courseType!;
-      if(courseType != 'live'){
+      if (courseType != 'live') {
         setState(() {
           isAudioMode = false;
         });
@@ -676,12 +677,12 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
 
   void handleMessageAudioMode(String data) {
     var parts = data.split(':');
-    if(parts.last == 'OFF'){
+    if (parts.last == 'OFF') {
       setState(() {
         isHostAudioMode = false;
         isAudioMode = false;
       });
-    }else {
+    } else {
       setState(() {
         meetingId = parts.last;
         isHostAudioMode = true;
@@ -748,10 +749,10 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     });
   }
 
-  void switchAudioMode(){
-    if(isAudioMode){
+  void switchAudioMode() {
+    if (isAudioMode) {
       meeting.leave();
-    }else{
+    } else {
       Room room = VideoSDK.createRoom(
           roomId: meetingId,
           token: widget.token,
@@ -1052,7 +1053,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       child: _joined && isCourseLoaded
           ? Scaffold(
               backgroundColor: CustomColors.grayCFCFCF,
-              body: !Responsive.isMobile(context)
+              body: !Responsive.isMobileLandscape(context)
                   ? _buildTablet()
                   : fullScreen
                       ? _buildMobileFullScreen()
@@ -1800,10 +1801,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 InkWell(
                   onTap: () {
                     showCloseDialog(context, () async {
-                      if (!widget.isMock)
-                        if (isAudioMode) {
-                          meeting.leave();
-                        }
+                      if (!widget.isMock) if (isAudioMode) {
+                        meeting.leave();
+                      }
                       isStudentLeave = true;
                       await saveReviewNote();
                       if (!mounted) return;
@@ -2134,8 +2134,12 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 ),
                 S.w(8),
                 statusTouchModeIcon(),
-                courseType == 'live' && !isHostAudioMode ? const SizedBox() : S.w(8),
-                courseType == 'live' && !isHostAudioMode ? const SizedBox() : audioModeIcon(),
+                courseType == 'live' && !isHostAudioMode
+                    ? const SizedBox()
+                    : S.w(8),
+                courseType == 'live' && !isHostAudioMode
+                    ? const SizedBox()
+                    : audioModeIcon(),
               ],
             ),
           ),
@@ -2342,26 +2346,29 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  isAudioMode ?
-                  Material(
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          micEnable = !micEnable;
-                        });
-                        if (micEnable && !widget.isMock) {
-                          meeting.unmuteMic();
-                        } else {
-                          meeting.muteMic();
-                        }
-                      },
-                      child: Image.asset(
-                        micEnable ? ImageAssets.micEnable : ImageAssets.micDis,
-                        height: 44,
-                        width: 44,
-                      ),
-                    ),
-                  ) : const Material(),
+                  isAudioMode
+                      ? Material(
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                micEnable = !micEnable;
+                              });
+                              if (micEnable && !widget.isMock) {
+                                meeting.unmuteMic();
+                              } else {
+                                meeting.muteMic();
+                              }
+                            },
+                            child: Image.asset(
+                              micEnable
+                                  ? ImageAssets.micEnable
+                                  : ImageAssets.micDis,
+                              height: 44,
+                              width: 44,
+                            ),
+                          ),
+                        )
+                      : const Material(),
                   isAudioMode ? S.w(defaultPadding) : const SizedBox(),
                   const DividerVer(),
                   S.w(defaultPadding),
@@ -3228,10 +3235,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             InkWell(
               onTap: () {
                 showCloseDialog(context, () async {
-                  if (!widget.isMock)
-                    if (isAudioMode) {
-                      meeting.leave();
-                    }
+                  if (!widget.isMock) if (isAudioMode) {
+                    meeting.leave();
+                  }
                   isStudentLeave = true;
                   await saveReviewNote();
                   if (!mounted) return;
@@ -3332,70 +3338,81 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               ),
             ),
             isAudioMode ? S.h(8) : const SizedBox(),
-            isAudioMode ?
-            InkWell(
-              onTap: () {
-                setState(() {
-                  micEnable = !micEnable;
-                });
-                if (micEnable && !widget.isMock) {
-                  meeting.unmuteMic();
-                } else {
-                  meeting.muteMic();
-                }
-              },
-              child: Image.asset(
-                micEnable ? ImageAssets.micEnable : ImageAssets.micDis,
-                width: 44,
-              ),
-            ) : const SizedBox(),
-            isAudioMode ? S.h(8) : const SizedBox(),
-            isAudioMode ?
-            InkWell(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text("Select Audio Device"),
-                    content: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        SingleChildScrollView(
-                          reverse: true,
-                          child: Column(
-                            children: meeting
-                                .getAudioOutputDevices()
-                                .map(
-                                  (device) => ElevatedButton(
-                                    child: Text(device.label),
-                                    onPressed: () => {
-                                      meeting.switchAudioDevice(device),
-                                      Navigator.pop(context)
-                                    },
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                        )
-                      ],
+            isAudioMode
+                ? InkWell(
+                    onTap: () {
+                      setState(() {
+                        micEnable = !micEnable;
+                      });
+                      if (micEnable && !widget.isMock) {
+                        meeting.unmuteMic();
+                      } else {
+                        meeting.muteMic();
+                      }
+                    },
+                    child: Image.asset(
+                      micEnable ? ImageAssets.micEnable : ImageAssets.micDis,
+                      width: 44,
                     ),
-                  ),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: const BoxDecoration(
-                    color: CustomColors.redFF4201, shape: BoxShape.circle),
-                child: const Icon(
-                  Icons.audiotrack,
-                  size: 20,
-                  color: Colors.white,
-                ),
-              ),
-            ) : const SizedBox(),
-            courseType == 'live' ? const SizedBox() : isHostAudioMode ? S.w(8) : const SizedBox(),
-            courseType == 'live' ? const SizedBox() : isHostAudioMode ? audioModeIcon() : const SizedBox(),
+                  )
+                : const SizedBox(),
+            isAudioMode ? S.h(8) : const SizedBox(),
+            isAudioMode
+                ? InkWell(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text("Select Audio Device"),
+                          content: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              SingleChildScrollView(
+                                reverse: true,
+                                child: Column(
+                                  children: meeting
+                                      .getAudioOutputDevices()
+                                      .map(
+                                        (device) => ElevatedButton(
+                                          child: Text(device.label),
+                                          onPressed: () => {
+                                            meeting.switchAudioDevice(device),
+                                            Navigator.pop(context)
+                                          },
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                          color: CustomColors.redFF4201,
+                          shape: BoxShape.circle),
+                      child: const Icon(
+                        Icons.audiotrack,
+                        size: 20,
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                : const SizedBox(),
+            courseType == 'live'
+                ? const SizedBox()
+                : isHostAudioMode
+                    ? S.w(8)
+                    : const SizedBox(),
+            courseType == 'live'
+                ? const SizedBox()
+                : isHostAudioMode
+                    ? audioModeIcon()
+                    : const SizedBox(),
 
             /// TODO: Reconsider fullscreen option
             // InkWell(
@@ -3996,7 +4013,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       ),
     );
   }
-
 
   Future<void> shareQuizModal() {
     return showDialog(

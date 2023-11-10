@@ -793,7 +793,7 @@ class _LearningPageState extends State<LearningPage> {
             }
             setState(() {
               var start = eraseAction['prev'].clamp(0, pointStack.length);
-              var end = eraseAction['prev'].clamp(start, pointStack.length);
+              var end = eraseAction['next'].clamp(start, pointStack.length);
               pointStack.removeRange(start, end);
             });
           } // erase
@@ -859,7 +859,7 @@ class _LearningPageState extends State<LearningPage> {
       child: isCourseLoaded
           ? Scaffold(
               backgroundColor: CustomColors.grayCFCFCF,
-              body: !Responsive.isMobile(context)
+              body: !Responsive.isMobileLandscape(context)
                   ? _buildTablet()
                   : _buildMobile(),
             )
@@ -1378,7 +1378,7 @@ class _LearningPageState extends State<LearningPage> {
           },
           child: Container(
             margin: EdgeInsets.symmetric(
-                vertical: Responsive.isMobile(context) ? 6 : 14.0),
+                vertical: Responsive.isMobileLandscape(context) ? 6 : 14.0),
             decoration: BoxDecoration(
                 color: isReplaying
                     ? CustomColors.gray363636
@@ -1427,7 +1427,7 @@ class _LearningPageState extends State<LearningPage> {
                 maxLines: 1,
               ),
             ),
-          if (Responsive.isMobile(context))
+          if (Responsive.isMobileLandscape(context))
             Expanded(
               flex: 2,
               child: Text(
