@@ -329,7 +329,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                               BorderRadius.circular(10),
                                         ),
                                         alignment: Alignment.center,
-                                        child: Row(
+                                        child: const Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
@@ -424,7 +424,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                         // ),
                         Row(
                           children: [
-                            Text(
+                            const Text(
                               "เรียบเรียงโดย : ",
                               style: TextStyle(
                                 color: Colors.black,
@@ -434,7 +434,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                             ),
                             Text(
                               con.tutor?.name ?? "",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: primaryColor,
                                 fontSize: 15,
                               ),
@@ -443,7 +443,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                         ),
                         Text(
                           "แก้ไขครั้งล่าสุด ${FormatDate.dt(con.courseDetail?.updateTime)}",
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.black,
                             fontSize: 15,
                           ),
@@ -456,7 +456,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 "รายการเนื้อหา",
                                 style: TextStyle(
                                   color: appTextPrimaryColor,
@@ -476,16 +476,17 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                       con.courseDetail!.lessons![index];
                                   return GestureDetector(
                                     onTap: () {
-                                      // Navigator.push(
-                                      //   context,
-                                      //   MaterialPageRoute(
-                                      //     builder: (context) => LearningPage(
-                                      //       lesson: con
-                                      //           .courseDetail!.lessons![index],
-                                      //       course: con.courseDetail!,
-                                      //     ),
-                                      //   ),
-                                      // );
+                                      if (index != 0) return;
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => LearningPage(
+                                            lesson: con
+                                                .courseDetail!.lessons![index],
+                                            course: con.courseDetail!,
+                                          ),
+                                        ),
+                                      );
                                     },
                                     child: Container(
                                       width: Sizer(context).w,
@@ -499,12 +500,24 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                       ),
                                       child: Row(
                                         children: [
-                                          Icon(
+                                          const Icon(
                                             Icons.video_camera_back,
                                             color: greyColor,
                                           ),
-                                          SizedBox(width: 5),
-                                          Text("${only.lessonName ?? ""}"),
+                                          const SizedBox(width: 5),
+                                          Text(only.lessonName ?? ""),
+                                          if (index == 0)
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 5.0),
+                                              child: Text(
+                                                'ทดลองเรียนบทแรก ฟรี!!',
+                                                style: TextStyle(
+                                                  color: primaryColor,
+                                                  fontSize: 15,
+                                                ),
+                                              ),
+                                            ),
                                         ],
                                       ),
                                     ),
@@ -515,7 +528,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                             ],
                           );
                         }),
-                        Text(
+                        const Text(
                           "รายละเอียดคอร์ส",
                           style: TextStyle(
                             color: appTextPrimaryColor,
@@ -527,7 +540,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                         ),
                         Text(
                           con.courseDetail?.detailsText ?? "",
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 15,
                           ),
                           maxLines: 10,
@@ -541,7 +554,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 "นอกจากนี้ผู้เรียนยังดู",
                                 style: TextStyle(
                                   color: appTextPrimaryColor,

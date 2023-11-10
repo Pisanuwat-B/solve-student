@@ -644,14 +644,12 @@ class _HomePageState extends State<MarketHomePage> {
     return FutureBuilder(
         future: homeProvider!.getTutorInfo(only.tutorId ?? ""),
         builder: (context, snap) {
-          return Container(
-            child: Text(
-              snap.data?.name ?? "",
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: primaryColor,
-              ),
+          return Text(
+            snap.data?.name ?? "",
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: primaryColor,
             ),
           );
         });

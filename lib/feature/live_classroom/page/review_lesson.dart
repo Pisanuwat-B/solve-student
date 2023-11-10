@@ -167,7 +167,6 @@ class _ReviewLessonState extends State<ReviewLesson>
   double noteScaleY = 0;
 
   // ---------- VARIABLE: Solve Pad features
-  bool _isReplaying = false;
   bool _isPrevBtnActive = false;
   bool _isNextBtnActive = true;
   int? activePointerId;
@@ -1639,13 +1638,7 @@ class _ReviewLessonState extends State<ReviewLesson>
   void doErase(int index, DrawingMode mode) {
     List<SolvepadStroke?> pointStack;
     if (mode == DrawingMode.pen) {
-      if (_isReplaying) {
-        // TODO: resolve this after initial test
-        // pointStack = _replayPoints[_currentReplayPage];
-        pointStack = _penPoints[_currentPage];
-      } else {
-        pointStack = _penPoints[_currentPage];
-      }
+      pointStack = _penPoints[_currentPage];
       removePointStack(pointStack, index);
     } else if (mode == DrawingMode.highlighter) {
       pointStack = _highlighterPoints[_currentPage];
