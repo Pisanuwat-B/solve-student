@@ -5,11 +5,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:solve_student/authentication/models/user_model.dart';
+import 'package:solve_student/authentication/models/wallet.model.dart';
+import 'package:solve_student/firebase/firestore.dart';
 
 class AuthProvider extends ChangeNotifier {
   final GoogleSignIn googleSignIn = GoogleSignIn();
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+  WalletModel? wallet;
   UserModel? user;
   String? uid;
   bool isLoading = true;
@@ -31,13 +34,67 @@ class AuthProvider extends ChangeNotifier {
           log('in Update');
           await updateRoleFirestore('student');
         }
-        log('My Data: ${userFirebase.data()}');
+        await getWallet();
+        // log('My Data: ${userFirebase.data()}');
       }
     });
     notifyListeners();
     await Future.delayed(const Duration(seconds: 2));
     isLoading = false;
     notifyListeners();
+  }
+
+  getWallet() async {
+    uid = firebaseAuth.currentUser?.uid ?? "";
+    await firebaseFirestore
+        .collection('wallet')
+        .doc(uid)
+        .get()
+        .then((walletFirebase) async {
+      if (walletFirebase.exists) {
+        wallet = WalletModel.fromJson(walletFirebase.data()!);
+        notifyListeners();
+      }else{
+        await updateWallet();
+      }
+    });
+  }
+
+  Future<void> updateLiveDuration(
+      int duration,
+      ) async {
+    try {
+      uid = firebaseAuth.currentUser?.uid ?? "";
+      final users = FirestoreService('users');
+      Map<String, dynamic> body = {
+        "id": uid,
+        "uid": uid,
+        "update_data": {"live_duration": duration}
+      };
+      await users.updateDocumentById(
+          body['id'], body['update_data'], body['uid']);
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateWalletBalance(
+      int value,
+      int duration,
+      ) async {
+    try {
+      uid = firebaseAuth.currentUser?.uid ?? "";
+      final wallet = FirestoreService('wallet');
+      Map<String, dynamic> body = {
+        "id": uid,
+        "uid": uid,
+        "update_data": {"balance": value, 'live_duration': duration}
+      };
+      await wallet.updateDocumentById(
+          body['id'], body['update_data'], body['uid']);
+    } catch (error) {
+      rethrow;
+    }
   }
 
   Future<bool> userExists(User userIn) async {
@@ -83,6 +140,7 @@ class AuthProvider extends ChangeNotifier {
     );
     user = chatUser;
     await firebaseFirestore.collection('users').doc(id).set(chatUser.toJson());
+    await updateWallet();
     notifyListeners();
   }
 
@@ -99,6 +157,14 @@ class AuthProvider extends ChangeNotifier {
     //     .collection('users')
     //     .doc(user!.id)
     //     .update({'role': role});
+  }
+
+  Future<void> updateWallet() async {
+    final CollectionReference users = firebaseFirestore.collection("wallet");
+    final String uid = firebaseAuth.currentUser?.uid ?? '';
+    WalletModel only = WalletModel(uid: uid, balance: 400, liveDuration: 0);
+    users.doc(uid).set(only.toJson());
+    notifyListeners();
   }
 
   // --------------more--------------------------
