@@ -737,8 +737,9 @@ class _ReviewLessonState extends State<ReviewLesson>
             setState(() {
               try {
                 setState(() {
-                  pointStack.removeRange(
-                      eraseAction['prev'], eraseAction['next']);
+                  var start = eraseAction['prev'].clamp(0, pointStack.length);
+                  var end = eraseAction['prev'].clamp(start, pointStack.length);
+                  pointStack.removeRange(start, end);
                 });
               } catch (e) {
                 if (e is RangeError) {

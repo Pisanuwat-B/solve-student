@@ -792,7 +792,9 @@ class _LearningPageState extends State<LearningPage> {
               pointStack = _replayHighlighterPoints[_tutorCurrentPage];
             }
             setState(() {
-              pointStack.removeRange(eraseAction['prev'], eraseAction['next']);
+              var start = eraseAction['prev'].clamp(0, pointStack.length);
+              var end = eraseAction['prev'].clamp(start, pointStack.length);
+              pointStack.removeRange(start, end);
             });
           } // erase
         }
