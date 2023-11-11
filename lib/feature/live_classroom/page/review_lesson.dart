@@ -712,9 +712,9 @@ class _ReviewLessonState extends State<ReviewLesson>
                 if (solveStopwatch.elapsed.inMilliseconds >=
                     eraseAction['points'][movingIndex]['time']) {
                   setState(() {
-                    _replayEraserPoints[_tutorCurrentPage] = Offset(
+                    _replayEraserPoints[_tutorCurrentPage] = scaleOffset(Offset(
                         eraseAction['points'][movingIndex]['x'],
-                        eraseAction['points'][movingIndex]['y']);
+                        eraseAction['points'][movingIndex]['y']));
                   });
                   movingIndex++;
                 }
