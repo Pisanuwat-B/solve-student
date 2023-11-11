@@ -1327,8 +1327,12 @@ class _ReviewLessonState extends State<ReviewLesson>
         double solvepadHeight = constraints.maxHeight;
         currentScrollX = (-1 * solvepadWidth);
         if (mySolvepadSize.width != solvepadWidth) {
-          mySolvepadSize = Size(solvepadWidth, solvepadHeight);
-          initSolvepadScaling();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            setState(() {
+              mySolvepadSize = Size(solvepadWidth, solvepadHeight);
+              initSolvepadScaling();
+            });
+          });
         }
         return PageView.builder(
           onPageChanged: _onPageViewChange,

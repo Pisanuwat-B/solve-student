@@ -1113,8 +1113,11 @@ class _LearningPageState extends State<LearningPage> {
         double solvepadHeight = constraints.maxHeight;
         currentScrollX = (-1 * solvepadWidth);
         if (mySolvepadSize.width != solvepadWidth) {
-          mySolvepadSize = Size(solvepadWidth, solvepadHeight);
-          log('my solvepad size $mySolvepadSize');
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            setState(() {
+              mySolvepadSize = Size(solvepadWidth, solvepadHeight);
+            });
+          });
         }
         return Stack(children: [
           PageView.builder(
