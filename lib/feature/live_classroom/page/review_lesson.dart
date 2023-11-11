@@ -798,7 +798,7 @@ class _ReviewLessonState extends State<ReviewLesson>
             if (eraseAction['mode'] == "pen") {
               pointStack = _replayPenPoints[_tutorCurrentPage];
             } // erase pen
-            else if (eraseAction['mode'] == "highlighter") {
+            else if (eraseAction['mode'] == "high") {
               pointStack = _replayHighlighterPoints[_tutorCurrentPage];
             } // erase high
             setState(() {
