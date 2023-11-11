@@ -770,9 +770,9 @@ class _LearningPageState extends State<LearningPage> {
                 if (solveStopwatch.elapsed.inMilliseconds >=
                     eraseAction['points'][movingIndex]['time']) {
                   setState(() {
-                    _replayEraserPoints[_currentPage] = Offset(
+                    _replayEraserPoints[_currentPage] = scaleOffset(Offset(
                         eraseAction['points'][movingIndex]['x'],
-                        eraseAction['points'][movingIndex]['y']);
+                        eraseAction['points'][movingIndex]['y']));
                   });
                   movingIndex++;
                 }
