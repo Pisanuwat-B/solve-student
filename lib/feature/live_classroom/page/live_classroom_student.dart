@@ -63,11 +63,14 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   bool showChatSnackbar = false;
   String recordingState = "RECORDING_STOPPED";
   late Room meeting;
+  late DateTime _joinedTime;
+  late DateTime _startAudioTime;
   bool _joined = false;
   Stream? shareStream;
   Stream? videoStream;
   Stream? audioStream;
   Stream? remoteParticipantShareStream;
+  int audioCost = 0;
 
   // WSS
   WebSocketChannel? channel;
@@ -250,6 +253,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       initConference();
     } else {
       _joined = true;
+      _joinedTime = DateTime.now();
       initWss();
     }
   }
@@ -662,6 +666,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     if (!mounted) return;
     if (isStudentLeave) return;
     await saveReviewNote();
+    await calculateTime();
     if (!mounted) return;
     Navigator.pop(context);
     Navigator.pop(context);
@@ -682,6 +687,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
         isHostAudioMode = false;
         isAudioMode = false;
       });
+      updateAudioCost();
     } else {
       setState(() {
         meetingId = parts.last;
@@ -752,6 +758,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   void switchAudioMode() {
     if (isAudioMode) {
       meeting.leave();
+      updateAudioCost();
     } else {
       Room room = VideoSDK.createRoom(
           roomId: meetingId,
@@ -770,6 +777,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
           mode: Mode.CONFERENCE);
       registerMeetingEvents(room);
       room.join();
+      setState(() {
+        _startAudioTime = DateTime.now();
+      });
     }
     setState(() {
       micEnable = false;
@@ -831,11 +841,17 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     _meeting.on(
       Events.roomJoined,
       () {
-        setState(() {
-          meeting = _meeting;
-          _joined = true;
-          initWss();
-        });
+        if(courseType == 'live') {
+          setState(() {
+            meeting = _meeting;
+            _joined = true;
+            initWss();
+          });
+        }else{
+          setState(() {
+            meeting = _meeting;
+          });
+        }
       },
     );
 
@@ -1806,6 +1822,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                       }
                       isStudentLeave = true;
                       await saveReviewNote();
+                      await calculateTime();
                       if (!mounted) return;
                       Navigator.push(
                           context, MaterialPageRoute(builder: (_) => Nav()));
@@ -2826,6 +2843,35 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     });
   }
 
+  void updateAudioCost(){
+    var now = DateTime.now();
+    int duration = 0;
+    duration = ((now.millisecondsSinceEpoch - _startAudioTime.millisecondsSinceEpoch) / 60000).ceil();
+    setState(() {
+      audioCost += duration;
+    });
+    log(audioCost.toString());
+  }
+
+  Future<void> calculateTime() async {
+    var now = DateTime.now();
+    int? duration;
+    duration = ((now.millisecondsSinceEpoch - _joinedTime.millisecondsSinceEpoch) / 60000).ceil();
+      if (courseType == 'hybrid') {
+        await updateBalanceAndLiveDuration(duration, audioCost);
+      }
+  }
+
+  Future<void> updateBalanceAndLiveDuration(int duration, int audioCost) async {
+    log(duration.toString());
+    log(audioCost.toString());
+    int cost = duration + audioCost;
+    int value = authProvider.wallet!.balance! - cost;
+    int walletDuration = duration + (authProvider.wallet!.liveDuration ?? 0);
+    await authProvider.updateWalletBalance(value, walletDuration);
+    authProvider.getSelfInfo();
+  }
+
   /// Tools
   Widget tools() {
     return Row(
@@ -3240,6 +3286,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                   }
                   isStudentLeave = true;
                   await saveReviewNote();
+                  await calculateTime();
                   if (!mounted) return;
                   Navigator.push(
                       context, MaterialPageRoute(builder: (_) => Nav()));
