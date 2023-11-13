@@ -2817,8 +2817,31 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               ],
             ),
           ),
-          const Expanded(
-            child: SizedBox(),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Transform.scale(
+                  scale: 0.6,
+                  child: CupertinoSwitch(
+                    trackColor: CustomColors.redB71C1C,
+                    activeColor: CustomColors.greenPrimary,
+                    value: testBoolean,
+                    onChanged: (bool value) {
+                      setState(() {
+                        testBoolean = !testBoolean;
+                      });
+                    },
+                  ),
+                ),
+                Text(testBoolean ? 'Online ' : 'On site',
+                    textAlign: TextAlign.center,
+                    style: testBoolean
+                        ? CustomStyles.bold14greenPrimary
+                        : CustomStyles.bold14redB71C1C),
+                S.w(defaultPadding),
+              ],
+            ),
           ),
           // Expanded(
           //   child: Row(
