@@ -31,198 +31,106 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: Responsive.isMobile(context) ? 200 : 230,
-                        margin: const EdgeInsets.fromLTRB(30, 30, 15, 0),
-                        padding: Responsive.isMobile(context)
-                            ? const EdgeInsets.all(15)
-                            : const EdgeInsets.all(30),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              spreadRadius: 3,
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const MaintenancePage(),
-                              ),
-                            );
-                          },
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: SizedBox(
-                                  child: Image.asset(
-                                    "assets/images/calendar.png",
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            "Hybrid Solution",
-                                            style: TextStyle(
-                                              color: appTextPrimaryColor,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize:
-                                                  Responsive.isMobile(context)
-                                                      ? 14
-                                                      : 16,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            "คอร์สเรียน Hybrid ของคุณ",
-                                            style: TextStyle(
-                                              color: appTextSecondaryColor,
-                                              fontSize:
-                                                  Responsive.isMobile(context)
-                                                      ? 13
-                                                      : 14,
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                if (!Responsive.isMobileLandscape(context)) ...[
+                  Row(
+                    children: [
+                      mobileCard(
+                        'assets/images/calendar.png',
+                        'Hybrid Solution',
+                        'คอร์สเรียน Hybrid ของคุณ',
+                        'left',
+                        const MaintenancePage(),
                       ),
-                    ),
-                    Expanded(
-                      child: Container(
-                        height: Responsive.isMobile(context) ? 200 : 230,
-                        margin: const EdgeInsets.fromLTRB(15, 30, 30, 0),
-                        padding: Responsive.isMobile(context)
-                            ? const EdgeInsets.all(15)
-                            : const EdgeInsets.all(30),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              spreadRadius: 3,
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const MaintenancePage(),
-                              ),
-                            );
-                          },
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: SizedBox(
-                                  child: Image.asset(
-                                    "assets/images/graph.png",
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            "การใช้งาน",
-                                            style: TextStyle(
-                                              color: appTextPrimaryColor,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize:
-                                                  Responsive.isMobile(context)
-                                                      ? 14
-                                                      : 16,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            "ดูรายการค่าใช้จ่ายคอร์สสอนสด",
-                                            style: TextStyle(
-                                              color: appTextSecondaryColor,
-                                              fontSize:
-                                                  Responsive.isMobile(context)
-                                                      ? 13
-                                                      : 14,
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      mobileCard(
+                        'assets/images/graph.png',
+                        'การใช้งาน',
+                        'ดูรายการค่าใช้จ่ายคอร์สสอนสด',
+                        'right',
+                        const MaintenancePage(),
                       ),
-                    ),
-                  ],
-                ),
-                if (!Responsive.isMobile(context))
+                    ],
+                  ),
+                ],
+                if (Responsive.isMobileLandscape(context)) ...[
+                  Row(
+                    children: [
+                      mobileCard(
+                        'assets/images/calendar.png',
+                        'Hybrid Solution',
+                        'คอร์สเรียน Hybrid ของคุณ',
+                        'tightLeft',
+                        const MaintenancePage(),
+                      ),
+                      mobileCard(
+                        'assets/images/graph.png',
+                        'การใช้งาน',
+                        'ดูรายการค่าใช้จ่ายคอร์สสอนสด',
+                        'tight',
+                        const MaintenancePage(),
+                      ),
+                      mobileCard(
+                        'assets/images/menu_my_course.png',
+                        'My SOLVE course',
+                        'คอร์สที่คุณซื้อจาก Marketplace',
+                        'tight',
+                        const MyCourseSolvepadPage(),
+                      ),
+                      mobileCard(
+                        'assets/images/menu_create_sheet.png',
+                        'My SOLVE live',
+                        'คอร์สเรียนสดของคุณ',
+                        'tight',
+                        const MyCourseLivePage(),
+                      ),
+                      mobileCard(
+                        'assets/images/menu_qa.png',
+                        'Marketplace',
+                        'ค้นหาคอร์สเรียน แบบ Solvepad',
+                        'tightRight',
+                        const MyCourseSolvepadPage(),
+                      ),
+                    ],
+                  ),
+                ],
+                if (Responsive.isMobile(context)) ...[
+                  Row(
+                    children: [
+                      mobileCard(
+                        'assets/images/menu_my_course.png',
+                        'My SOLVE course',
+                        'คอร์สที่คุณซื้อจาก Marketplace',
+                        'left',
+                        const MyCourseSolvepadPage(),
+                      ),
+                      mobileCard(
+                        'assets/images/menu_create_sheet.png',
+                        'My SOLVE live',
+                        'คอร์สเรียนสดของคุณ',
+                        'right',
+                        const MyCourseLivePage(),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      mobileCard(
+                        'assets/images/menu_qa.png',
+                        'Marketplace',
+                        'ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี Solvepad',
+                        'left',
+                        const MyCourseSolvepadPage(),
+                      ),
+                    ],
+                  ),
+                ],
+                if (Responsive.isTablet(context)) ...[
                   GridView.count(
                     shrinkWrap: true,
                     primary: false,
                     padding: const EdgeInsets.all(30),
                     crossAxisSpacing: 30,
                     mainAxisSpacing: 30,
-                    crossAxisCount: Sizer(context).w <= 600 ? 1 : 3,
+                    crossAxisCount: 3,
                     children: <Widget>[
                       gridCard(
                         context,
@@ -264,291 +172,142 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                       ),
                     ],
                   ),
-                if (Responsive.isMobile(context))
+                ],
+                if (Responsive.isDesktop(context)) ...[
                   Row(
                     children: [
-                      Expanded(
-                        child: Container(
-                          height: Responsive.isMobile(context) ? 200 : 230,
-                          margin: const EdgeInsets.fromLTRB(30, 30, 15, 0),
-                          padding: Responsive.isMobile(context)
-                              ? const EdgeInsets.all(15)
-                              : const EdgeInsets.all(30),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.2),
-                                spreadRadius: 3,
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const MyCourseSolvepadPage(),
-                                ),
-                              );
-                            },
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: SizedBox(
-                                    child: Image.asset(
-                                      "assets/images/menu_my_course.png",
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              "My SOLVE course",
-                                              style: TextStyle(
-                                                color: appTextPrimaryColor,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize:
-                                                    Responsive.isMobile(context)
-                                                        ? 14
-                                                        : 16,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              "คอร์สที่คุณซื้อจาก Marketplace",
-                                              style: TextStyle(
-                                                color: appTextSecondaryColor,
-                                                fontSize:
-                                                    Responsive.isMobile(context)
-                                                        ? 13
-                                                        : 14,
-                                              ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      mobileCard(
+                        'assets/images/menu_my_course.png',
+                        'My SOLVE course',
+                        'คอร์สที่คุณซื้อจาก Marketplace',
+                        'left',
+                        const MyCourseSolvepadPage(),
                       ),
-                      Expanded(
-                        child: Container(
-                          height: Responsive.isMobile(context) ? 200 : 230,
-                          margin: const EdgeInsets.fromLTRB(15, 30, 30, 0),
-                          padding: Responsive.isMobile(context)
-                              ? const EdgeInsets.all(15)
-                              : const EdgeInsets.all(30),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.2),
-                                spreadRadius: 3,
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: InkWell(
-                            onTap: () {
-                              var route = MaterialPageRoute(
-                                  builder: (context) =>
-                                      const MyCourseLivePage());
-                              Navigator.push(context, route);
-                            },
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: SizedBox(
-                                    child: Image.asset(
-                                      "assets/images/menu_create_sheet.png",
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              "My SOLVE live",
-                                              style: TextStyle(
-                                                color: appTextPrimaryColor,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize:
-                                                    Responsive.isMobile(context)
-                                                        ? 14
-                                                        : 16,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              "คอร์สเรียนสดของคุณ",
-                                              style: TextStyle(
-                                                color: appTextSecondaryColor,
-                                                fontSize:
-                                                    Responsive.isMobile(context)
-                                                        ? 13
-                                                        : 14,
-                                              ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      mobileCard(
+                        'assets/images/menu_create_sheet.png',
+                        'My SOLVE live',
+                        'คอร์สเรียนสดของคุณ',
+                        'mid',
+                        const MyCourseLivePage(),
+                      ),
+                      mobileCard(
+                        'assets/images/menu_qa.png',
+                        'Marketplace',
+                        'ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี Solvepad',
+                        'right',
+                        const MyCourseSolvepadPage(),
                       ),
                     ],
                   ),
-                if (Responsive.isMobile(context))
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: Responsive.isMobile(context) ? 200 : 230,
-                          margin: const EdgeInsets.fromLTRB(30, 30, 15, 0),
-                          padding: Responsive.isMobile(context)
-                              ? const EdgeInsets.all(15)
-                              : const EdgeInsets.all(30),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.2),
-                                spreadRadius: 3,
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const MarketHomePage(),
-                                ),
-                              );
-                            },
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: SizedBox(
-                                    child: Image.asset(
-                                      "assets/images/menu_qa.png",
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              "Marketplace",
-                                              style: TextStyle(
-                                                color: appTextPrimaryColor,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize:
-                                                    Responsive.isMobile(context)
-                                                        ? 14
-                                                        : 16,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              "ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี Solvepad",
-                                              style: TextStyle(
-                                                color: appTextSecondaryColor,
-                                                fontSize:
-                                                    Responsive.isMobile(context)
-                                                        ? 13
-                                                        : 14,
-                                              ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                const SizedBox(height: 70),
+                ],
+                if (!Responsive.isMobileLandscape(context) &&
+                    !Responsive.isDesktop(context))
+                  const SizedBox(height: 70),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget mobileCard(
+      String img, String title, String desc, String position, Widget link) {
+    EdgeInsets cardPosition;
+    if (position == 'left') {
+      cardPosition = const EdgeInsets.fromLTRB(30, 25, 15, 0);
+    } else if (position == 'right') {
+      cardPosition = const EdgeInsets.fromLTRB(15, 25, 30, 0);
+    } else if (position == 'mid') {
+      cardPosition = const EdgeInsets.fromLTRB(15, 25, 15, 0);
+    } else if (position == 'tight') {
+      cardPosition = const EdgeInsets.fromLTRB(7, 5, 7, 0);
+    } else if (position == 'tightLeft') {
+      cardPosition = const EdgeInsets.fromLTRB(14, 5, 7, 0);
+    } else if (position == 'tightRight') {
+      cardPosition = const EdgeInsets.fromLTRB(7, 5, 14, 0);
+    } else {
+      cardPosition = const EdgeInsets.fromLTRB(15, 25, 15, 0);
+    }
+    return Expanded(
+      child: Container(
+        height: Responsive.isTablet(context) ? 230 : 185,
+        margin: cardPosition,
+        padding: Responsive.isTablet(context)
+            ? const EdgeInsets.all(30)
+            : const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 3,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => link,
+              ),
+            );
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 60,
+                child: Image.asset(
+                  img,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              color: appTextPrimaryColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: Responsive.isMobile(context) ? 14 : 16,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            desc,
+                            style: TextStyle(
+                              color: appTextSecondaryColor,
+                              fontSize: Responsive.isMobile(context) ? 13 : 16,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

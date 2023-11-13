@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:solve_student/constants/theme.dart';
 import 'package:solve_student/feature/manage_course/pages/manage_live_course_page.dart';
-import 'package:solve_student/feature/manage_course/pages/manage_market_course_page.dart';
-import 'package:solve_student/widgets/sizer.dart';
+
+import '../../live_classroom/utils/responsive.dart';
 
 class ManageCoursePage extends StatefulWidget {
   const ManageCoursePage({super.key});
@@ -34,127 +34,112 @@ class _ManageCoursePageState extends State<ManageCoursePage>
     auth = Provider.of<AuthProvider>(context);
     return SafeArea(
       child: Scaffold(
-        // TODO: remove this just for mobile
-        // appBar: AppBar(
-        //   centerTitle: true,
-        //   elevation: 0,
-        //   backgroundColor: Colors.white,
-        //   title: Text(
-        //     'คำสั่งซื้อ',
-        //     style: const TextStyle(
-        //       color: Colors.black,
-        //     ),
-        //   ),
-        // ),
         backgroundColor: Colors.white,
         body: DefaultTabController(
           length: _tabController!.length,
           child: Builder(builder: (context) {
             return Column(
               children: <Widget>[
-                const SizedBox(height: 20),
-                SizedBox(
-                    width: 110,
-                    height: 50,
-                    child: Image.asset('assets/images/big_solve_logo.png')),
-                const Text(
-                  "เทคโนโลยีใหม่ในการเรียนออนไลน์",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                if (Responsive.isMobile(context) ||
+                    Responsive.isTablet(context)) ...[
+                  const SizedBox(height: 20),
+                  SizedBox(
+                      width: 110,
+                      height: 50,
+                      child: Image.asset('assets/images/big_solve_logo.png')),
+                  const Text(
+                    "เทคโนโลยีใหม่ในการสอนออนไลน์",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const Text(
-                  "เปลี่ยนวิธีการเรียนออนไลน์แบบเดิม ด้วยการเรียนผ่านแอป SOLVE\n ให้นคุณสามารถเรียนได้จากทุกที่ผ่านมือถือ หรือ Tablet",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: appTextSecondaryColor,
+                  const Text(
+                    "เปลี่ยนวิธีการสอนออนไลน์แบบเดิม ด้วยการสอนผ่านแอป SOLVE\nให้นักเรียนของคุณสามารถเรียนได้จากทุกที่ผ่านมือถือ หรือ Tablet",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: appTextSecondaryColor,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
+                  const SizedBox(height: 10),
+                ],
+                if (Responsive.isDesktop(context)) ...[
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 32.0),
+                        child: SizedBox(
+                            width: 110,
+                            height: 50,
+                            child: Image.asset(
+                                'assets/images/big_solve_logo.png')),
+                      ),
+                      const Column(
+                        children: [
+                          Text(
+                            "เทคโนโลยีใหม่ในการสอนออนไลน์",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            "เปลี่ยนวิธีการสอนออนไลน์แบบเดิม ด้วยการสอนผ่านแอป SOLVE\nให้นักเรียนของคุณสามารถเรียนได้จากทุกที่ผ่านมือถือ หรือ Tablet",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: appTextSecondaryColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 10),
+                        ],
+                      ),
+                    ],
+                  )
+                ],
+                if (Responsive.isMobileLandscape(context)) ...[
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 15.0),
+                        child: SizedBox(
+                            width: 110,
+                            height: 50,
+                            child: Image.asset(
+                                'assets/images/big_solve_logo.png')),
+                      ),
+                      const Column(
+                        children: [
+                          Text(
+                            "เทคโนโลยีใหม่ในการสอนออนไลน์",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            "เปลี่ยนวิธีการสอนออนไลน์แบบเดิม ด้วยการสอนผ่านแอป SOLVE\nให้นักเรียนของคุณสามารถเรียนได้จากทุกที่ผ่านมือถือ หรือ Tablet",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: appTextSecondaryColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 10),
-                // TODO: remove this just for mobile
-                // Container(
-                //   constraints: const BoxConstraints.expand(height: 80),
-                //   decoration: const BoxDecoration(
-                //     color: Colors.transparent,
-                //   ),
-                //   child: Row(
-                //     crossAxisAlignment: CrossAxisAlignment.center,
-                //     children: [
-                //       Expanded(
-                //         child: Container(
-                //           color: Colors.white,
-                //           child: TabBar(
-                //             controller: _tabController,
-                //             labelPadding: const EdgeInsets.all(4),
-                //             labelColor: primaryColor,
-                //             unselectedLabelColor: Colors.black,
-                //             indicatorColor: primaryColor,
-                //             onTap: (value) {},
-                //             tabs: [
-                //               // Container(
-                //               //   alignment: Alignment.center,
-                //               //   constraints: const BoxConstraints(
-                //               //       minWidth: 100, minHeight: 150),
-                //               //   decoration: BoxDecoration(
-                //               //     borderRadius: BorderRadius.circular(8),
-                //               //   ),
-                //               //   child: const Column(
-                //               //     mainAxisAlignment: MainAxisAlignment.center,
-                //               //     children: [
-                //               //       Text(
-                //               //         "คอร์สบันทึกย้อนหลัง",
-                //               //         textAlign: TextAlign.center,
-                //               //         maxLines: 1,
-                //               //         overflow: TextOverflow.ellipsis,
-                //               //       ),
-                //               //       Text(
-                //               //         "(SLOVE MARKETPLACE)",
-                //               //         textAlign: TextAlign.center,
-                //               //         maxLines: 1,
-                //               //         overflow: TextOverflow.ellipsis,
-                //               //       ),
-                //               //     ],
-                //               //   ),
-                //               // ),
-                //               Container(
-                //                 alignment: Alignment.center,
-                //                 constraints: const BoxConstraints(
-                //                     minWidth: 100, minHeight: 150),
-                //                 decoration: BoxDecoration(
-                //                   borderRadius: BorderRadius.circular(8),
-                //                 ),
-                //                 child: const Column(
-                //                   mainAxisAlignment: MainAxisAlignment.center,
-                //                   children: [
-                //                     Text(
-                //                       "คอร์สสอนสด",
-                //                       textAlign: TextAlign.center,
-                //                       maxLines: 1,
-                //                       overflow: TextOverflow.ellipsis,
-                //                     ),
-                //                     Text(
-                //                       "(SLOVE LIVE)",
-                //                       textAlign: TextAlign.center,
-                //                       maxLines: 1,
-                //                       overflow: TextOverflow.ellipsis,
-                //                     ),
-                //                   ],
-                //                 ),
-                //               ),
-                //             ],
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
                 Expanded(
                   child: TabBarView(
                     controller: _tabController,
                     children: const [
-                      // ManageMarketCoursePage(),
                       ManageLiveCoursePage(),
                     ],
                   ),
