@@ -282,17 +282,16 @@ class CustomStyles {
     fontFamily: CustomFontFamily.NotoSansBold,
     fontSize: _util.addMinusFontSize(14),
   );
+  static TextStyle bold12Gray878787 = TextStyle(
+    color: CustomColors.gray878787,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: _util.addMinusFontSize(12),
+  );
 
   static TextStyle bold11Gray878787 = const TextStyle(
     color: CustomColors.gray878787,
     fontFamily: CustomFontFamily.NotoSansBold,
     fontSize: 11,
-  );
-
-  static TextStyle bold12redB71C1C = const TextStyle(
-    color: CustomColors.redB71C1C,
-    fontFamily: CustomFontFamily.NotoSansBold,
-    fontSize: 12,
   );
 
   static TextStyle bold14RedF44336 = TextStyle(
@@ -317,6 +316,11 @@ class CustomStyles {
     fontFamily: CustomFontFamily.NotoSansBold,
     fontSize: _util.addMinusFontSize(14),
   );
+  static TextStyle bold12bluePrimary = TextStyle(
+    color: CustomColors.blue0D47A1,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: _util.addMinusFontSize(12),
+  );
   static TextStyle bold14bluePrimaryLine = TextStyle(
     color: CustomColors.blue0D47A1,
     fontFamily: CustomFontFamily.NotoSansBold,
@@ -340,11 +344,21 @@ class CustomStyles {
     fontFamily: CustomFontFamily.NotoSansBold,
     fontSize: _util.addMinusFontSize(14),
   );
+  static TextStyle bold12redB71C1C = TextStyle(
+    color: CustomColors.redB71C1C,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: _util.addMinusFontSize(12),
+  );
 
   static TextStyle bold14green4CAF50 = TextStyle(
     color: CustomColors.green4CAF50,
     fontFamily: CustomFontFamily.NotoSansBold,
     fontSize: _util.addMinusFontSize(14),
+  );
+  static TextStyle bold12green4CAF50 = TextStyle(
+    color: CustomColors.green4CAF50,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: _util.addMinusFontSize(12),
   );
   static TextStyle bold14Black363636Overflow = TextStyle(
     color: CustomColors.black363636,

@@ -16,6 +16,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../authentication/service/auth_provider.dart';
 import '../../../nav.dart';
+import '../../calendar/constants/custom_fontfamily.dart';
 import '../../calendar/constants/custom_styles.dart';
 import '../../calendar/controller/create_course_live_controller.dart';
 import '../../calendar/widgets/sizebox.dart';
@@ -1818,7 +1819,11 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 InkWell(
                   onTap: () {
                     showCloseDialog(context, () async {
-                      if (!widget.isMock) if (isAudioMode) {
+                      if (!widget.isMock) {
+                        Navigator.push(
+                            context, MaterialPageRoute(builder: (_) => Nav()));
+                      }
+                      if (isAudioMode) {
                         meeting.leave();
                       }
                       isStudentLeave = true;
@@ -2387,6 +2392,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                           ),
                         )
                       : const Material(),
+                  isAudioMode ? S.w(defaultPadding) : const SizedBox(),
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(
@@ -2405,11 +2411,17 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Text("On Site",
-                            textAlign: TextAlign.center,
-                            style: testBoolean
-                                ? CustomStyles.bold14Gray878787
-                                : CustomStyles.bold14redB71C1C),
+                        // Text(
+                        //   "On Site",
+                        //   textAlign: TextAlign.center,
+                        //   style: TextStyle(
+                        //     color: testBoolean
+                        //         ? CustomColors.gray878787
+                        //         : CustomColors.redB71C1C,
+                        //     fontSize: 12,
+                        //     fontFamily: CustomFontFamily.NotoSansBold,
+                        //   ),
+                        // ),
                         Transform.scale(
                           scale: 0.7,
                           child: CupertinoSwitch(
@@ -2423,19 +2435,18 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                             },
                           ),
                         ),
-                        Text("Online",
+                        Text(testBoolean ? 'Online ' : 'On site',
                             textAlign: TextAlign.center,
                             style: testBoolean
-                                ? CustomStyles.bold14green4CAF50
-                                : CustomStyles.bold14Gray878787),
+                                ? CustomStyles.bold12green4CAF50
+                                : CustomStyles.bold14RedB71C1C),
                         S.w(4)
                       ],
                     ),
                   ),
-                  S.w(defaultPadding),
-                  isAudioMode ? S.w(defaultPadding) : const SizedBox(),
+                  S.w(10),
                   const DividerVer(),
-                  S.w(defaultPadding),
+                  S.w(10),
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(
@@ -2448,8 +2459,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                       borderRadius: BorderRadius.circular(100),
                       color: CustomColors.whitePrimary,
                     ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -2466,7 +2476,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                                   isAllowSharingScreen = !isAllowSharingScreen;
                                 });
                                 if (isAllowSharingScreen) {
-                                  // sendMessage('TEST_MESSAGE');
                                   setState(() {
                                     tabFollowing = false;
                                     tabFreestyle = true;
@@ -2485,8 +2494,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                         Text("อนุญาตแชร์จอ",
                             textAlign: TextAlign.center,
                             style: isHostRequestShareScreen
-                                ? CustomStyles.bold14bluePrimary
-                                : CustomStyles.reg14Gray878787),
+                                ? CustomStyles.bold12bluePrimary
+                                : CustomStyles.reg12Gray878787),
                         S.w(4)
                       ],
                     ),
