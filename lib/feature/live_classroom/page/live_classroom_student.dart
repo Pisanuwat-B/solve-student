@@ -219,6 +219,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   bool isCourseLoaded = false;
   bool showHeader = false;
   bool isStudentLeave = false;
+  bool testBoolean = false;
 
   @override
   void initState() {
@@ -841,13 +842,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     _meeting.on(
       Events.roomJoined,
       () {
-        if(courseType == 'live') {
+        if (courseType == 'live') {
           setState(() {
             meeting = _meeting;
             _joined = true;
             initWss();
           });
-        }else{
+        } else {
           setState(() {
             meeting = _meeting;
           });
@@ -2386,6 +2387,52 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                           ),
                         )
                       : const Material(),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: testBoolean
+                            ? CustomColors.greenPrimary
+                            : CustomColors.redB71C1C,
+                        style: BorderStyle.solid,
+                        width: 2.0,
+                      ),
+                      borderRadius: BorderRadius.circular(100),
+                      color: CustomColors.whitePrimary,
+                    ),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text("On Site",
+                            textAlign: TextAlign.center,
+                            style: testBoolean
+                                ? CustomStyles.bold14Gray878787
+                                : CustomStyles.bold14redB71C1C),
+                        Transform.scale(
+                          scale: 0.7,
+                          child: CupertinoSwitch(
+                            trackColor: CustomColors.redB71C1C,
+                            activeColor: CustomColors.greenPrimary,
+                            value: testBoolean,
+                            onChanged: (bool value) {
+                              setState(() {
+                                testBoolean = !testBoolean;
+                              });
+                            },
+                          ),
+                        ),
+                        Text("Online",
+                            textAlign: TextAlign.center,
+                            style: testBoolean
+                                ? CustomStyles.bold14green4CAF50
+                                : CustomStyles.bold14Gray878787),
+                        S.w(4)
+                      ],
+                    ),
+                  ),
+                  S.w(defaultPadding),
                   isAudioMode ? S.w(defaultPadding) : const SizedBox(),
                   const DividerVer(),
                   S.w(defaultPadding),
@@ -2444,7 +2491,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                       ],
                     ),
                   ),
-                  S.w(32),
                 ],
               ),
             ),
@@ -2639,6 +2685,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                     ],
                   ),
                 ),
+                audioModeIcon(),
               ],
             ),
           ),
@@ -2843,10 +2890,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     });
   }
 
-  void updateAudioCost(){
+  void updateAudioCost() {
     var now = DateTime.now();
     int duration = 0;
-    duration = ((now.millisecondsSinceEpoch - _startAudioTime.millisecondsSinceEpoch) / 60000).ceil();
+    duration =
+        ((now.millisecondsSinceEpoch - _startAudioTime.millisecondsSinceEpoch) /
+                60000)
+            .ceil();
     setState(() {
       audioCost += duration;
     });
@@ -2856,10 +2906,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   Future<void> calculateTime() async {
     var now = DateTime.now();
     int? duration;
-    duration = ((now.millisecondsSinceEpoch - _joinedTime.millisecondsSinceEpoch) / 60000).ceil();
-      if (courseType == 'hybrid') {
-        await updateBalanceAndLiveDuration(duration, audioCost);
-      }
+    duration =
+        ((now.millisecondsSinceEpoch - _joinedTime.millisecondsSinceEpoch) /
+                60000)
+            .ceil();
+    if (courseType == 'hybrid') {
+      await updateBalanceAndLiveDuration(duration, audioCost);
+    }
   }
 
   Future<void> updateBalanceAndLiveDuration(int duration, int audioCost) async {
@@ -3281,7 +3334,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
             InkWell(
               onTap: () {
                 showCloseDialog(context, () async {
-                  if (!widget.isMock) if (isAudioMode) {
+                  if (!widget.isMock) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => Nav()),
+                    );
+                  }
+                  if (isAudioMode) {
                     meeting.leave();
                   }
                   isStudentLeave = true;
@@ -3289,7 +3348,9 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                   await calculateTime();
                   if (!mounted) return;
                   Navigator.push(
-                      context, MaterialPageRoute(builder: (_) => Nav()));
+                    context,
+                    MaterialPageRoute(builder: (_) => Nav()),
+                  );
                 });
               },
               child: Image.asset(
