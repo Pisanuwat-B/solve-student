@@ -58,8 +58,6 @@ class StudentLiveClassroom extends StatefulWidget {
 
 class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   // Conference
-  bool isAudioMode = true;
-  bool isHostAudioMode = false;
   bool isRecordingOn = false;
   bool showChatSnackbar = false;
   String recordingState = "RECORDING_STOPPED";
@@ -216,11 +214,10 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   var courseController = CourseLiveController();
   late String courseName;
   late String courseType;
-  late String meetingId;
   bool isCourseLoaded = false;
   bool showHeader = false;
   bool isStudentLeave = false;
-  bool testBoolean = false;
+  bool isAudioMode = true;
 
   @override
   void initState() {
@@ -356,7 +353,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
         roomId: widget.meetingId,
         token: widget.token,
         displayName: widget.displayName,
-        micEnabled: widget.micEnabled,
+        micEnabled: courseType == 'live' ? widget.micEnabled : false,
         camEnabled: false,
         maxResolution: 'hd',
         multiStream: true,
@@ -394,7 +391,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
           if (data.startsWith('RequestScreenShare') ||
               data.startsWith('FocusStudentScreen') ||
               data.startsWith('HostLeaveScreen') ||
-              data.startsWith('AudioMode') ||
               data.startsWith('EndMeeting')) {
             for (var entry in handlers.entries) {
               if (data.startsWith(entry.key)) {
@@ -443,7 +439,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       'HostLeaveScreen': handleMessageHostLeaveScreen,
       'EndMeeting': handleMessageEndMeeting,
       'SetSolvepad': handleMessageSetSolvepad,
-      'AudioMode': handleMessageAudioMode,
     };
   }
 
@@ -682,22 +677,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
     });
   }
 
-  void handleMessageAudioMode(String data) {
-    var parts = data.split(':');
-    if (parts.last == 'OFF') {
-      setState(() {
-        isHostAudioMode = false;
-        isAudioMode = false;
-      });
-      updateAudioCost();
-    } else {
-      setState(() {
-        meetingId = parts.last;
-        isHostAudioMode = true;
-      });
-    }
-  }
-
   Offset convertToOffset(String offsetString) {
     final matched = RegExp(r'Offset\((.*), (.*)\)').firstMatch(offsetString);
     final dx = double.tryParse(matched!.group(1)!);
@@ -762,23 +741,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       meeting.leave();
       updateAudioCost();
     } else {
-      Room room = VideoSDK.createRoom(
-          roomId: meetingId,
-          token: widget.token,
-          displayName: widget.displayName,
-          micEnabled: false,
-          camEnabled: false,
-          maxResolution: 'hd',
-          multiStream: true,
-          defaultCameraIndex: 1,
-          notification: const NotificationInfo(
-            title: "Video SDK",
-            message: "Video SDK is sharing screen in the meeting",
-            icon: "notification_share", // drawable icon name
-          ),
-          mode: Mode.CONFERENCE);
-      registerMeetingEvents(room);
-      room.join();
+      initConference();
       setState(() {
         _startAudioTime = DateTime.now();
       });
@@ -2157,12 +2120,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                 ),
                 S.w(8),
                 statusTouchModeIcon(),
-                courseType == 'live' && !isHostAudioMode
-                    ? const SizedBox()
-                    : S.w(8),
-                courseType == 'live' && !isHostAudioMode
-                    ? const SizedBox()
-                    : audioModeIcon(),
               ],
             ),
           ),
@@ -2393,11 +2350,12 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                         )
                       : const Material(),
                   isAudioMode ? S.w(defaultPadding) : const SizedBox(),
-                  Container(
+                  courseType == 'live' ? Container() : Container(
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: testBoolean
+                        color: isAudioMode
                             ? CustomColors.greenPrimary
+
                             : CustomColors.redB71C1C,
                         style: BorderStyle.solid,
                         width: 2.0,
@@ -2415,7 +2373,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                         //   "On Site",
                         //   textAlign: TextAlign.center,
                         //   style: TextStyle(
-                        //     color: testBoolean
+                        //     color: isAudioMode
                         //         ? CustomColors.gray878787
                         //         : CustomColors.redB71C1C,
                         //     fontSize: 12,
@@ -2427,24 +2385,22 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                           child: CupertinoSwitch(
                             trackColor: CustomColors.redB71C1C,
                             activeColor: CustomColors.greenPrimary,
-                            value: testBoolean,
+                            value: isAudioMode,
                             onChanged: (bool value) {
-                              setState(() {
-                                testBoolean = !testBoolean;
-                              });
+                              switchAudioMode();
                             },
                           ),
                         ),
-                        Text(testBoolean ? 'Online ' : 'On site',
+                        Text(isAudioMode ? 'Online ' : 'On site',
                             textAlign: TextAlign.center,
-                            style: testBoolean
+                            style: isAudioMode
                                 ? CustomStyles.bold12green4CAF50
                                 : CustomStyles.bold14RedB71C1C),
                         S.w(4)
                       ],
                     ),
                   ),
-                  S.w(10),
+                  courseType == 'live' ? const SizedBox() : S.w(10),
                   const DividerVer(),
                   S.w(10),
                   Container(
@@ -2694,7 +2650,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                     ],
                   ),
                 ),
-                audioModeIcon(),
               ],
             ),
           ),
@@ -2817,6 +2772,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               ],
             ),
           ),
+          courseType == 'live' ? Container() :
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -2826,17 +2782,15 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                   child: CupertinoSwitch(
                     trackColor: CustomColors.redB71C1C,
                     activeColor: CustomColors.greenPrimary,
-                    value: testBoolean,
+                    value: isAudioMode,
                     onChanged: (bool value) {
-                      setState(() {
-                        testBoolean = !testBoolean;
-                      });
+                      switchAudioMode();
                     },
                   ),
                 ),
-                Text(testBoolean ? 'Online ' : 'On site',
+                Text(isAudioMode ? 'Online ' : 'On site',
                     textAlign: TextAlign.center,
-                    style: testBoolean
+                    style: isAudioMode
                         ? CustomStyles.bold14greenPrimary
                         : CustomStyles.bold14redB71C1C),
                 S.w(defaultPadding),
@@ -2936,13 +2890,13 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   }
 
   Future<void> calculateTime() async {
+    if (courseType == 'hybrid') {
     var now = DateTime.now();
     int? duration;
     duration =
         ((now.millisecondsSinceEpoch - _joinedTime.millisecondsSinceEpoch) /
                 60000)
             .ceil();
-    if (courseType == 'hybrid') {
       await updateBalanceAndLiveDuration(duration, audioCost);
     }
   }
@@ -3543,16 +3497,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                     ),
                   )
                 : const SizedBox(),
-            courseType == 'live'
-                ? const SizedBox()
-                : isHostAudioMode
-                    ? S.w(8)
-                    : const SizedBox(),
-            courseType == 'live'
-                ? const SizedBox()
-                : isHostAudioMode
-                    ? audioModeIcon()
-                    : const SizedBox(),
 
             /// TODO: Reconsider fullscreen option
             // InkWell(
@@ -4133,21 +4077,6 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
         _isStylusActive
             ? 'assets/images/stylus-icon.png'
             : 'assets/images/touch-icon.png',
-        height: 44,
-        width: 44,
-      ),
-    );
-  }
-
-  Widget audioModeIcon() {
-    return InkWell(
-      onTap: () {
-        switchAudioMode();
-      },
-      child: Image.asset(
-        isAudioMode
-            ? 'assets/images/power-button-icon.png'
-            : 'assets/images/video-conference-icon.png',
         height: 44,
         width: 44,
       ),

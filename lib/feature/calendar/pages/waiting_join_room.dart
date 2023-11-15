@@ -126,25 +126,7 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
       showSnackBarMessage(message: "Invalid Meeting ID", context: context);
       return;
     }
-    if(meetingId == 'hybrid'){
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              StudentLiveClassroom(
-                token: _token,
-                userId: authProvider.uid!,
-                courseId: widget.course.courseId!,
-                startTime: widget.course.start!.millisecondsSinceEpoch,
-                meetingId: meetingId,
-                displayName: displayName,
-                isHost: false,
-                micEnabled: isMicOn,
-                camEnabled: false,
-              ),
-        ),
-      );
-    }else{
+    if(widget.course.courseType == 'live'){
       var validMeeting = await validateMeeting(_token, meetingId);
       if (validMeeting) {
         if (mounted) {
@@ -172,6 +154,24 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
           showSnackBarMessage(message: "Invalid Meeting ID", context: context);
         }
       }
+    }else{
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              StudentLiveClassroom(
+                token: _token,
+                userId: authProvider.uid!,
+                courseId: widget.course.courseId!,
+                startTime: widget.course.start!.millisecondsSinceEpoch,
+                meetingId: meetingId,
+                displayName: displayName,
+                isHost: false,
+                micEnabled: isMicOn,
+                camEnabled: false,
+              ),
+        ),
+      );
     }
   }
 
