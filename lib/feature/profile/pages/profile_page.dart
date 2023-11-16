@@ -12,6 +12,7 @@ import 'package:solve_student/widgets/sizer.dart';
 
 import '../../calendar/widgets/sizebox.dart';
 import '../../live_classroom/page/live_classroom_student.dart';
+import '../../question/pages/question_demo_page.dart';
 import '../components/webview.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -315,6 +316,17 @@ class _ProfilePageState extends State<ProfilePage> {
                         //   },
                         //   child: const Text('TEST'),
                         // ),
+                        // ElevatedButton(
+                        //     onPressed: () {
+                        //       Navigator.push(
+                        //         context,
+                        //         MaterialPageRoute(
+                        //           builder: (context) =>
+                        //               const QuestionDemoPage(),
+                        //         ),
+                        //       );
+                        //     },
+                        //     child: const Text('TEST')),
                         TextButton(
                           onPressed: () async {
                             showDialog(
@@ -350,7 +362,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         S.h(10),
                         const Text(
-                          'SOLVE v 0.3.04',
+                          'SOLVE v 0.3.1',
                           style: TextStyle(
                             color: greyColor,
                           ),

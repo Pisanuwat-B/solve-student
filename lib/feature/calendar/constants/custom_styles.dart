@@ -705,6 +705,11 @@ class CustomStyles {
     fontFamily: CustomFontFamily.NotoSansBold,
     fontSize: 16,
   );
+  static TextStyle bold14whitePrimary = const TextStyle(
+    color: CustomColors.whitePrimary,
+    fontFamily: CustomFontFamily.NotoSansBold,
+    fontSize: 14,
+  );
 
   static TextStyle med11white = const TextStyle(
     color: CustomColors.whitePrimary,

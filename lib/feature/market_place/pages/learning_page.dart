@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
+import 'package:speech_balloon/speech_balloon.dart';
 
 import '../../../authentication/service/auth_provider.dart';
 import '../../../firebase/database.dart';
@@ -26,6 +27,7 @@ import '../../live_classroom/components/close_dialog.dart';
 import '../../live_classroom/components/divider.dart';
 import '../../live_classroom/components/divider_vertical.dart';
 import '../../live_classroom/components/room_loading_screen.dart';
+import '../../live_classroom/page/ask_tutor_live.dart';
 import '../../live_classroom/solvepad/solve_watch.dart';
 import '../../live_classroom/solvepad/solvepad_drawer.dart';
 import '../../live_classroom/solvepad/solvepad_stroke_model.dart';
@@ -61,6 +63,7 @@ class _LearningPageState extends State<LearningPage> {
   int _selectedIndexLines = 0;
   late bool isSelected;
   bool isChecked = false;
+  bool showSpeechBalloon = true;
 
   final List _listLines = [
     {
@@ -868,131 +871,177 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   Widget _buildTablet() {
-    return SafeArea(
-      child: Stack(
-        children: [
-          Column(
-            children: [
-              headerLayer2(),
-              const DividerLine(),
+    return Scaffold(
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                headerLayer2(),
+                const DividerLine(),
 
-              //Body Layout
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    tabFreestyle ? tools() : toolsDisable(),
-                    solvePad(),
-                  ],
+                //Body Layout
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      tabFreestyle ? tools() : toolsDisable(),
+                      solvePad(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              left: 140,
+              top: 160,
+              child: slider('tablet'),
+            ),
+
+            ///tools widget
+            if (openColors)
+              Positioned(
+                left: 150,
+                bottom: 50,
+                child: Container(
+                  width: 55,
+                  height: 260,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: CustomColors.grayCFCFCF,
+                      style: BorderStyle.solid,
+                      width: 1.0,
+                    ),
+                    borderRadius: BorderRadius.circular(64),
+                    color: CustomColors.whitePrimary,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: _listColors.length,
+                          itemBuilder: (context, index) {
+                            return Column(
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedIndexColors = index;
+                                      openColors = !openColors;
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(3.0),
+                                    child: Image.asset(
+                                      _listColors[index]['color'],
+                                    ),
+                                  ),
+                                ),
+                                S.h(4)
+                              ],
+                            );
+                          })
+                    ],
+                  ),
+                ),
+              ),
+            if (openLines)
+              Positioned(
+                left: 150,
+                bottom: 50,
+                child: Container(
+                  width: 55,
+                  height: 220,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: CustomColors.grayCFCFCF,
+                      style: BorderStyle.solid,
+                      width: 1.0,
+                    ),
+                    borderRadius: BorderRadius.circular(64),
+                    color: CustomColors.whitePrimary,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: _listLines.length,
+                          itemBuilder: (context, index) {
+                            return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedIndexLines = index;
+                                  openLines = !openLines;
+                                });
+                              },
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(3.0),
+                                    child: Image.asset(
+                                      _selectedIndexLines == index
+                                          ? _listLines[index]['image_active']
+                                          : _listLines[index]['image_dis'],
+                                    ),
+                                  ),
+                                  S.h(8)
+                                ],
+                              ),
+                            );
+                          })
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if (showSpeechBalloon)
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      showSpeechBalloon = false;
+                    });
+                  },
+                  child: SpeechBalloon(
+                    width: 130,
+                    height: 30,
+                    borderRadius: 3,
+                    nipLocation: NipLocation.right,
+                    color: CustomColors.greenPrimary,
+                    child: Center(
+                      child: Text(
+                        "กดเพื่อถามคำถาม",
+                        style: CustomStyles.bold14whitePrimary,
+                      ),
+                    ),
+                  ),
+                ),
+              S.w(13),
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    showSpeechBalloon = false;
+                  });
+                  log('tap');
+                },
+                child: Image.asset(
+                  'assets/images/ic_mic_off_float.png',
+                  width: 50,
                 ),
               ),
             ],
-          ),
-          Positioned(
-            left: 140,
-            top: 160,
-            child: slider('tablet'),
-          ),
-
-          ///tools widget
-          if (openColors)
-            Positioned(
-              left: 150,
-              bottom: 50,
-              child: Container(
-                width: 55,
-                height: 260,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: CustomColors.grayCFCFCF,
-                    style: BorderStyle.solid,
-                    width: 1.0,
-                  ),
-                  borderRadius: BorderRadius.circular(64),
-                  color: CustomColors.whitePrimary,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: _listColors.length,
-                        itemBuilder: (context, index) {
-                          return Column(
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    _selectedIndexColors = index;
-                                    openColors = !openColors;
-                                  });
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(3.0),
-                                  child: Image.asset(
-                                    _listColors[index]['color'],
-                                  ),
-                                ),
-                              ),
-                              S.h(4)
-                            ],
-                          );
-                        })
-                  ],
-                ),
-              ),
-            ),
-          if (openLines)
-            Positioned(
-              left: 150,
-              bottom: 50,
-              child: Container(
-                width: 55,
-                height: 220,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: CustomColors.grayCFCFCF,
-                    style: BorderStyle.solid,
-                    width: 1.0,
-                  ),
-                  borderRadius: BorderRadius.circular(64),
-                  color: CustomColors.whitePrimary,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: _listLines.length,
-                        itemBuilder: (context, index) {
-                          return InkWell(
-                            onTap: () {
-                              setState(() {
-                                _selectedIndexLines = index;
-                                openLines = !openLines;
-                              });
-                            },
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(3.0),
-                                  child: Image.asset(
-                                    _selectedIndexLines == index
-                                        ? _listLines[index]['image_active']
-                                        : _listLines[index]['image_dis'],
-                                  ),
-                                ),
-                                S.h(8)
-                              ],
-                            ),
-                          );
-                        })
-                  ],
-                ),
-              ),
-            ),
+          )
         ],
       ),
     );
@@ -1368,6 +1417,11 @@ class _LearningPageState extends State<LearningPage> {
         height: 100,
         child: GestureDetector(
           onTap: () {
+            if (showSpeechBalloon) {
+              setState(() {
+                showSpeechBalloon = false;
+              });
+            }
             if (!isReplaying) {
               if (isReplayEnd) {
                 _initReplay();

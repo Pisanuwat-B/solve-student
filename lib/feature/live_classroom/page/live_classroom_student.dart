@@ -384,8 +384,8 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
       if (!mounted) return;
       setState(() {
         var decodedMessage = json.decode(message);
-        // log('json message');
-        // log(decodedMessage.toString());
+        log('json message');
+        log(decodedMessage.toString());
 
         for (int i = 0; i < decodedMessage.length; i++) {
           var item = decodedMessage[i];
