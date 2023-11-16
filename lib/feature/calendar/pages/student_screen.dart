@@ -15,6 +15,7 @@ import 'package:solve_student/feature/calendar/pages/waiting_join_room.dart';
 import 'package:solve_student/feature/calendar/widgets/alert_overlay.dart';
 import 'package:solve_student/feature/calendar/widgets/format_date.dart';
 import 'package:solve_student/feature/calendar/widgets/sizebox.dart';
+import 'package:solve_student/feature/calendar/widgets/widgets.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../../authentication/service/auth_provider.dart';
@@ -568,7 +569,7 @@ class _StudentScreenState extends State<StudentScreen>
                       style: CustomStyles.med14Black363636Overflow,
                     ),
                     S.h(8),
-                    // _buttonCard(showCourseStudent),
+                    _buttonCard(showCourseStudent),
                   ],
                 ),
               ),
@@ -1785,18 +1786,24 @@ class _StudentScreenState extends State<StudentScreen>
 
   Widget _buttonCard(ShowCourseStudent showCourseStudent) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Image.asset(
-          'assets/images/student_view.png',
-          scale: 4,
+        Row(
+          children: [
+            // Image.asset(
+            //   'assets/images/student_view.png',
+            //   scale: 4,
+            // ),
+            S.w(5),
+            // Text(
+            //   '${showCourseStudent.studentCount ?? 0}',
+            //   style: CustomStyles.med12gray878787,
+            // ),
+          ],
         ),
-        S.w(5),
-        Text(
-          // '${showCourseTutor.subjectId?.length ?? 0}',
-          '${0}',
-          style: CustomStyles.med12gray878787,
-        ),
+        const SizedBox(),
+        // Text('status: publish'),
+        showCourseStudent.courseType == 'live' ? solveIcon() : HybridSolveIcon(),
       ],
     );
   }
