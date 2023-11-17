@@ -11,17 +11,18 @@ import 'package:solve_student/feature/market_place/model/course_live_model.dart'
 
 class MyCourseLiveController extends ChangeNotifier {
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
-  MyCourseLiveController(this.context);
+  MyCourseLiveController(this.context, this.courseType);
   BuildContext context;
   AuthProvider? auth;
+  String courseType;
 
   List<CourseLiveModel> myCourseList = [];
   init() {
     auth = Provider.of<AuthProvider>(context, listen: false);
-    getMyCourseList();
+    getMyCourseList(courseType);
   }
 
-  getMyCourseList() async {
+  getMyCourseList(String courseType) async {
     myCourseList = [];
     await firebaseFirestore.collection('course_live').get().then((data) async {
       if (data.size != 0) {
@@ -39,8 +40,10 @@ class MyCourseLiveController extends ChangeNotifier {
             if (course != null) {
               CourseLiveModel only =
                   CourseLiveModel.fromJson(data.docs[i].data());
-              only.id = data.docs[i].id;
-              myCourseList.add(only);
+              if(only.courseType == courseType) {
+                only.id = data.docs[i].id;
+                myCourseList.add(only);
+              }
             }
           }
         }

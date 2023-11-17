@@ -9,7 +9,8 @@ import 'package:solve_student/feature/my_course/pages/my_course_live_detail_page
 import 'package:solve_student/widgets/sizer.dart';
 
 class MyCourseLivePage extends StatefulWidget {
-  const MyCourseLivePage({super.key});
+  const MyCourseLivePage({super.key, required this.courseType});
+  final String courseType;
 
   @override
   State<MyCourseLivePage> createState() => _MyCourseLivePageState();
@@ -20,7 +21,7 @@ class _MyCourseLivePageState extends State<MyCourseLivePage> {
 
   @override
   void initState() {
-    controller = MyCourseLiveController(context);
+    controller = MyCourseLiveController(context, widget.courseType);
     controller!.init();
     super.initState();
   }
@@ -44,7 +45,7 @@ class _MyCourseLivePageState extends State<MyCourseLivePage> {
               ),
             ),
             title: Text(
-              "คอร์สของ Live ฉัน ",
+              "คอร์ส ${widget.courseType == 'hybrid' ? 'Hybrid' : 'Live'} ของฉัน ",
               style: TextStyle(
                 color: appTextPrimaryColor,
               ),

@@ -39,7 +39,7 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                         'Hybrid Solution',
                         'คอร์สเรียน Hybrid ของคุณ',
                         'left',
-                        const MaintenancePage(),
+                        const MyCourseLivePage(courseType: 'hybrid'),
                       ),
                       mobileCard(
                         'assets/images/graph.png',
@@ -59,7 +59,7 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                         'Hybrid Solution',
                         'คอร์สเรียน Hybrid ของคุณ',
                         'tightLeft',
-                        const MaintenancePage(),
+                        const MyCourseLivePage(courseType: 'hybrid'),
                       ),
                       mobileCard(
                         'assets/images/graph.png',
@@ -80,7 +80,7 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                         'My SOLVE live',
                         'คอร์สเรียนสดของคุณ',
                         'tight',
-                        const MyCourseLivePage(),
+                        const MyCourseLivePage(courseType: 'live'),
                       ),
                       mobileCard(
                         'assets/images/menu_qa.png',
@@ -107,7 +107,7 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                         'My SOLVE live',
                         'คอร์สเรียนสดของคุณ',
                         'right',
-                        const MyCourseLivePage(),
+                        const MyCourseLivePage(courseType: 'live'),
                       ),
                     ],
                   ),
@@ -151,7 +151,7 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                         context,
                         onTap: () async {
                           var route = MaterialPageRoute(
-                              builder: (context) => const MyCourseLivePage());
+                              builder: (context) => const MyCourseLivePage(courseType: 'live'));
                           Navigator.push(context, route);
                         },
                         image: 'assets/images/menu_create_sheet.png',
@@ -188,7 +188,7 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                         'My SOLVE live',
                         'คอร์สเรียนสดของคุณ',
                         'mid',
-                        const MyCourseLivePage(),
+                        const MyCourseLivePage(courseType: 'live'),
                       ),
                       mobileCard(
                         'assets/images/menu_qa.png',
