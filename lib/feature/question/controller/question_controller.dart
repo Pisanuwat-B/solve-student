@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:solve_student/feature/question/models/question_search_model.dart';
 
 class QuestionController extends ChangeNotifier {
-  QuestionController(this.context, {required this.initQuestion});
+  QuestionController(this.context,
+      {required this.initQuestion, this.questionSelected});
   BuildContext context;
   List<QuestionSearchModel> initQuestion;
   List<QuestionSearchModel> questionList = [];

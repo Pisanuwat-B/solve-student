@@ -41,4 +41,9 @@ class QuestionSearchModel {
         "sound_path": soundPath,
         "lecture_path": lecturePath,
       };
+
+  @override
+  String toString() {
+    return 'QuestionSearchModel(id: $id, showTime: $showTime, questionText: $questionText, videoPath: $videoPath, soundPath: $soundPath, lecturePath: $lecturePath)';
+  }
 }

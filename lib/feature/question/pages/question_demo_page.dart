@@ -35,7 +35,7 @@ class _QuestionDemoPageState extends State<QuestionDemoPage> {
     );
   }
 
-  showModal(QuestionSearchModel? data) {
+  showModal(QuestionSearchModel? selectedQuestion) {
     showGeneralDialog(
       context: context,
       barrierLabel: "",
@@ -71,19 +71,10 @@ class _QuestionDemoPageState extends State<QuestionDemoPage> {
           q1,
           q2,
           q3,
-          q2,
-          q3,
-          q2,
-          q3,
-          q2,
-          q3,
-          q2,
-          q3,
-          q2,
-          q3
         ];
         return QuestionPage(
           initQuestion: data,
+          selectedQuestion: selectedQuestion,
         );
       },
       transitionBuilder: (context, anim1, anim2, child) {
@@ -95,9 +86,9 @@ class _QuestionDemoPageState extends State<QuestionDemoPage> {
       },
     ).then((value) async {
       if (value != null) {
-        QuestionSearchModel data = value as QuestionSearchModel;
-        await Future.delayed(Duration(seconds: data.showTime ?? 0));
-        showModal(data);
+        QuestionSearchModel selectedQuestion = value as QuestionSearchModel;
+        await Future.delayed(Duration(seconds: selectedQuestion.showTime ?? 0));
+        showModal(selectedQuestion);
       }
     });
   }

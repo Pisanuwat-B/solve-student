@@ -317,16 +317,16 @@ class _ProfilePageState extends State<ProfilePage> {
                         //   child: const Text('TEST'),
                         // ),
                         // ElevatedButton(
-                        //     onPressed: () {
-                        //       Navigator.push(
-                        //         context,
-                        //         MaterialPageRoute(
-                        //           builder: (context) =>
-                        //               const QuestionDemoPage(),
-                        //         ),
-                        //       );
-                        //     },
-                        //     child: const Text('TEST')),
+                        //   onPressed: () {
+                        //     Navigator.push(
+                        //       context,
+                        //       MaterialPageRoute(
+                        //         builder: (context) => const QuestionDemoPage(),
+                        //       ),
+                        //     );
+                        //   },
+                        //   child: const Text('TEST'),
+                        // ),
                         TextButton(
                           onPressed: () async {
                             showDialog(
@@ -362,7 +362,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         S.h(10),
                         const Text(
-                          'SOLVE v 0.3.12',
+                          'SOLVE v 0.3.3',
                           style: TextStyle(
                             color: greyColor,
                           ),

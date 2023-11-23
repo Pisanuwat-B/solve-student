@@ -5,14 +5,17 @@ enum DrawingMode { drag, pen, eraser, laser, highlighter }
 
 class SolvepadDrawer extends CustomPainter {
   SolvepadDrawer(
-      this.penPoints,
-      this.eraserPoint,
-      this.laserPoints,
-      this.highlighterPoints,
-      this.hostPenPoints,
-      this.hostLaserPoints,
-      this.hostHighlighterPoints,
-      this.hostEraserPoint);
+    this.penPoints,
+    this.eraserPoint,
+    this.laserPoints,
+    this.highlighterPoints,
+    this.hostPenPoints,
+    this.hostLaserPoints,
+    this.hostHighlighterPoints,
+    this.hostEraserPoint, {
+    this.questionHighlighterPoints = const [],
+    this.answerHighlighterPoints = const [],
+  });
 
   List<SolvepadStroke?> penPoints;
   List<SolvepadStroke?> laserPoints;
@@ -22,6 +25,8 @@ class SolvepadDrawer extends CustomPainter {
   List<SolvepadStroke?> hostLaserPoints;
   List<SolvepadStroke?> hostHighlighterPoints;
   Offset hostEraserPoint;
+  List<SolvepadStroke?> questionHighlighterPoints;
+  List<SolvepadStroke?> answerHighlighterPoints;
 
   Paint penPaint = Paint()..strokeCap = StrokeCap.round;
   Paint eraserPaint = Paint()
@@ -64,6 +69,13 @@ class SolvepadDrawer extends CustomPainter {
     ..strokeWidth = 25
     ..strokeCap = StrokeCap.round;
   Paint hostHighlightPaint = Paint()
+    ..strokeCap = StrokeCap.round
+    ..style = PaintingStyle.stroke;
+
+  Paint questionHighlightPaint = Paint()
+    ..strokeCap = StrokeCap.round
+    ..style = PaintingStyle.stroke;
+  Paint answerHighlightPaint = Paint()
     ..strokeCap = StrokeCap.round
     ..style = PaintingStyle.stroke;
 
@@ -169,6 +181,64 @@ class SolvepadDrawer extends CustomPainter {
     }
     canvas.drawCircle(hostEraserPoint, 10, hostEraserPaint);
     canvas.drawCircle(hostEraserPoint, 10, hostBorderPaint);
+
+    Path questionPath = Path();
+    bool questionNewPath = true;
+    int questionNewStrokeIndex = 0;
+    for (int i = 0; i < questionHighlighterPoints.length - 1; i++) {
+      if (questionHighlighterPoints[i]?.offset == null) {
+        canvas.drawPath(questionPath, questionHighlightPaint);
+        questionPath = Path();
+        questionNewPath = true;
+        questionNewStrokeIndex = i + 1;
+        continue;
+      }
+      if (questionNewPath) {
+        questionPath.moveTo(
+            questionHighlighterPoints[questionNewStrokeIndex]!.offset.dx,
+            questionHighlighterPoints[questionNewStrokeIndex]!.offset.dy);
+        questionNewPath = false;
+      } else {
+        questionPath.lineTo(questionHighlighterPoints[i]!.offset.dx,
+            questionHighlighterPoints[i]!.offset.dy);
+      }
+      questionHighlightPaint.color =
+          questionHighlighterPoints[questionNewStrokeIndex]!
+              .color
+              .withOpacity(0.4);
+      questionHighlightPaint.strokeWidth =
+          (questionHighlighterPoints[questionNewStrokeIndex]!.width * 10) + 5;
+    }
+    canvas.drawPath(questionPath, questionHighlightPaint);
+
+    Path answerPath = Path();
+    bool answerNewPath = true;
+    int answerNewStrokeIndex = 0;
+    for (int i = 0; i < questionHighlighterPoints.length - 1; i++) {
+      if (questionHighlighterPoints[i]?.offset == null) {
+        canvas.drawPath(answerPath, answerHighlightPaint);
+        answerPath = Path();
+        answerNewPath = true;
+        answerNewStrokeIndex = i + 1;
+        continue;
+      }
+      if (answerNewPath) {
+        answerPath.moveTo(
+            questionHighlighterPoints[answerNewStrokeIndex]!.offset.dx,
+            questionHighlighterPoints[answerNewStrokeIndex]!.offset.dy);
+        answerNewPath = false;
+      } else {
+        answerPath.lineTo(questionHighlighterPoints[i]!.offset.dx,
+            questionHighlighterPoints[i]!.offset.dy);
+      }
+      answerHighlightPaint.color =
+          questionHighlighterPoints[answerNewStrokeIndex]!
+              .color
+              .withOpacity(0.4);
+      answerHighlightPaint.strokeWidth =
+          (questionHighlighterPoints[answerNewStrokeIndex]!.width * 10) + 5;
+    }
+    canvas.drawPath(answerPath, answerHighlightPaint);
   }
 
   @override

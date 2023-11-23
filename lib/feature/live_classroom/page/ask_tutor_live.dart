@@ -516,11 +516,6 @@ class _AskTutorState extends State<AskTutor>
                 ),
                 onPressed: () {
                   print('recording view');
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //       builder: (context) => const RecordingReview()),
-                  // );
                 },
                 child: Row(
                   children: [

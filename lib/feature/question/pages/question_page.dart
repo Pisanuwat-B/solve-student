@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:solve_student/constants/theme.dart';
@@ -6,8 +8,10 @@ import 'package:solve_student/feature/question/models/question_search_model.dart
 import 'package:solve_student/feature/question/widgets/send_question_widget.dart';
 
 class QuestionPage extends StatefulWidget {
-  const QuestionPage({required this.initQuestion, super.key});
+  const QuestionPage(
+      {required this.initQuestion, super.key, this.selectedQuestion});
   final List<QuestionSearchModel> initQuestion;
+  final QuestionSearchModel? selectedQuestion;
   @override
   State<QuestionPage> createState() => _QuestionPageState();
 }
@@ -17,8 +21,11 @@ class _QuestionPageState extends State<QuestionPage> {
 
   @override
   void initState() {
-    controller = QuestionController(context, initQuestion: widget.initQuestion);
+    controller = QuestionController(context,
+        initQuestion: widget.initQuestion,
+        questionSelected: widget.selectedQuestion);
     controller!.init();
+    log(controller!.questionSelected.toString());
     super.initState();
   }
 
@@ -40,13 +47,14 @@ class _QuestionPageState extends State<QuestionPage> {
                 child: Material(
                   color: Colors.transparent,
                   child: Container(
-                    width: double.infinity,
+                    width: MediaQuery.of(context).size.width * 0.6,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     margin: const EdgeInsets.all(8),
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 30),
                     child: SingleChildScrollView(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -77,65 +85,70 @@ class _QuestionPageState extends State<QuestionPage> {
                           const SizedBox(height: 10),
                           const Text("คำถามของคุณ : "),
                           const SizedBox(height: 10),
-                          SizedBox(
-                            width: 200,
-                            child: TextFormField(
-                              controller: con.searchText,
-                              keyboardType: TextInputType.text,
-                              decoration: InputDecoration(
-                                fillColor: Colors.grey.shade100,
-                                filled: true,
-                                hintText: "คำถามของคุณ",
-                                contentPadding:
-                                    const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(100),
-                                  borderSide: const BorderSide(
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 200,
+                                child: TextFormField(
+                                  controller: con.searchText,
+                                  keyboardType: TextInputType.text,
+                                  decoration: InputDecoration(
+                                    fillColor: Colors.grey.shade100,
+                                    filled: true,
+                                    hintText: "คำถามของคุณ",
+                                    contentPadding:
+                                        const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(100),
+                                      borderSide: const BorderSide(
+                                        color: primaryColor,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(100),
+                                      borderSide: const BorderSide(
+                                        color: Colors.transparent,
+                                        width: 1,
+                                      ),
+                                    ),
+                                  ),
+                                  onFieldSubmitted: (value) {
+                                    con.setSearchText(value);
+                                  },
+                                  onChanged: (value) {
+                                    con.setSearchText(value);
+                                  },
+                                  onEditingComplete: () =>
+                                      FocusScope.of(context).unfocus(),
+                                  validator: (String? value) {
+                                    if (value == null || value.isEmpty) {
+                                      return "กรุณาระบุ";
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              InkWell(
+                                onTap: () {
+                                  print(con.questionSelected);
+                                },
+                                child: Container(
+                                  height: 50,
+                                  width: 50,
+                                  decoration: const BoxDecoration(
                                     color: primaryColor,
-                                    width: 1,
+                                    shape: BoxShape.circle,
                                   ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(100),
-                                  borderSide: const BorderSide(
-                                    color: Colors.transparent,
-                                    width: 1,
+                                  child: const Icon(
+                                    Icons.keyboard_arrow_right,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
-                              onFieldSubmitted: (value) {
-                                con.setSearchText(value);
-                              },
-                              onChanged: (value) {
-                                con.setSearchText(value);
-                              },
-                              onEditingComplete: () =>
-                                  FocusScope.of(context).unfocus(),
-                              validator: (String? value) {
-                                if (value == null || value.isEmpty) {
-                                  return "กรุณาระบุ";
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          InkWell(
-                            onTap: () {
-                              print(con.questionSelected);
-                            },
-                            child: Container(
-                              height: 50,
-                              width: 50,
-                              decoration: const BoxDecoration(
-                                color: primaryColor,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.keyboard_arrow_right,
-                                color: Colors.white,
-                              ),
-                            ),
+                            ],
                           ),
                           const SizedBox(height: 50),
                           // const SendQuestionWidget(),
@@ -230,7 +243,7 @@ class _QuestionPageState extends State<QuestionPage> {
                     ),
                   ],
                 );
-                if (con.questionSelected == only) {
+                if (con.questionSelected?.id == only.id) {
                   textColor = primaryColor;
                   selectedStyle = BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
@@ -285,7 +298,7 @@ class _QuestionPageState extends State<QuestionPage> {
                           child: Row(
                             children: [
                               const Text(
-                                "ดูคำถาม",
+                                "ดูคำตอบ",
                                 style: TextStyle(
                                   color: primaryColor,
                                   fontWeight: FontWeight.bold,
@@ -315,42 +328,6 @@ class _QuestionPageState extends State<QuestionPage> {
                 );
               });
             },
-          ),
-          const SizedBox(height: 20),
-          Center(
-            child: GestureDetector(
-              onTap: () {
-                if (con.questionSelected != null) {
-                  Navigator.pop(
-                    context,
-                    con.questionSelected,
-                  );
-                }
-              },
-              child: Column(
-                children: [
-                  Container(
-                    height: 50,
-                    width: 50,
-                    decoration: const BoxDecoration(
-                      color: primaryColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.keyboard_arrow_right,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    "ดูคำตอบ",
-                    style: TextStyle(
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),
