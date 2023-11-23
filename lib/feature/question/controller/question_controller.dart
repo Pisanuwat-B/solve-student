@@ -2,32 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:solve_student/feature/question/models/question_search_model.dart';
 
 class QuestionController extends ChangeNotifier {
-  QuestionController(this.context,
-      {required this.initQuestion, this.questionSelected});
+  QuestionController(this.context, {this.questionList, this.questionSelected});
   BuildContext context;
-  List<QuestionSearchModel> initQuestion;
-  List<QuestionSearchModel> questionList = [];
+  List<QuestionSearchModel>? questionList;
   QuestionSearchModel? questionSelected;
   TextEditingController searchText = TextEditingController();
+  bool confirmSpeech = false;
   bool notFound = true;
   bool sendQuestion = false;
-  init() {
-    questionList = [];
-    questionList = initQuestion;
-    notFound = true;
-    notifyListeners();
-  }
 
   selectQuestion(QuestionSearchModel data) {
     questionSelected = data;
     notifyListeners();
   }
 
+  setConfirmSpeech() {
+    confirmSpeech = true;
+    // check question from db and NLP
+    // update notFound value
+    notifyListeners();
+  }
+
   setSearchText(String text) {
-    notFound = false;
-    if (searchText.text.isEmpty) {
-      notFound = true;
-    }
+    searchText.text = text;
     notifyListeners();
   }
 

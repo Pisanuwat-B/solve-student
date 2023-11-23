@@ -73,7 +73,8 @@ class _QuestionDemoPageState extends State<QuestionDemoPage> {
           q3,
         ];
         return QuestionPage(
-          initQuestion: data,
+          questionText: 'test',
+          questionList: data,
           selectedQuestion: selectedQuestion,
         );
       },

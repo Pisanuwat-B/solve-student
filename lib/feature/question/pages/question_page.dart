@@ -9,9 +9,13 @@ import 'package:solve_student/feature/question/widgets/send_question_widget.dart
 
 class QuestionPage extends StatefulWidget {
   const QuestionPage(
-      {required this.initQuestion, super.key, this.selectedQuestion});
-  final List<QuestionSearchModel> initQuestion;
+      {required this.questionText,
+      this.questionList,
+      super.key,
+      this.selectedQuestion});
+  final List<QuestionSearchModel>? questionList;
   final QuestionSearchModel? selectedQuestion;
+  final String questionText;
   @override
   State<QuestionPage> createState() => _QuestionPageState();
 }
@@ -22,9 +26,9 @@ class _QuestionPageState extends State<QuestionPage> {
   @override
   void initState() {
     controller = QuestionController(context,
-        initQuestion: widget.initQuestion,
+        questionList: widget.questionList,
         questionSelected: widget.selectedQuestion);
-    controller!.init();
+    controller?.setSearchText(widget.questionText);
     log(controller!.questionSelected.toString());
     super.initState();
   }
@@ -53,8 +57,7 @@ class _QuestionPageState extends State<QuestionPage> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     margin: const EdgeInsets.all(8),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 15, horizontal: 30),
+                    padding: const EdgeInsets.all(30),
                     child: SingleChildScrollView(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -133,7 +136,7 @@ class _QuestionPageState extends State<QuestionPage> {
                               const SizedBox(width: 16),
                               InkWell(
                                 onTap: () {
-                                  print(con.questionSelected);
+                                  con.setConfirmSpeech();
                                 },
                                 child: Container(
                                   height: 50,
@@ -150,12 +153,17 @@ class _QuestionPageState extends State<QuestionPage> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 50),
-                          // const SendQuestionWidget(),
+                          const SizedBox(height: 20),
                           Builder(builder: (context) {
-                            // if (con.notFound) {
-                            //   return notFoundWidget();
-                            // }
+                            if (!con.confirmSpeech) {
+                              return Container();
+                            }
+                            if (con.sendQuestion) {
+                              return const SendQuestionWidget();
+                            }
+                            if (con.notFound) {
+                              return notFoundWidget();
+                            }
                             return textListWidget(con, context);
                           }),
                         ],
@@ -224,11 +232,11 @@ class _QuestionPageState extends State<QuestionPage> {
           ListView.builder(
             shrinkWrap: true,
             itemCount:
-                con.questionList.length > 3 ? 3 : con.questionList.length,
+                con.questionList!.length > 3 ? 3 : con.questionList!.length,
             padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
             physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
-              QuestionSearchModel only = con.questionList[index];
+              QuestionSearchModel only = con.questionList![index];
               return Builder(builder: (context) {
                 Color textColor = Colors.black;
                 BoxDecoration selectedStyle = BoxDecoration(
@@ -339,34 +347,39 @@ class _QuestionPageState extends State<QuestionPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Text("ไม่พบคำถามของคุณ"),
+        const Text("คำถามของคุณยังไม่เคยถูกถามมาก่อน"),
         const Text(
           "ส่งคำถามใหม่ให้ติวเตอร์ \nระบบจะส่งแจ้งเตือนเมื่อติวเตอร์ตอบคำถามของคุณ",
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 20),
-        Container(
-          height: 45,
-          width: 200,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: primaryColor,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.add,
-                color: Colors.white,
-              ),
-              Text(
-                "ส่งคำถามใหม่ให้ติวเตอร์",
-                style: TextStyle(
+        InkWell(
+          onTap: () {
+            controller?.sendQuestionSuccess();
+          },
+          child: Container(
+            height: 45,
+            width: 200,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: primaryColor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.add,
                   color: Colors.white,
                 ),
-              ),
-            ],
+                Text(
+                  "ส่งคำถามใหม่ให้ติวเตอร์",
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 40),

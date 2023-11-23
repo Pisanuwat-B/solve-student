@@ -961,8 +961,7 @@ class _LearningPageState extends State<LearningPage> {
     });
     if (result.finalResult) {
       log('speech result: $lastWords');
-    } else {
-      log('no final result');
+      endAskTimer();
     }
   }
 
@@ -1007,6 +1006,7 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   void endAskTimer() {
+    if (askState == 3) return;
     _askTimer?.cancel();
     setState(() {
       askState = 3;
@@ -2522,7 +2522,6 @@ class _LearningPageState extends State<LearningPage> {
         child: GestureDetector(
           onTap: () {
             endAskTimer();
-            // getRecorderFn();
           },
           child: Container(
             margin: const EdgeInsets.symmetric(vertical: 14.0),
@@ -2553,15 +2552,7 @@ class _LearningPageState extends State<LearningPage> {
       barrierColor: Colors.black.withOpacity(0.5),
       pageBuilder: (context, anim1, anim2) {
         return QuestionPage(
-          initQuestion: mockData,
-          selectedQuestion: selectedQuestion,
-        );
-      },
-      transitionBuilder: (context, anim1, anim2, child) {
-        return SlideTransition(
-          position: Tween(begin: const Offset(0, 1), end: const Offset(0, 0))
-              .animate(anim1),
-          child: child,
+          questionText: lastWords,
         );
       },
     ).then((value) async {
