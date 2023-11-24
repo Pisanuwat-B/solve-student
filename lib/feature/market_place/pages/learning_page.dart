@@ -29,9 +29,7 @@ import '../../calendar/constants/assets_manager.dart';
 import '../../calendar/constants/custom_colors.dart';
 import '../../live_classroom/components/close_dialog.dart';
 import '../../live_classroom/components/divider.dart';
-import '../../live_classroom/components/divider_vertical.dart';
 import '../../live_classroom/components/room_loading_screen.dart';
-import '../../live_classroom/page/ask_tutor_live.dart';
 import '../../live_classroom/solvepad/solve_watch.dart';
 import '../../live_classroom/solvepad/solvepad_drawer.dart';
 import '../../live_classroom/solvepad/solvepad_stroke_model.dart';
@@ -135,6 +133,7 @@ class _LearningPageState extends State<LearningPage> {
   late List<String> _pages = [];
   DrawingMode _mode = DrawingMode.drag;
   final SolveStopwatch solveStopwatch = SolveStopwatch();
+  final SolveStopwatch answerStopwatch = SolveStopwatch();
   final List<List<SolvepadStroke?>> _penPoints = [[]];
   final List<List<SolvepadStroke?>> _laserPoints = [[]];
   final List<List<SolvepadStroke?>> _highlighterPoints = [[]];
@@ -145,6 +144,8 @@ class _LearningPageState extends State<LearningPage> {
   final List<Offset> _replayEraserPoints = [const Offset(-100, -100)];
   final List<List<SolvepadStroke?>> _questionHighlighterPoints = [[]];
   final List<List<SolvepadStroke?>> _answerHighlighterPoints = [[]];
+  final List<List<SolvepadStroke?>> _answerPenPoints = [[]];
+  final List<Offset> _answerEraserPoints = [const Offset(-100, -100)];
 
   // ---------- VARIABLE: Solve Size
   Size mySolvepadSize = const Size(1059.0, 547.0);
@@ -200,12 +201,16 @@ class _LearningPageState extends State<LearningPage> {
   // ---------- VARIABLE: tutor solvepad data
   late Map<String, dynamic> _data;
   late Map<String, dynamic> reviewNote;
+  late Map<String, dynamic> answerData;
   String jsonData = '';
   List<StrokeStamp> currentStroke = [];
   List<ScrollZoomStamp> currentScrollZoom = [];
   int currentReplayIndex = 0;
   int currentReplayPointIndex = 0;
   int currentReplayScrollIndex = 0;
+  int currentAnswerIndex = 0;
+  int currentAnswerPointIndex = 0;
+  int currentAnswerScrollIndex = 0;
   double currentScale = 2.0;
   double currentScrollX = 2.0;
   double currentScrollY = 0;
@@ -215,7 +220,6 @@ class _LearningPageState extends State<LearningPage> {
   late AuthProvider authProvider;
 
   // ---------- VARIABLE: speech-to-text
-  bool _hasSpeech = false;
   final int _listenFor = 30;
   final int _pauseFor = 3;
   double level = 0.0;
@@ -231,10 +235,12 @@ class _LearningPageState extends State<LearningPage> {
   List<QuestionSearchModel> mockData = [
     QuestionSearchModel(
       id: 1,
-      showTime: 2,
+      showTime: 21,
       questionText: "v คืออะไร",
-      videoPath: "",
-      soundPath: "",
+      videoPath:
+          "https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/marketplace%2FhdMl8nL6ipxD3ej59H0j_2.txt?alt=media&token=e512660b-eefb-462e-962b-44a31e481fec",
+      soundPath:
+          "https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/marketplace%2FhdMl8nL6ipxD3ej59H0j_2.mp4?alt=media&token=ed20f656-a6a6-4bed-8900-96145488e290",
       lecturePath: "a1",
     ),
     QuestionSearchModel(
@@ -247,10 +253,12 @@ class _LearningPageState extends State<LearningPage> {
     ),
     QuestionSearchModel(
       id: 3,
-      showTime: 2,
+      showTime: 21,
       questionText: "v กับ u เหมือนกันไหมครับ",
-      videoPath: "",
-      soundPath: "",
+      videoPath:
+          "https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/marketplace%2FhdMl8nL6ipxD3ej59H0j_2.txt?alt=media&token=e512660b-eefb-462e-962b-44a31e481fec",
+      soundPath:
+          "https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/marketplace%2FhdMl8nL6ipxD3ej59H0j_2.mp4?alt=media&token=ed20f656-a6a6-4bed-8900-96145488e290",
       lecturePath: "a1",
     ),
   ];
@@ -342,6 +350,19 @@ class _LearningPageState extends State<LearningPage> {
     log(tutorSolvepadSize.toString());
   }
 
+  void initAnswerData(String voiceUrl, String solvepadUrl) async {
+    final directory = await getTemporaryDirectory();
+    final file = File('${directory.path}/answerSolvepad.txt');
+    var response = await http.get(Uri.parse(solvepadUrl));
+    await file.writeAsBytes(response.bodyBytes);
+    var fileContent = await file.readAsString();
+    answerData = json.decode(fileContent);
+    setState(() {
+      _mPath = voiceUrl;
+      _mPlaybackReady = true;
+    });
+  }
+
   void initSolvepadScaling() {
     tutorImageWidth = tutorSolvepadSize.height * sheetImageRatio;
     tutorExtraSpaceX = (tutorSolvepadSize.width - tutorImageWidth) / 2;
@@ -404,6 +425,8 @@ class _LearningPageState extends State<LearningPage> {
       _replayLaserPoints.add([]);
       _replayHighlighterPoints.add([]);
       _replayEraserPoints.add(const Offset(-100, -100));
+      _questionHighlighterPoints.add([]);
+      _answerHighlighterPoints.add([]);
     });
   }
 
@@ -709,7 +732,6 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   void _initReplay() {
-    log('init replay');
     setState(() {
       isReplaying = true;
       isReplayEnd = false;
@@ -754,6 +776,28 @@ class _LearningPageState extends State<LearningPage> {
     _sliderTimer?.cancel();
     solveStopwatch.reset();
     currentReplayIndex = 0;
+  }
+
+  Future<void> _replayAnswer() async {
+    answerStopwatch.start();
+
+    while (currentAnswerIndex < answerData['actions'].length) {
+      await Future.delayed(const Duration(milliseconds: 0), () async {
+        if (answerStopwatch.elapsed.inMilliseconds >=
+            answerData['actions'][currentAnswerIndex]['time']) {
+          await executeReplayAction(_data['actions'][currentAnswerIndex]);
+          currentAnswerIndex++;
+        }
+      });
+    }
+
+    endReplay();
+  }
+
+  void endAnswerReplay() {
+    stopAudioPlayer();
+    answerStopwatch.reset();
+    currentAnswerIndex = 0;
   }
 
   Future<void> executeReplayAction(Map<String, dynamic> action) async {
@@ -920,20 +964,15 @@ class _LearningPageState extends State<LearningPage> {
 
   Future<void> initSpeechState() async {
     try {
-      var hasSpeech = await speech.initialize(
+      speech.initialize(
         onError: errorListener,
         onStatus: statusListener,
         debugLogging: false,
       );
       if (!mounted) return;
-
-      setState(() {
-        _hasSpeech = hasSpeech;
-      });
     } catch (e) {
       setState(() {
         lastError = 'Speech recognition failed: ${e.toString()}';
-        _hasSpeech = false;
       });
     }
   }
@@ -1616,6 +1655,7 @@ class _LearningPageState extends State<LearningPage> {
                                       _questionHighlighterPoints[index],
                                   answerHighlighterPoints:
                                       _answerHighlighterPoints[index],
+                                  answerPenPoints: _answerPenPoints[index],
                                 ),
                               ),
                             ),
@@ -2553,13 +2593,17 @@ class _LearningPageState extends State<LearningPage> {
       pageBuilder: (context, anim1, anim2) {
         return QuestionPage(
           questionText: lastWords,
+          questionList: mockData,
+          selectedQuestion: selectedQuestion,
         );
       },
     ).then((value) async {
       if (value != null) {
         QuestionSearchModel selectedQuestion = value as QuestionSearchModel;
-        await Future.delayed(Duration(seconds: selectedQuestion.showTime ?? 0));
-        showQuestionModal(selectedQuestion);
+        // await Future.delayed(Duration(seconds: selectedQuestion.showTime ?? 0));
+        // showQuestionModal(selectedQuestion);
+        initAnswerData(
+            selectedQuestion.soundPath!, selectedQuestion.videoPath!);
       } else {
         clearQuestionPoint();
         setState(() {

@@ -120,11 +120,6 @@ class _QuestionPageState extends State<QuestionPage> {
                                   onFieldSubmitted: (value) {
                                     con.setSearchText(value);
                                   },
-                                  onChanged: (value) {
-                                    con.setSearchText(value);
-                                  },
-                                  onEditingComplete: () =>
-                                      FocusScope.of(context).unfocus(),
                                   validator: (String? value) {
                                     if (value == null || value.isEmpty) {
                                       return "กรุณาระบุ";
@@ -155,6 +150,9 @@ class _QuestionPageState extends State<QuestionPage> {
                           ),
                           const SizedBox(height: 20),
                           Builder(builder: (context) {
+                            if (con.questionList != null) {
+                              return textListWidget(con, context);
+                            }
                             if (!con.confirmSpeech) {
                               return Container();
                             }
@@ -298,6 +296,8 @@ class _QuestionPageState extends State<QuestionPage> {
                         ),
                         GestureDetector(
                           onTap: () {
+                            log('answer vdo: ${only.videoPath}');
+                            log('answer audio: ${only.soundPath}');
                             Navigator.pop(
                               context,
                               only,

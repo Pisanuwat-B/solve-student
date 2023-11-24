@@ -15,6 +15,8 @@ class SolvepadDrawer extends CustomPainter {
     this.hostEraserPoint, {
     this.questionHighlighterPoints = const [],
     this.answerHighlighterPoints = const [],
+    this.answerPenPoints = const [],
+    this.answerEraserPoint = const Offset(-100, -100),
   });
 
   List<SolvepadStroke?> penPoints;
@@ -27,6 +29,8 @@ class SolvepadDrawer extends CustomPainter {
   Offset hostEraserPoint;
   List<SolvepadStroke?> questionHighlighterPoints;
   List<SolvepadStroke?> answerHighlighterPoints;
+  List<SolvepadStroke?> answerPenPoints;
+  Offset answerEraserPoint;
 
   Paint penPaint = Paint()..strokeCap = StrokeCap.round;
   Paint eraserPaint = Paint()
@@ -78,7 +82,7 @@ class SolvepadDrawer extends CustomPainter {
   Paint answerHighlightPaint = Paint()
     ..strokeCap = StrokeCap.round
     ..style = PaintingStyle.stroke;
-
+  Paint answerPenPaint = Paint()..strokeCap = StrokeCap.round;
   @override
   void paint(Canvas canvas, Size size) {
     for (int i = 0; i < penPoints.length - 1; i++) {
@@ -239,6 +243,19 @@ class SolvepadDrawer extends CustomPainter {
           (questionHighlighterPoints[answerNewStrokeIndex]!.width * 10) + 5;
     }
     canvas.drawPath(answerPath, answerHighlightPaint);
+
+    for (int i = 0; i < answerPenPoints.length - 1; i++) {
+      if (answerPenPoints[i]?.offset != null &&
+          answerPenPoints[i + 1]?.offset != null) {
+        answerPenPaint.color = answerPenPoints[i]!.color;
+        answerPenPaint.strokeWidth = answerPenPoints[i]!.width;
+        canvas.drawLine(answerPenPoints[i]!.offset,
+            answerPenPoints[i + 1]!.offset, answerPenPaint);
+      }
+    }
+
+    canvas.drawCircle(answerEraserPoint, 10, hostEraserPaint);
+    canvas.drawCircle(answerEraserPoint, 10, hostBorderPaint);
   }
 
   @override
