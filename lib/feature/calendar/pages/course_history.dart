@@ -11,6 +11,7 @@ import 'package:solve_student/feature/calendar/helper/utility_helper.dart';
 import 'package:solve_student/feature/calendar/model/show_course.dart';
 import 'package:solve_student/feature/calendar/widgets/format_date.dart';
 import 'package:solve_student/feature/calendar/widgets/sizebox.dart';
+import 'package:solve_student/feature/live_classroom/utils/api.dart';
 
 import '../../../authentication/service/auth_provider.dart';
 import '../../live_classroom/page/review_lesson.dart';
@@ -27,6 +28,7 @@ class _CourseHistoryState extends State<CourseHistory>
   static final _util = UtilityHelper();
   TabController? tabController;
   int indexTab = 0;
+  String _token = "";
   var studentController = StudentController();
   var courseController = CourseLiveController();
   List<ShowCourseStudent> reviewList = [];
@@ -42,6 +44,10 @@ class _CourseHistoryState extends State<CourseHistory>
         Provider.of<CourseLiveController>(context, listen: false);
     authProvider = Provider.of<AuthProvider>(context, listen: false);
     getInit();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final token = await fetchToken(context);
+      setState(() => _token = token);
+    });
   }
 
   getInit() async {
@@ -76,8 +82,16 @@ class _CourseHistoryState extends State<CourseHistory>
                 .map((key, value) => MapEntry(key, value));
 
         if (itemWithAdditionalFields['audio_file'] == null ||
-            itemWithAdditionalFields['audio_file'].isEmpty) {
-          itemWithAdditionalFields['audio_file'] = null;
+            itemWithAdditionalFields['audio_file'].isEmpty ||
+            itemWithAdditionalFields['audio_file'].length == 0) {
+          if(itemWithAdditionalFields['meeting_id'] == null ||
+              itemWithAdditionalFields['meeting_id'].isEmpty ||
+              itemWithAdditionalFields['meeting_id'] == "") {
+            itemWithAdditionalFields['audio_file'] = null;
+          }else{
+            fetchRecording(itemWithAdditionalFields['meeting_id'], itemWithAdditionalFields['course_id'], itemWithAdditionalFields['start']).then((value) =>
+            itemWithAdditionalFields['audio_file'] = value);
+          }
         }
         // Adding additional fields
         itemWithAdditionalFields['thumbnail_url'] = thumbnailUrl;
@@ -90,6 +104,39 @@ class _CourseHistoryState extends State<CourseHistory>
     }
     showCourseStudents.sort((a, b) => b.start!.compareTo(a.start!));
     return showCourseStudents;
+  }
+
+  Future<List> fetchRecording(meetingID, courseID, start) async {
+    try {
+      log(meetingID);
+      List recordList = [];
+      var record = await fetchRecordings(_token, meetingID);
+      record.forEach((r) {
+        if (r['file'] != null) {
+          recordList.add(r['file']['fileUrl']);
+        }
+      });
+      log(recordList.toString());
+      await updateAudioFile(recordList, courseID, start);
+      return recordList;
+    } catch (error) {
+      log('fetchRecording error: $error');
+      return [];
+    }
+  }
+
+  Future<void> updateAudioFile(recordList, courseID, start) async {
+    await courseController.getCourseById(courseID);
+    var calendars = courseController.courseData?.calendars;
+    int indexToUpdate = calendars!.indexWhere((element) =>
+    element.start?.compareTo(
+        DateTime.fromMillisecondsSinceEpoch(start)) ==
+        0);
+    if (indexToUpdate != -1) {
+      calendars[indexToUpdate].audioFile = recordList;
+      await courseController.updateSessionDetails(
+          context, courseController.courseData);
+    }
   }
 
   Future<void> getCalendarList() async {
