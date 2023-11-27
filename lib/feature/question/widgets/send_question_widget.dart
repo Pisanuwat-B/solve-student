@@ -38,28 +38,35 @@ class SendQuestionWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          Container(
-            height: 45,
-            width: 200,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: primaryColor,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.keyboard_arrow_left,
-                  color: Colors.white,
-                ),
-                Text(
-                  "กลับไปที่ห้องเรียน",
-                  style: TextStyle(
+          InkWell(
+            onTap: () {
+              Navigator.pop(
+                context,
+              );
+            },
+            child: Container(
+              height: 45,
+              width: 200,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: primaryColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.keyboard_arrow_left,
                     color: Colors.white,
                   ),
-                ),
-              ],
+                  Text(
+                    "กลับไปที่ห้องเรียน",
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

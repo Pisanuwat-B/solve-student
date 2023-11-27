@@ -2593,7 +2593,7 @@ class _LearningPageState extends State<LearningPage> {
       pageBuilder: (context, anim1, anim2) {
         return QuestionPage(
           questionText: lastWords,
-          questionList: mockData,
+          // questionList: mockData,
           selectedQuestion: selectedQuestion,
         );
       },
@@ -2602,8 +2602,8 @@ class _LearningPageState extends State<LearningPage> {
         QuestionSearchModel selectedQuestion = value as QuestionSearchModel;
         // await Future.delayed(Duration(seconds: selectedQuestion.showTime ?? 0));
         // showQuestionModal(selectedQuestion);
-        initAnswerData(
-            selectedQuestion.soundPath!, selectedQuestion.videoPath!);
+        // initAnswerData(
+        //     selectedQuestion.soundPath!, selectedQuestion.videoPath!);
       } else {
         clearQuestionPoint();
         setState(() {
