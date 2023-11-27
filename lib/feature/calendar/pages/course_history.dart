@@ -84,13 +84,17 @@ class _CourseHistoryState extends State<CourseHistory>
         if (itemWithAdditionalFields['audio_file'] == null ||
             itemWithAdditionalFields['audio_file'].isEmpty ||
             itemWithAdditionalFields['audio_file'].length == 0) {
-          if(itemWithAdditionalFields['meeting_id'] == null ||
+          if (itemWithAdditionalFields['meeting_id'] == null ||
               itemWithAdditionalFields['meeting_id'].isEmpty ||
               itemWithAdditionalFields['meeting_id'] == "") {
             itemWithAdditionalFields['audio_file'] = null;
-          }else{
-            fetchRecording(itemWithAdditionalFields['meeting_id'], itemWithAdditionalFields['course_id'], itemWithAdditionalFields['start']).then((value) =>
-            itemWithAdditionalFields['audio_file'] = value);
+          } else {
+            fetchRecording(
+                    itemWithAdditionalFields['meeting_id'],
+                    itemWithAdditionalFields['course_id'],
+                    itemWithAdditionalFields['start'])
+                .then(
+                    (value) => itemWithAdditionalFields['audio_file'] = value);
           }
         }
         // Adding additional fields
@@ -107,6 +111,7 @@ class _CourseHistoryState extends State<CourseHistory>
   }
 
   Future<List> fetchRecording(meetingID, courseID, start) async {
+    log('fetch recording');
     try {
       log(meetingID);
       List recordList = [];
@@ -129,11 +134,11 @@ class _CourseHistoryState extends State<CourseHistory>
     await courseController.getCourseById(courseID);
     var calendars = courseController.courseData?.calendars;
     int indexToUpdate = calendars!.indexWhere((element) =>
-    element.start?.compareTo(
-        DateTime.fromMillisecondsSinceEpoch(start)) ==
+        element.start?.compareTo(DateTime.fromMillisecondsSinceEpoch(start)) ==
         0);
     if (indexToUpdate != -1) {
       calendars[indexToUpdate].audioFile = recordList;
+      if (!mounted) return;
       await courseController.updateSessionDetails(
           context, courseController.courseData);
     }
@@ -144,8 +149,8 @@ class _CourseHistoryState extends State<CourseHistory>
     setState(() {
       reviewList = courseList;
     });
-    log('Assigning reviewList');
-    log(reviewList[0].rawStart.toString());
+    // log('Assigning reviewList');
+    // log(reviewList[0].rawStart.toString());
   }
 
   @override
