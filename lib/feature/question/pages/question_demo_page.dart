@@ -72,11 +72,12 @@ class _QuestionDemoPageState extends State<QuestionDemoPage> {
           q2,
           q3,
         ];
-        return QuestionPage(
-          questionText: 'test',
-          questionList: data,
-          selectedQuestion: selectedQuestion,
-        );
+        return const Text('');
+        // return QuestionDialog(
+        //   questionText: 'test',
+        //   questionList: data,
+        //   selectedQuestion: selectedQuestion,
+        // );
       },
       transitionBuilder: (context, anim1, anim2, child) {
         return SlideTransition(

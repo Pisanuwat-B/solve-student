@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:solve_student/authentication/models/user_model.dart';
@@ -17,9 +18,11 @@ class AuthProvider extends ChangeNotifier {
   String? uid;
   bool isLoading = true;
   getSelfInfo() async {
-    log("getSelfInfo");
     if (firebaseAuth.currentUser?.uid == null) return;
     uid = firebaseAuth.currentUser?.uid;
+
+    DocumentReference userRef = firebaseFirestore.collection('users').doc(uid);
+
     await firebaseFirestore
         .collection('users')
         .doc(uid)
@@ -27,21 +30,45 @@ class AuthProvider extends ChangeNotifier {
         .then((userFirebase) async {
       if (userFirebase.exists) {
         user = UserModel.fromJson(userFirebase.data()!);
-        // await getFirebaseMessagingToken();
-        //for setting user status to active
+
+        String? currentPushToken = userFirebase.data()?['push_token'];
+        if (currentPushToken == null || currentPushToken.isEmpty) {
+          log('getSelfInfo: current token empty');
+          var pushToken = await getFCMToken();
+          if (pushToken != null && pushToken.isNotEmpty) {
+            log('getSelfInfo: have pushToken parameter');
+            await userRef.update({'push_token': pushToken});
+            log('successfully added push token');
+          }
+        }
+
+        // for setting user status to active
         // updateActiveStatus(true);
         if (user?.role == null || user?.role == "") {
           log('in Update');
           await updateRoleFirestore('student');
         }
         await getWallet();
-        // log('My Data: ${userFirebase.data()}');
       }
     });
     notifyListeners();
     await Future.delayed(const Duration(seconds: 2));
     isLoading = false;
     notifyListeners();
+  }
+
+  Future<String?> getFCMToken() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission();
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      log('User granted permission');
+    } else if (settings.authorizationStatus ==
+        AuthorizationStatus.provisional) {
+      log('User granted provisional permission');
+    } else {
+      log('User declined or has not accepted permission');
+    }
+    return await messaging.getToken();
   }
 
   getWallet() async {
@@ -54,15 +81,15 @@ class AuthProvider extends ChangeNotifier {
       if (walletFirebase.exists) {
         wallet = WalletModel.fromJson(walletFirebase.data()!);
         notifyListeners();
-      }else{
+      } else {
         await updateWallet();
       }
     });
   }
 
   Future<void> updateLiveDuration(
-      int duration,
-      ) async {
+    int duration,
+  ) async {
     try {
       uid = firebaseAuth.currentUser?.uid ?? "";
       final users = FirestoreService('users');
@@ -79,9 +106,9 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> updateWalletBalance(
-      int value,
-      int duration,
-      ) async {
+    int value,
+    int duration,
+  ) async {
     try {
       uid = firebaseAuth.currentUser?.uid ?? "";
       final wallet = FirestoreService('wallet');

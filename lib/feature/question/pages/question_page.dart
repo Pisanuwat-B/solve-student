@@ -7,25 +7,35 @@ import 'package:solve_student/feature/question/controller/question_controller.da
 import 'package:solve_student/feature/question/models/question_search_model.dart';
 import 'package:solve_student/feature/question/widgets/send_question_widget.dart';
 
-class QuestionPage extends StatefulWidget {
-  const QuestionPage(
-      {required this.questionText,
-      this.questionList,
-      super.key,
-      this.selectedQuestion});
+import '../../calendar/constants/custom_styles.dart';
+
+class QuestionDialog extends StatefulWidget {
+  const QuestionDialog({
+    required this.questionText,
+    required this.courseId,
+    required this.chapterId,
+    required this.page,
+    this.questionList,
+    super.key,
+    this.selectedQuestion,
+  });
   final List<QuestionSearchModel>? questionList;
   final QuestionSearchModel? selectedQuestion;
   final String questionText;
+  final String courseId;
+  final String chapterId;
+  final int page;
   @override
-  State<QuestionPage> createState() => _QuestionPageState();
+  State<QuestionDialog> createState() => _QuestionDialogState();
 }
 
-class _QuestionPageState extends State<QuestionPage> {
+class _QuestionDialogState extends State<QuestionDialog> {
   QuestionController? controller;
 
   @override
   void initState() {
-    controller = QuestionController(context,
+    controller = QuestionController(
+        context, widget.courseId, widget.chapterId, widget.page,
         questionList: widget.questionList,
         questionSelected: widget.selectedQuestion);
     controller?.setSearchText(widget.questionText);
@@ -135,14 +145,23 @@ class _QuestionPageState extends State<QuestionPage> {
                                 },
                                 child: Container(
                                   height: 50,
-                                  width: 50,
-                                  decoration: const BoxDecoration(
+                                  padding:
+                                      const EdgeInsets.only(left: 12, right: 6),
+                                  decoration: BoxDecoration(
                                     color: primaryColor,
-                                    shape: BoxShape.circle,
+                                    borderRadius: BorderRadius.circular(24),
                                   ),
-                                  child: const Icon(
-                                    Icons.keyboard_arrow_right,
-                                    color: Colors.white,
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'ส่งคำถาม',
+                                        style: CustomStyles.reg14white,
+                                      ),
+                                      const Icon(
+                                        Icons.keyboard_arrow_right,
+                                        color: Colors.white,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -150,16 +169,22 @@ class _QuestionPageState extends State<QuestionPage> {
                           ),
                           const SizedBox(height: 20),
                           Builder(builder: (context) {
-                            if (con.questionList != null) {
+                            if (con.questionList != null &&
+                                con.questionList!.isNotEmpty) {
+                              log('Builder: list not empty');
+                              log(con.questionList.toString());
                               return textListWidget(con, context);
                             }
                             if (!con.confirmSpeech) {
+                              log('Builder: speech not confirm');
                               return Container();
                             }
                             if (con.sendQuestion) {
+                              log('Builder: after sending question');
                               return const SendQuestionWidget();
                             }
                             if (con.notFound) {
+                              log('Builder: question not found');
                               return notFoundWidget();
                             }
                             return textListWidget(con, context);

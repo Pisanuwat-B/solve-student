@@ -71,4 +71,83 @@ class FirebaseService {
     await file.writeAsBytes(response.bodyBytes);
     return file.path;
   }
+
+  Future<Map<String, List<String>>> getQuestionList(
+      String courseId, String chapterId, int page) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    CollectionReference questionGroups =
+        firestore.collection('question_group_market');
+
+    QuerySnapshot querySnapshot = await questionGroups
+        .where('course_id', isEqualTo: courseId)
+        .where('chapter_id', isEqualTo: chapterId)
+        .where('page', isEqualTo: page)
+        .get();
+
+    List<String> questions = [];
+    List<String> groupIds = [];
+
+    for (var doc in querySnapshot.docs) {
+      var data = doc.data() as Map<String, dynamic>;
+      List<dynamic> questionList = data['questions'] ?? [];
+      String groupId = doc.id;
+
+      for (var question in questionList) {
+        questions.add(question);
+        groupIds.add(groupId);
+      }
+    }
+
+    return {
+      'questions': questions,
+      'groupIds': groupIds,
+    };
+  }
+
+  Future<Map<String, String>> getSolvepadAnswer(String questionGroupId) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // Get the answer_id from question_group_market
+    DocumentSnapshot questionGroupDoc = await firestore
+        .collection('question_group_market')
+        .doc(questionGroupId)
+        .get();
+
+    if (!questionGroupDoc.exists) {
+      throw Exception('Question group not found');
+    }
+
+    var questionGroupData = questionGroupDoc.data() as Map<String, dynamic>;
+    String answerId = questionGroupData['answer_id'];
+
+    // Get the solvepad_qa_market_id from answer_market
+    DocumentSnapshot answerDoc =
+        await firestore.collection('answer_market').doc(answerId).get();
+
+    if (!answerDoc.exists) {
+      throw Exception('Answer not found');
+    }
+
+    var answerData = answerDoc.data() as Map<String, dynamic>;
+    String solvepadQaId = answerData['solvepad_qa_market_id'];
+
+    // Get the solvepad and voice from solvepad_qa_market
+    DocumentSnapshot solvepadQaDoc = await firestore
+        .collection('solvepad_qa_market')
+        .doc(solvepadQaId)
+        .get();
+
+    if (!solvepadQaDoc.exists) {
+      throw Exception('Solvepad QA not found');
+    }
+
+    var solvepadQaData = solvepadQaDoc.data() as Map<String, dynamic>;
+    String solvepad = solvepadQaData['solvepad'];
+    String voice = solvepadQaData['voice'];
+
+    return {
+      'solvepad': solvepad,
+      'voice': voice,
+    };
+  }
 }

@@ -15,9 +15,11 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:speech_balloon/speech_balloon.dart';
+import 'package:speech_to_text/speech_recognition_event.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text_provider.dart';
 
 import '../../../authentication/service/auth_provider.dart';
 import '../../../firebase/database.dart';
@@ -226,9 +228,9 @@ class _LearningPageState extends State<LearningPage> {
   double minSoundLevel = 50000;
   double maxSoundLevel = -50000;
   String lastWords = '';
-  String lastError = '';
   String lastStatus = '';
   SpeechToText speech = SpeechToText();
+  late SpeechToTextProvider speechToTextProvider;
   TextEditingController textVoiceController = TextEditingController();
 
   // ---------- VARIABLE: mockup test
@@ -247,8 +249,10 @@ class _LearningPageState extends State<LearningPage> {
       id: 2,
       showTime: 2,
       questionText: "ทำไมต้องเป็น v",
-      videoPath: "",
-      soundPath: "",
+      videoPath:
+          "https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/marketplace%2FhdMl8nL6ipxD3ej59H0j_2.txt?alt=media&token=e512660b-eefb-462e-962b-44a31e481fec",
+      soundPath:
+          "https://firebasestorage.googleapis.com/v0/b/solve-f1778.appspot.com/o/marketplace%2FhdMl8nL6ipxD3ej59H0j_2.mp4?alt=media&token=ed20f656-a6a6-4bed-8900-96145488e290",
       lecturePath: "a1",
     ),
     QuestionSearchModel(
@@ -262,6 +266,14 @@ class _LearningPageState extends State<LearningPage> {
       lecturePath: "a1",
     ),
   ];
+  QuestionSearchModel? selectedQuestion;
+
+  @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+    speechToTextProvider = Provider.of<SpeechToTextProvider>(context);
+    await speechToTextProvider.initialize();
+  }
 
   @override
   void initState() {
@@ -278,7 +290,7 @@ class _LearningPageState extends State<LearningPage> {
       ]);
     });
     authProvider = Provider.of<AuthProvider>(context, listen: false);
-    initSpeechState();
+    // initSpeechState();
     fetchReviewNote();
     initAudio();
     initSolvepadData();
@@ -347,7 +359,7 @@ class _LearningPageState extends State<LearningPage> {
       replayDuration = _data['metadata']['duration'];
     });
     initSolvepadScaling();
-    log(tutorSolvepadSize.toString());
+    log('tutor size: $tutorSolvepadSize');
   }
 
   void initAnswerData(String voiceUrl, String solvepadUrl) async {
@@ -361,6 +373,8 @@ class _LearningPageState extends State<LearningPage> {
       _mPath = voiceUrl;
       _mPlaybackReady = true;
     });
+    _replayAnswer();
+    playAudioPlayer();
   }
 
   void initSolvepadScaling() {
@@ -391,6 +405,7 @@ class _LearningPageState extends State<LearningPage> {
     _sliderTimer?.cancel();
     _laserTimer?.cancel();
     _askTimer?.cancel();
+    speech.stop();
     super.dispose();
   }
 
@@ -427,6 +442,7 @@ class _LearningPageState extends State<LearningPage> {
       _replayEraserPoints.add(const Offset(-100, -100));
       _questionHighlighterPoints.add([]);
       _answerHighlighterPoints.add([]);
+      _answerPenPoints.add([]);
     });
   }
 
@@ -705,6 +721,15 @@ class _LearningPageState extends State<LearningPage> {
     }
   }
 
+  void clearAnswerPoint() {
+    for (var point in _answerPenPoints) {
+      point.clear();
+    }
+    for (var point in _answerHighlighterPoints) {
+      point.clear();
+    }
+  }
+
   void clearZoomPosition() {
     for (int i = 0; i < _transformationController.length; i++) {
       _transformationController[i].value = Matrix4.identity()
@@ -779,28 +804,36 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   Future<void> _replayAnswer() async {
+    log('start replay answer');
+    clearAnswerPoint();
     answerStopwatch.start();
 
     while (currentAnswerIndex < answerData['actions'].length) {
       await Future.delayed(const Duration(milliseconds: 0), () async {
         if (answerStopwatch.elapsed.inMilliseconds >=
             answerData['actions'][currentAnswerIndex]['time']) {
-          await executeReplayAction(_data['actions'][currentAnswerIndex]);
+          await executeReplayAction(answerData['actions'][currentAnswerIndex],
+              mode: 'answer');
           currentAnswerIndex++;
         }
       });
     }
 
-    endReplay();
+    endAnswerReplay();
   }
 
   void endAnswerReplay() {
+    log('end answer replay');
     stopAudioPlayer();
     answerStopwatch.reset();
     currentAnswerIndex = 0;
+    log('answer end: ${showQuestionModal.toString()}');
+    log(selectedQuestion.toString());
+    showQuestionModal(selectedQuestion);
   }
 
-  Future<void> executeReplayAction(Map<String, dynamic> action) async {
+  Future<void> executeReplayAction(Map<String, dynamic> action,
+      {String? mode}) async {
     switch (action['type']) {
       case 'start-recording':
         var page = action['page'];
@@ -809,6 +842,7 @@ class _LearningPageState extends State<LearningPage> {
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
+        if (mode == 'answer') break;
         _tutorCurrentPage = page;
         _transformationController[page].value = Matrix4.identity()
           ..translate(scaleScrollX(action['scrollX']) / 2,
@@ -818,6 +852,7 @@ class _LearningPageState extends State<LearningPage> {
             '${action['scrollX']}|${action['scrollY']}|${action['scale']}';
         break;
       case 'change-page':
+        if (mode == 'answer') break;
         if (tabFollowing) {
           _pageController.animateToPage(
             action['data'],
@@ -830,6 +865,7 @@ class _LearningPageState extends State<LearningPage> {
       case 'stop-recording':
         break;
       case 'scroll-zoom':
+        if (mode == 'answer') break;
         List<dynamic> scrollAction = action['data'];
         while (currentReplayScrollIndex < scrollAction.length) {
           await Future.delayed(const Duration(milliseconds: 0), () {
@@ -853,22 +889,42 @@ class _LearningPageState extends State<LearningPage> {
         break;
       case 'drawing':
         List<dynamic> points = action['data']['points'];
-        while (currentReplayPointIndex < points.length) {
-          await Future.delayed(const Duration(milliseconds: 0), () {
-            if (solveStopwatch.elapsed.inMilliseconds >=
-                points[currentReplayPointIndex]['time']) {
-              drawReplayPoint(
-                  points[currentReplayPointIndex],
-                  action['data']['tool'],
-                  action['data']['color'],
-                  action['data']['strokeWidth']);
-              currentReplayPointIndex++;
-            }
-          });
-        }
-        currentReplayPointIndex = 0;
-        drawReplayNull(action['data']['tool']);
-        break;
+        if (mode == 'answer') {
+          while (currentAnswerPointIndex < points.length) {
+            await Future.delayed(const Duration(milliseconds: 0), () {
+              if (answerStopwatch.elapsed.inMilliseconds >=
+                  points[currentAnswerPointIndex]['time']) {
+                drawReplayPoint(
+                    points[currentAnswerPointIndex],
+                    'answer-${action['data']['tool']}',
+                    action['data']['color'],
+                    action['data']['strokeWidth']);
+                currentAnswerPointIndex++;
+              }
+            });
+          }
+          currentAnswerPointIndex = 0;
+          drawReplayNull('answer-${action['data']['tool']}');
+          break;
+        } // answer mode
+        else {
+          while (currentReplayPointIndex < points.length) {
+            await Future.delayed(const Duration(milliseconds: 0), () {
+              if (solveStopwatch.elapsed.inMilliseconds >=
+                  points[currentReplayPointIndex]['time']) {
+                drawReplayPoint(
+                    points[currentReplayPointIndex],
+                    action['data']['tool'],
+                    action['data']['color'],
+                    action['data']['strokeWidth']);
+                currentReplayPointIndex++;
+              }
+            });
+          }
+          currentReplayPointIndex = 0;
+          drawReplayNull(action['data']['tool']);
+          break;
+        } // replay mode
       case 'erasing':
         for (var eraseAction in action['data']) {
           if (eraseAction['action'] == 'moves') {
@@ -931,14 +987,37 @@ class _LearningPageState extends State<LearningPage> {
       ));
       setState(() {});
     } // high
+    else if (tool == "answer-DrawingMode.pen") {
+      _answerPenPoints[_currentPage].add(SolvepadStroke(
+        scaleOffset(Offset(point['x'], point['y'])),
+        Color(int.parse(color, radix: 16)),
+        stroke,
+      ));
+      setState(() {});
+    } // answer-pen
+    else if (tool == "answer-DrawingMode.highlighter") {
+      _answerHighlighterPoints[_currentPage].add(SolvepadStroke(
+        scaleOffset(Offset(point['x'], point['y'])),
+        Color(int.parse(color, radix: 16)),
+        stroke,
+      ));
+      setState(() {});
+    } // answer-high
   }
 
   void drawReplayNull(String tool) {
     if (tool == "DrawingMode.pen") {
       _replayPenPoints[_tutorCurrentPage].add(null);
-    } else if (tool == "DrawingMode.highlighter") {
+    } // pen
+    else if (tool == "DrawingMode.highlighter") {
       _replayHighlighterPoints[_tutorCurrentPage].add(null);
-    }
+    } // high
+    else if (tool == "answer-DrawingMode.pen") {
+      _answerPenPoints[_currentPage].add(null);
+    } // answer-pen
+    else if (tool == "answer-DrawingMode.highlighter") {
+      _answerHighlighterPoints[_currentPage].add(null);
+    } // answer-high
   }
 
   // ---------- FUNCTION: recording and playback
@@ -963,62 +1042,33 @@ class _LearningPageState extends State<LearningPage> {
   // ---------- FUNCTION: speech
 
   Future<void> initSpeechState() async {
-    try {
-      speech.initialize(
-        onError: errorListener,
-        onStatus: statusListener,
-        debugLogging: false,
-      );
-      if (!mounted) return;
-    } catch (e) {
-      setState(() {
-        lastError = 'Speech recognition failed: ${e.toString()}';
-      });
-    }
+    speechToTextProvider = Provider.of<SpeechToTextProvider>(context);
+    await speechToTextProvider.initialize();
   }
 
   void startListening() {
     lastWords = '';
-    lastError = '';
-    speech.listen(
-      onResult: resultListener,
-      listenFor: Duration(seconds: _listenFor),
+    speechToTextProvider.listen(
       pauseFor: Duration(seconds: _pauseFor),
-      partialResults: true,
+      listenFor: Duration(seconds: _listenFor),
       localeId: 'th_TH',
-      onSoundLevelChange: soundLevelListener,
-      cancelOnError: true,
-      listenMode: ListenMode.confirmation,
-      onDevice: false,
     );
-    setState(() {});
-  }
-
-  void resultListener(SpeechRecognitionResult result) {
-    setState(() {
-      lastWords = result.recognizedWords;
-    });
-    if (result.finalResult) {
-      log('speech result: $lastWords');
-      endAskTimer();
-    }
-  }
-
-  void soundLevelListener(double level) {
-    minSoundLevel = math.min(minSoundLevel, level);
-    maxSoundLevel = math.max(maxSoundLevel, level);
-    setState(() {
-      this.level = level;
-    });
-  }
-
-  void errorListener(SpeechRecognitionError error) {
-    log('speech error');
-    log(error.toString());
-  }
-
-  void statusListener(String status) {
-    log('speech status: $status');
+    StreamSubscription<SpeechRecognitionEvent> subscription =
+        speechToTextProvider.stream.listen(
+      (event) {
+        if (event.eventType == SpeechRecognitionEventType.errorEvent) {
+          endAskTimer();
+        } else if (event.eventType ==
+            SpeechRecognitionEventType.finalRecognitionEvent) {
+          log('final: ${speechToTextProvider.lastResult!.recognizedWords}');
+          if (!mounted) return;
+          setState(() {
+            lastWords = speechToTextProvider.lastResult!.recognizedWords;
+          });
+          endAskTimer();
+        }
+      },
+    );
   }
 
   // ---------- FUNCTION: miscellaneous
@@ -1045,8 +1095,10 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   void endAskTimer() {
+    speechToTextProvider.stop();
     if (askState == 3) return;
     _askTimer?.cancel();
+    if (!mounted) return;
     setState(() {
       askState = 3;
       _mode = DrawingMode.drag;
@@ -1421,7 +1473,7 @@ class _LearningPageState extends State<LearningPage> {
                             onPanDown: (_) {},
                             child: Listener(
                               onPointerDown: (details) {
-                                _isHasReviewNote = true;
+                                if (askState == 0) _isHasReviewNote = true;
                                 if (activePointerId != null) return;
                                 activePointerId = details.pointer;
                                 switch (_mode) {
@@ -2446,7 +2498,7 @@ class _LearningPageState extends State<LearningPage> {
           ),
           Expanded(
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // InkWell(
                 //   onTap: () {
@@ -2464,12 +2516,41 @@ class _LearningPageState extends State<LearningPage> {
                 // ),
                 // S.w(defaultPadding),
                 // const DividerVer(),
-                replayButton(),
-                RichText(
-                  text: TextSpan(
-                    text: 'เริ่มเรียน',
-                    style: CustomStyles.bold14RedF44336,
+                if (askState == 0)
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        showSpeechBalloon = false;
+                        askState = 1;
+                        _currentTime = Duration.zero;
+                      });
+                      showAskDialog(context, () {
+                        startAskTimer();
+                        startListening();
+                      }, onCancel: () {
+                        setState(() {
+                          askState = 0;
+                        });
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Image.asset(
+                        'assets/images/ic_mic_off_float.png',
+                        width: 35,
+                      ),
+                    ),
                   ),
+                Row(
+                  children: [
+                    replayButton(),
+                    RichText(
+                      text: TextSpan(
+                        text: 'เริ่มเรียน',
+                        style: CustomStyles.bold14RedF44336,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -2591,21 +2672,25 @@ class _LearningPageState extends State<LearningPage> {
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.5),
       pageBuilder: (context, anim1, anim2) {
-        return QuestionPage(
+        return QuestionDialog(
           questionText: lastWords,
-          // questionList: mockData,
+          courseId: widget.course.id!,
+          chapterId: widget.lesson.lessonId.toString(),
+          page: _currentPage + 1,
           selectedQuestion: selectedQuestion,
+          // questionList: mockData,
         );
       },
     ).then((value) async {
       if (value != null) {
-        QuestionSearchModel selectedQuestion = value as QuestionSearchModel;
-        // await Future.delayed(Duration(seconds: selectedQuestion.showTime ?? 0));
-        // showQuestionModal(selectedQuestion);
-        // initAnswerData(
-        //     selectedQuestion.soundPath!, selectedQuestion.videoPath!);
+        log('model null value');
+        selectedQuestion = value as QuestionSearchModel;
+        initAnswerData(
+            selectedQuestion!.soundPath!, selectedQuestion!.videoPath!);
       } else {
+        log('model not null');
         clearQuestionPoint();
+        clearAnswerPoint();
         setState(() {
           askState = 0;
         });
@@ -3181,8 +3266,6 @@ class _LearningPageState extends State<LearningPage> {
               ),
             );
 
-            // Find the ScaffoldMessenger in the widget tree
-            // and use it to show a SnackBar.
             ScaffoldMessenger.of(context).showSnackBar(snackBar);
           },
           child: Center(

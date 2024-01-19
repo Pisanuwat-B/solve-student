@@ -14,8 +14,8 @@ class SplashPage extends StatefulWidget {
 class SplashPageState extends State<SplashPage> {
   @override
   void initState() {
-    auth = Provider.of<AuthProvider>(context, listen: false);
     super.initState();
+    auth = Provider.of<AuthProvider>(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       if (auth.firebaseAuth.currentUser != null) {
         auth.getSelfInfo();

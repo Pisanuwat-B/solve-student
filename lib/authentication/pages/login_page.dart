@@ -27,8 +27,8 @@ class LoginPageState extends State<LoginPage> {
       // Dialogs.showProgressBar(context);
       var user = await _signInWithGoogle();
       if (user != null) {
-        log('\nUser: ${user.user}');
-        log('\nUserAdditionalInfo: ${user.additionalUserInfo}');
+        log('User: ${user.user}');
+        log('UserAdditionalInfo: ${user.additionalUserInfo}');
         if (await authProvider!.userExists(user.user!)) {
         } else {
           await authProvider!.createUser(

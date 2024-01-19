@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../calendar/constants/custom_colors.dart';
 import '../../calendar/constants/custom_styles.dart';
 import '../../calendar/widgets/sizebox.dart';
+import '../../live_classroom/utils/responsive.dart';
 
 Future<void> showAskDialog(BuildContext context, Function onConfirm,
     {Function? onCancel}) {
@@ -55,7 +56,8 @@ Future<void> showAskDialog(BuildContext context, Function onConfirm,
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       SizedBox(
-                        width: 230,
+                        width:
+                            Responsive.isMobileLandscape(context) ? 180 : 230,
                         height: 40,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
@@ -76,7 +78,8 @@ Future<void> showAskDialog(BuildContext context, Function onConfirm,
                         ),
                       ),
                       SizedBox(
-                        width: 230,
+                        width:
+                            Responsive.isMobileLandscape(context) ? 180 : 230,
                         height: 40,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
