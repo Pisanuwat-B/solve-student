@@ -62,7 +62,7 @@ class QuestionController extends ChangeNotifier {
     log('try checkNLPResponse');
 
     final response = await http.post(
-      Uri.parse('http://34.143.240.238:8080/nlp'),
+      Uri.parse('http://35.240.204.107:8080/nlp'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

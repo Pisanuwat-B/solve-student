@@ -372,7 +372,7 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
   void initWss() {
     channel = WebSocketChannel.connect(
       Uri.parse(
-          'ws://34.143.240.238:3000/${widget.courseId}/${widget.startTime}'),
+          'ws://35.240.204.107:3000/${widget.courseId}/${widget.startTime}'),
     );
     log('connect to WSS');
     sendMessage('RequestSolvepadSize');
@@ -2350,56 +2350,57 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
                         )
                       : const Material(),
                   isAudioMode ? S.w(defaultPadding) : const SizedBox(),
-                  courseType == 'live' ? Container() : Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: isAudioMode
-                            ? CustomColors.greenPrimary
-
-                            : CustomColors.redB71C1C,
-                        style: BorderStyle.solid,
-                        width: 2.0,
-                      ),
-                      borderRadius: BorderRadius.circular(100),
-                      color: CustomColors.whitePrimary,
-                    ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        // Text(
-                        //   "On Site",
-                        //   textAlign: TextAlign.center,
-                        //   style: TextStyle(
-                        //     color: isAudioMode
-                        //         ? CustomColors.gray878787
-                        //         : CustomColors.redB71C1C,
-                        //     fontSize: 12,
-                        //     fontFamily: CustomFontFamily.NotoSansBold,
-                        //   ),
-                        // ),
-                        Transform.scale(
-                          scale: 0.7,
-                          child: CupertinoSwitch(
-                            trackColor: CustomColors.redB71C1C,
-                            activeColor: CustomColors.greenPrimary,
-                            value: isAudioMode,
-                            onChanged: (bool value) {
-                              switchAudioMode();
-                            },
+                  courseType == 'live'
+                      ? Container()
+                      : Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: isAudioMode
+                                  ? CustomColors.greenPrimary
+                                  : CustomColors.redB71C1C,
+                              style: BorderStyle.solid,
+                              width: 2.0,
+                            ),
+                            borderRadius: BorderRadius.circular(100),
+                            color: CustomColors.whitePrimary,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 1),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              // Text(
+                              //   "On Site",
+                              //   textAlign: TextAlign.center,
+                              //   style: TextStyle(
+                              //     color: isAudioMode
+                              //         ? CustomColors.gray878787
+                              //         : CustomColors.redB71C1C,
+                              //     fontSize: 12,
+                              //     fontFamily: CustomFontFamily.NotoSansBold,
+                              //   ),
+                              // ),
+                              Transform.scale(
+                                scale: 0.7,
+                                child: CupertinoSwitch(
+                                  trackColor: CustomColors.redB71C1C,
+                                  activeColor: CustomColors.greenPrimary,
+                                  value: isAudioMode,
+                                  onChanged: (bool value) {
+                                    switchAudioMode();
+                                  },
+                                ),
+                              ),
+                              Text(isAudioMode ? 'Online ' : 'On site',
+                                  textAlign: TextAlign.center,
+                                  style: isAudioMode
+                                      ? CustomStyles.bold12green4CAF50
+                                      : CustomStyles.bold14RedB71C1C),
+                              S.w(4)
+                            ],
                           ),
                         ),
-                        Text(isAudioMode ? 'Online ' : 'On site',
-                            textAlign: TextAlign.center,
-                            style: isAudioMode
-                                ? CustomStyles.bold12green4CAF50
-                                : CustomStyles.bold14RedB71C1C),
-                        S.w(4)
-                      ],
-                    ),
-                  ),
                   courseType == 'live' ? const SizedBox() : S.w(10),
                   const DividerVer(),
                   S.w(10),
@@ -2772,31 +2773,32 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
               ],
             ),
           ),
-          courseType == 'live' ? Container() :
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Transform.scale(
-                  scale: 0.6,
-                  child: CupertinoSwitch(
-                    trackColor: CustomColors.redB71C1C,
-                    activeColor: CustomColors.greenPrimary,
-                    value: isAudioMode,
-                    onChanged: (bool value) {
-                      switchAudioMode();
-                    },
+          courseType == 'live'
+              ? Container()
+              : Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Transform.scale(
+                        scale: 0.6,
+                        child: CupertinoSwitch(
+                          trackColor: CustomColors.redB71C1C,
+                          activeColor: CustomColors.greenPrimary,
+                          value: isAudioMode,
+                          onChanged: (bool value) {
+                            switchAudioMode();
+                          },
+                        ),
+                      ),
+                      Text(isAudioMode ? 'Online ' : 'On site',
+                          textAlign: TextAlign.center,
+                          style: isAudioMode
+                              ? CustomStyles.bold14greenPrimary
+                              : CustomStyles.bold14redB71C1C),
+                      S.w(defaultPadding),
+                    ],
                   ),
                 ),
-                Text(isAudioMode ? 'Online ' : 'On site',
-                    textAlign: TextAlign.center,
-                    style: isAudioMode
-                        ? CustomStyles.bold14greenPrimary
-                        : CustomStyles.bold14redB71C1C),
-                S.w(defaultPadding),
-              ],
-            ),
-          ),
           // Expanded(
           //   child: Row(
           //     mainAxisAlignment: MainAxisAlignment.end,
@@ -2891,12 +2893,12 @@ class _StudentLiveClassroomState extends State<StudentLiveClassroom> {
 
   Future<void> calculateTime() async {
     if (courseType == 'hybrid') {
-    var now = DateTime.now();
-    int? duration;
-    duration =
-        ((now.millisecondsSinceEpoch - _joinedTime.millisecondsSinceEpoch) /
-                60000)
-            .ceil();
+      var now = DateTime.now();
+      int? duration;
+      duration =
+          ((now.millisecondsSinceEpoch - _joinedTime.millisecondsSinceEpoch) /
+                  60000)
+              .ceil();
       await updateBalanceAndLiveDuration(duration, audioCost);
     }
   }

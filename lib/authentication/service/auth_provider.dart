@@ -37,6 +37,7 @@ class AuthProvider extends ChangeNotifier {
           var pushToken = await getFCMToken();
           if (pushToken != null && pushToken.isNotEmpty) {
             log('getSelfInfo: have pushToken parameter');
+            log(pushToken);
             await userRef.update({'push_token': pushToken});
             log('successfully added push token');
           }

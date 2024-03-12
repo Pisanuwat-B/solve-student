@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:developer';
 
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:solve_student/constants/theme.dart';
@@ -12,9 +14,11 @@ import '../../calendar/constants/custom_styles.dart';
 class QuestionDialog extends StatefulWidget {
   const QuestionDialog({
     required this.questionText,
+    required this.courseName,
     required this.courseId,
     required this.chapterId,
     required this.page,
+    required this.replayProgress,
     this.questionList,
     super.key,
     this.selectedQuestion,
@@ -22,9 +26,11 @@ class QuestionDialog extends StatefulWidget {
   final List<QuestionSearchModel>? questionList;
   final QuestionSearchModel? selectedQuestion;
   final String questionText;
+  final String courseName;
   final String courseId;
   final String chapterId;
   final int page;
+  final double replayProgress;
   @override
   State<QuestionDialog> createState() => _QuestionDialogState();
 }
@@ -41,6 +47,42 @@ class _QuestionDialogState extends State<QuestionDialog> {
     controller?.setSearchText(widget.questionText);
     log(controller!.questionSelected.toString());
     super.initState();
+  }
+
+  String nuToken =
+      'dWR8pm6mQ76R8x4A4tgES7:APA91bGAA0t7DlUstEVRRSs7EJIG74cFxodma-O40Z8kI78CUyhJ3DDOftu6UiAnyWUDr97nMjKmRzHHatcMUc-gdPu89nR73ttq_dE0bJFGEG9Av1--6LlpWQRrA4ZHJo8O6PdWymmP';
+
+  String solveToken =
+      'f-nHww8wTp6Ti2sqnUGp41:APA91bESQAG-p-ZlADrPYtavpcIIrWPb_UBfD-lVJ4NH-lgDNjmyuHSEdgtz2-oyxz_SbuvfSFJwmoEeCybGbdm8pFbbpSMgsL3UzZyvedzBfcSgvufSaVaH8FNdAJzTVib7Jy4o1vl2';
+
+  Future<void> sendMessage(String token) async {
+    log('try to send message');
+    var messageData = {
+      'token': token,
+      'courseName': widget.courseName,
+      'questionText': widget.questionText,
+      // Add other fields as needed
+      'courseId': widget.courseId.toString(),
+      'chapterId': widget.chapterId.toString(),
+      'page': widget.page.toString(),
+      'replayProgress': widget.replayProgress.toString(),
+    };
+
+    log('Message data: $messageData');
+
+    var url = Uri.parse('http://35.240.204.107:8000/send-message');
+    var headers = {'Content-Type': 'application/json'};
+    var response = await http.post(
+      url,
+      headers: headers,
+      body: json.encode(messageData),
+    );
+
+    if (response.statusCode == 200) {
+      log('send message success');
+    } else {
+      log('send message fail: ${response.body}');
+    }
   }
 
   @override
@@ -380,6 +422,7 @@ class _QuestionDialogState extends State<QuestionDialog> {
         const SizedBox(height: 20),
         InkWell(
           onTap: () {
+            sendMessage(solveToken);
             controller?.sendQuestionSuccess();
           },
           child: Container(

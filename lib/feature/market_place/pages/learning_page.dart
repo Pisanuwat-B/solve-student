@@ -2674,10 +2674,12 @@ class _LearningPageState extends State<LearningPage> {
       pageBuilder: (context, anim1, anim2) {
         return QuestionDialog(
           questionText: lastWords,
+          courseName: courseName,
           courseId: widget.course.id!,
           chapterId: widget.lesson.lessonId.toString(),
           page: _currentPage + 1,
           selectedQuestion: selectedQuestion,
+          replayProgress: replayProgress,
           // questionList: mockData,
         );
       },
