@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
+import 'package:solve_student/authentication/models/user_model.dart';
 import 'package:speech_balloon/speech_balloon.dart';
 import 'package:speech_to_text/speech_recognition_event.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -45,10 +46,12 @@ import '../model/lesson_market_model.dart';
 class LearningPage extends StatefulWidget {
   final CourseMarketModel course;
   final Lesson lesson;
+  final UserModel tutor;
   const LearningPage({
     Key? key,
     required this.lesson,
     required this.course,
+    required this.tutor,
   }) : super(key: key);
 
   @override
@@ -202,8 +205,10 @@ class _LearningPageState extends State<LearningPage> {
 
   // ---------- VARIABLE: tutor solvepad data
   late Map<String, dynamic> _data;
+  late Map<String, dynamic> questionData;
   late Map<String, dynamic> reviewNote;
   late Map<String, dynamic> answerData;
+  late List<Map<String, dynamic>> _actions;
   String jsonData = '';
   List<StrokeStamp> currentStroke = [];
   List<ScrollZoomStamp> currentScrollZoom = [];
@@ -1091,6 +1096,26 @@ class _LearningPageState extends State<LearningPage> {
           endAskTimer();
         }
       });
+    });
+    questionData = {
+      "version": "2.0.0",
+      "solvepadWidth": mySolvepadSize.width,
+      "solvepadHeight": mySolvepadSize.height,
+      "metadata": {
+        "courseId": widget.course.id,
+        "tutorId": widget.course.tutorId,
+        "duration": 0,
+      },
+      "actions": []
+    };
+    _actions = (questionData['actions'] as List).cast<Map<String, dynamic>>();
+    _actions.add({
+      "time": 0,
+      "type": "start-recording",
+      "page": _currentPage,
+      "scrollX": currentScrollX,
+      "scrollY": currentScrollY,
+      "scale": currentScale,
     });
   }
 
@@ -2677,6 +2702,7 @@ class _LearningPageState extends State<LearningPage> {
           courseName: courseName,
           courseId: widget.course.id!,
           chapterId: widget.lesson.lessonId.toString(),
+          tutorToken: widget.tutor.pushToken!,
           page: _currentPage + 1,
           selectedQuestion: selectedQuestion,
           replayProgress: replayProgress,

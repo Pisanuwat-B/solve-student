@@ -484,6 +484,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                             lesson: con
                                                 .courseDetail!.lessons![index],
                                             course: con.courseDetail!,
+                                            tutor: con.tutor!,
                                           ),
                                         ),
                                       );

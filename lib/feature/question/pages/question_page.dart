@@ -17,6 +17,7 @@ class QuestionDialog extends StatefulWidget {
     required this.courseName,
     required this.courseId,
     required this.chapterId,
+    required this.tutorToken,
     required this.page,
     required this.replayProgress,
     this.questionList,
@@ -29,6 +30,7 @@ class QuestionDialog extends StatefulWidget {
   final String courseName;
   final String courseId;
   final String chapterId;
+  final String tutorToken;
   final int page;
   final double replayProgress;
   @override
