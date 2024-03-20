@@ -7,6 +7,7 @@ import 'package:solve_student/feature/my_course/pages/my_course_live_page.dart';
 import 'package:solve_student/feature/my_course/pages/my_course_solvepad_page.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import '../../class/pages/class_list_page.dart';
 import '../../live_classroom/utils/responsive.dart';
 import '../../maintenance/maintenance.dart';
 
@@ -86,8 +87,15 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                         'assets/images/menu_qa.png',
                         'Marketplace',
                         'ค้นหาคอร์สเรียน แบบ Solvepad',
-                        'tightRight',
+                        'tight',
                         const MarketHomePage(),
+                      ),
+                      mobileCard(
+                        'assets/images/live4.png',
+                        'ค้นหาติวเตอร์',
+                        'ค้นหาติวเตอร์ จาก Solve',
+                        'tightRight',
+                        ClassListPage(),
                       ),
                     ],
                   ),
@@ -120,6 +128,13 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                         'left',
                         const MarketHomePage(),
                       ),
+                      mobileCard(
+                        'assets/images/live4.png',
+                        'ค้นหาติวเตอร์',
+                        'ค้นหาติวเตอร์ จาก Solve',
+                        'right',
+                        ClassListPage(),
+                      ),
                     ],
                   ),
                 ],
@@ -151,7 +166,8 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                         context,
                         onTap: () async {
                           var route = MaterialPageRoute(
-                              builder: (context) => const MyCourseLivePage(courseType: 'live'));
+                              builder: (context) =>
+                                  const MyCourseLivePage(courseType: 'live'));
                           Navigator.push(context, route);
                         },
                         image: 'assets/images/menu_create_sheet.png',
@@ -169,6 +185,17 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                         title: "Marketplace",
                         content:
                             "ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี SOLVEPad",
+                      ),
+                      gridCard(
+                        context,
+                        onTap: () {
+                          var route = MaterialPageRoute(
+                              builder: (context) => ClassListPage());
+                          Navigator.push(context, route);
+                        },
+                        image: 'assets/images/live4.png',
+                        title: "ค้นหาติวเตอร์",
+                        content: "ค้นหาติวเตอร์ จาก Solve",
                       ),
                     ],
                   ),
@@ -194,8 +221,15 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                         'assets/images/menu_qa.png',
                         'Marketplace',
                         'ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี Solvepad',
-                        'right',
+                        'mid',
                         const MarketHomePage(),
+                      ),
+                      mobileCard(
+                        'assets/images/live4.png',
+                        'ค้นหาติวเตอร์',
+                        'ค้นหาติวเตอร์ จาก Solve',
+                        'right',
+                        ClassListPage(),
                       ),
                     ],
                   ),
