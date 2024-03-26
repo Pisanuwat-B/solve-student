@@ -424,7 +424,7 @@ class _QuestionDialogState extends State<QuestionDialog> {
         const SizedBox(height: 20),
         InkWell(
           onTap: () {
-            sendMessage(solveToken);
+            sendMessage(widget.tutorToken);
             controller?.sendQuestionSuccess();
           },
           child: Container(
