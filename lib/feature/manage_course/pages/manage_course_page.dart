@@ -64,7 +64,8 @@ class _ManageCoursePageState extends State<ManageCoursePage>
                   ),
                   const SizedBox(height: 10),
                 ],
-                if (Responsive.isDesktop(context)) ...[
+                if (Responsive.isDesktop(context) || !(Responsive.isMobile(context) ||
+                    Responsive.isTablet(context))) ...[
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

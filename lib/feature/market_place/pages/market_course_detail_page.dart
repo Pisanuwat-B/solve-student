@@ -298,26 +298,27 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                     const SizedBox(height: 10),
                                     GestureDetector(
                                       onTap: () async {
-                                        if (!con.isLoading) {
-                                          OrderClassModel orderNew =
-                                              await con.createMarketOrder(
-                                            widget.courseId,
-                                            con.courseDetail?.courseName ?? "",
-                                            con.courseDetail?.detailsText ?? "",
-                                            con.courseDetail?.createUser ?? "",
-                                          );
-                                          ChatModel? data =
-                                              await con.createMarketChat(
-                                            widget.courseId,
-                                            con.courseDetail?.createUser ?? "",
-                                          );
-                                          var route = MaterialPageRoute(
-                                            builder: (_) => ChatRoomPage(
-                                              chat: data!,
-                                              order: orderNew,
-                                            ),
-                                          );
-                                          Navigator.push(context, route);
+                                        if (!con.isLoading && con.courseDetail != null) {
+                                          con.addCourse(con.courseDetail!);
+                                          // OrderClassModel orderNew =
+                                          //     await con.createMarketOrder(
+                                          //   widget.courseId,
+                                          //   con.courseDetail?.courseName ?? "",
+                                          //   con.courseDetail?.detailsText ?? "",
+                                          //   con.courseDetail?.createUser ?? "",
+                                          // );
+                                          // ChatModel? data =
+                                          //     await con.createMarketChat(
+                                          //   widget.courseId,
+                                          //   con.courseDetail?.createUser ?? "",
+                                          // );
+                                          // var route = MaterialPageRoute(
+                                          //   builder: (_) => ChatRoomPage(
+                                          //     chat: data!,
+                                          //     order: orderNew,
+                                          //   ),
+                                          // );
+                                          // Navigator.push(context, route);
                                         }
                                       },
                                       onDoubleTap: () {},
@@ -333,13 +334,13 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            Icon(
-                                              Icons.chat,
-                                              color: Colors.white,
-                                            ),
-                                            SizedBox(width: 5),
+                                            // Icon(
+                                            //   Icons.chat,
+                                            //   color: Colors.white,
+                                            // ),
+                                            // SizedBox(width: 5),
                                             Text(
-                                              "แชท",
+                                              "ซื้อ",
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 15,

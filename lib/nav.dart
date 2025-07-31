@@ -35,11 +35,11 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
     // const CourseLivePage(),
     // const ChatListPage(),
     // const Center(child: Text("Notification")),
-    StudentScreen(),
+    // StudentScreen(),
     // const MarketHomePage(),
     const ManageCoursePage(),
     // ClassListPage(),
-    const ChatListPage(),
+    // const ChatListPage(),
     const NotificationPage(),
     const ProfilePage(),
   ];
@@ -101,18 +101,20 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
           onTap: (value) {
             tab(value);
           },
-          selectedLabelStyle: GoogleFonts.kanit(),
-          unselectedLabelStyle: GoogleFonts.kanit(),
+          selectedLabelStyle:
+          GoogleFonts.kanit(fontSize: 12, fontWeight: FontWeight.w600),
+          unselectedLabelStyle:
+          GoogleFonts.kanit(fontSize: 12, fontWeight: FontWeight.w400),
           // selectedItemColor: primaryColor,
           unselectedItemColor: Colors.grey,
           showUnselectedLabels: true,
           currentIndex: currentIndex,
           type: BottomNavigationBarType.fixed,
           items: const [
-            BottomNavigationBarItem(
-                activeIcon: Icon(Icons.calendar_month),
-                icon: Icon(Icons.calendar_month_outlined),
-                label: "ตารางเรียน"),
+            // BottomNavigationBarItem(
+            //     activeIcon: Icon(Icons.calendar_month),
+            //     icon: Icon(Icons.calendar_month_outlined),
+            //     label: "ตารางเรียน"),
             // BottomNavigationBarItem(
             //     activeIcon: Icon(Icons.find_in_page),
             //     icon: Icon(Icons.find_in_page_outlined),
@@ -125,10 +127,10 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
                 activeIcon: Icon(Icons.copy),
                 icon: Icon(Icons.copy_outlined),
                 label: "คอร์ส"),
-            BottomNavigationBarItem(
-                activeIcon: Icon(CupertinoIcons.chat_bubble_2),
-                icon: Icon(CupertinoIcons.chat_bubble_2),
-                label: "แชท"),
+            // BottomNavigationBarItem(
+            //     activeIcon: Icon(CupertinoIcons.chat_bubble_2),
+            //     icon: Icon(CupertinoIcons.chat_bubble_2),
+            //     label: "แชท"),
             BottomNavigationBarItem(
                 activeIcon: Icon(Icons.notifications),
                 icon: Icon(Icons.notifications_outlined),

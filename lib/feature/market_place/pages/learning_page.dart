@@ -1034,6 +1034,10 @@ class _LearningPageState extends State<LearningPage> {
                     showSpeechBalloon = false;
                   });
                   log('tap');
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(builder: (context) => const AskTutor()),
+                  // );
                 },
                 child: Image.asset(
                   'assets/images/ic_mic_off_float.png',
@@ -2543,7 +2547,7 @@ class _LearningPageState extends State<LearningPage> {
             child: AnimatedContainer(
               duration: const Duration(seconds: 1),
               curve: Curves.fastOutSlowIn,
-              height: selectedTools ? 270 : 440,
+              height: selectedTools ? 270 : 460,
               width: 120,
               decoration: BoxDecoration(
                 border: Border.all(
@@ -2610,45 +2614,48 @@ class _LearningPageState extends State<LearningPage> {
                         )
                       : Expanded(
                           flex: 7, // flex 4 if have all
-                          child: ListView.builder(
-                              scrollDirection: Axis.vertical,
-                              shrinkWrap: true,
-                              itemCount: _listTools.length,
-                              itemBuilder: (context, index) {
-                                return Column(
-                                  children: [
-                                    S.h(8),
-                                    InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedIndexTools = index;
-                                        });
-                                        if (index == 0) {
-                                          _mode = DrawingMode.drag;
-                                        } // drag
-                                        else if (index == 1) {
-                                          _mode = DrawingMode.pen;
-                                        } // pen
-                                        else if (index == 2) {
-                                          _mode = DrawingMode.highlighter;
-                                        } // high
-                                        else if (index == 3) {
-                                          _mode = DrawingMode.eraser;
-                                        } // eraser
-                                        else if (index == 4) {
-                                          _mode = DrawingMode.laser;
-                                        } // laser
-                                      },
-                                      child: Image.asset(
-                                        _selectedIndexTools == index
-                                            ? _listTools[index]['image_active']
-                                            : _listTools[index]['image_dis'],
-                                        width: 10.w,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ListView.builder(
+                                scrollDirection: Axis.vertical,
+                                shrinkWrap: true,
+                                itemCount: _listTools.length,
+                                itemBuilder: (context, index) {
+                                  return Column(
+                                    children: [
+                                      S.h(8),
+                                      InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedIndexTools = index;
+                                          });
+                                          if (index == 0) {
+                                            _mode = DrawingMode.drag;
+                                          } // drag
+                                          else if (index == 1) {
+                                            _mode = DrawingMode.pen;
+                                          } // pen
+                                          else if (index == 2) {
+                                            _mode = DrawingMode.highlighter;
+                                          } // high
+                                          else if (index == 3) {
+                                            _mode = DrawingMode.eraser;
+                                          } // eraser
+                                          else if (index == 4) {
+                                            _mode = DrawingMode.laser;
+                                          } // laser
+                                        },
+                                        child: Image.asset(
+                                          _selectedIndexTools == index
+                                              ? _listTools[index]['image_active']
+                                              : _listTools[index]['image_dis'],
+                                          width: 10.w,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                );
-                              }),
+                                    ],
+                                  );
+                                }),
+                          ),
                         ),
                   Container(
                       height: 2, width: 80, color: CustomColors.grayF3F3F3),

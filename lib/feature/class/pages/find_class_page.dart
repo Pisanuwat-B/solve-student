@@ -370,14 +370,14 @@ class _FindClassPageState extends State<FindClassPage> {
                             // print('=================: ${currentPage}');
                           });
                         },
-                        config: NumberPaginatorUIConfig(
-                            buttonSelectedBackgroundColor: Colors.green,
-                            // buttonSelectedForegroundColor: Colors.blue,
-                            buttonShape: RoundedRectangleBorder(
-                                side: const BorderSide(color: Colors.green),
-                                borderRadius: BorderRadius.circular(5)),
-                            mode: ContentDisplayMode.numbers,
-                            mainAxisAlignment: MainAxisAlignment.center),
+                        // config: NumberPaginatorUIConfig(
+                        //     buttonSelectedBackgroundColor: Colors.green,
+                        //     // buttonSelectedForegroundColor: Colors.blue,
+                        //     buttonShape: RoundedRectangleBorder(
+                        //         side: const BorderSide(color: Colors.green),
+                        //         borderRadius: BorderRadius.circular(5)),
+                        //     mode: ContentDisplayMode.numbers,
+                        //     mainAxisAlignment: MainAxisAlignment.center),
                         // contentBuilder: (index) {
                         //   return Container(child: Text('${index+1}'),);
                         // },

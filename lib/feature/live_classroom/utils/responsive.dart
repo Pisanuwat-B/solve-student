@@ -28,6 +28,11 @@ class Responsive extends StatelessWidget {
       MediaQuery.of(context).size.width >= 650 &&
       MediaQuery.of(context).orientation == Orientation.portrait;
 
+  static bool isTabletLandscape(BuildContext context) =>
+      MediaQuery.of(context).size.width < 1100 &&
+          MediaQuery.of(context).size.width >= 650 &&
+          MediaQuery.of(context).orientation == Orientation.landscape;
+
   static bool isDesktop(BuildContext context) =>
       MediaQuery.of(context).size.width >= 1100;
 

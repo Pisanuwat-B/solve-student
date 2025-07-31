@@ -173,7 +173,7 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                     ],
                   ),
                 ],
-                if (Responsive.isDesktop(context)) ...[
+                if (Responsive.isDesktop(context) || Responsive.isTabletLandscape(context)) ...[
                   Row(
                     children: [
                       mobileCard(

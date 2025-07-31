@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +16,7 @@ import 'package:solve_student/feature/order/model/order_class_model.dart';
 import 'package:uuid/uuid.dart';
 
 class MarketCourseDetailController extends ChangeNotifier {
-  final GoogleSignIn googleSignIn = GoogleSignIn();
+  // final GoogleSignIn googleSignIn = GoogleSignIn();
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   final FirebaseStorage storage = FirebaseStorage.instance;
@@ -145,6 +145,31 @@ class MarketCourseDetailController extends ChangeNotifier {
         return 'ไม่พบข้อมูล';
       }
     });
+  }
+
+  Future<void> addCourse(CourseMarketModel courseDetail) async {
+    final userId = auth?.uid;
+
+    if (userId == null) {
+      debugPrint("User not authenticated.");
+      return;
+    }
+
+    try {
+      // Add a new document to 'orders' collection
+      await firebaseFirestore.collection('orders').add({
+        'studentId': userId,
+        'title': courseDetail.courseName,
+        'tutorId': courseDetail.tutorId,
+        'classId': courseDetail.id,
+        'paymentStatus': 'paid', // Must be 'paid' to show up in getMyCourseList()
+        'timestamp': FieldValue.serverTimestamp(), // optional: for ordering or history
+      });
+
+      log("Course added successfully.");
+    } catch (e) {
+      log("Failed to add course: $e");
+    }
   }
 
   Future<OrderClassModel> createMarketOrder(

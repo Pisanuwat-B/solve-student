@@ -20,6 +20,8 @@ import 'package:solve_student/feature/my_course/model/review_model.dart';
 import 'package:solve_student/feature/order/model/order_class_model.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import '../../market_place/pages/learning_page.dart';
+
 class MyCourseSolveDetailPage extends StatefulWidget {
   MyCourseSolveDetailPage({super.key, required this.courseId});
   String courseId;
@@ -188,71 +190,71 @@ class _MyCourseDetailPageState extends State<MyCourseSolveDetailPage> {
                                 ],
                               ),
                             ),
-                            Container(
-                              width: Sizer(context).w * 0.3,
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: greyColor2,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Wrap(
-                                spacing: 2,
-                                children: [
-                                  GestureDetector(
-                                    onTap: () async {
-                                      if (!con.isLoading) {
-                                        OrderClassModel orderNew =
-                                            await con.createMarketOrder(
-                                          widget.courseId,
-                                          con.courseDetail?.courseName ?? "",
-                                          con.courseDetail?.detailsText ?? "",
-                                          con.courseDetail?.createUser ?? "",
-                                        );
-                                        ChatModel? data =
-                                            await con.createMarketChat(
-                                          widget.courseId,
-                                          con.courseDetail?.createUser ?? "",
-                                        );
-                                        var route = MaterialPageRoute(
-                                          builder: (_) => ChatRoomPage(
-                                            chat: data!,
-                                            order: orderNew,
-                                          ),
-                                        );
-                                        Navigator.push(context, route);
-                                      }
-                                    },
-                                    onDoubleTap: () {},
-                                    child: Container(
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.chat,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(width: 5),
-                                          Text(
-                                            "แชท",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
+                            // Container(
+                            //   width: Sizer(context).w * 0.3,
+                            //   padding: EdgeInsets.all(10),
+                            //   decoration: BoxDecoration(
+                            //     color: greyColor2,
+                            //     borderRadius: BorderRadius.circular(10),
+                            //   ),
+                            //   child: Wrap(
+                            //     spacing: 2,
+                            //     children: [
+                            //       GestureDetector(
+                            //         onTap: () async {
+                            //           if (!con.isLoading) {
+                            //             OrderClassModel orderNew =
+                            //                 await con.createMarketOrder(
+                            //               widget.courseId,
+                            //               con.courseDetail?.courseName ?? "",
+                            //               con.courseDetail?.detailsText ?? "",
+                            //               con.courseDetail?.createUser ?? "",
+                            //             );
+                            //             ChatModel? data =
+                            //                 await con.createMarketChat(
+                            //               widget.courseId,
+                            //               con.courseDetail?.createUser ?? "",
+                            //             );
+                            //             var route = MaterialPageRoute(
+                            //               builder: (_) => ChatRoomPage(
+                            //                 chat: data!,
+                            //                 order: orderNew,
+                            //               ),
+                            //             );
+                            //             Navigator.push(context, route);
+                            //           }
+                            //         },
+                            //         onDoubleTap: () {},
+                            //         child: Container(
+                            //           height: 40,
+                            //           decoration: BoxDecoration(
+                            //             color: primaryColor,
+                            //             borderRadius: BorderRadius.circular(10),
+                            //           ),
+                            //           alignment: Alignment.center,
+                            //           child: Row(
+                            //             mainAxisAlignment:
+                            //                 MainAxisAlignment.center,
+                            //             children: [
+                            //               Icon(
+                            //                 Icons.chat,
+                            //                 color: Colors.white,
+                            //               ),
+                            //               SizedBox(width: 5),
+                            //               Text(
+                            //                 "แชท",
+                            //                 style: TextStyle(
+                            //                   color: Colors.white,
+                            //                   fontSize: 15,
+                            //                 ),
+                            //               ),
+                            //             ],
+                            //           ),
+                            //         ),
+                            //       ),
+                            //     ],
+                            //   ),
+                            // )
                           ],
                         ),
                         const SizedBox(height: 10),
@@ -330,7 +332,17 @@ class _MyCourseDetailPageState extends State<MyCourseSolveDetailPage> {
                                       con.courseDetail!.lessons![index];
                                   return GestureDetector(
                                     onTap: () {
-                                      log("click");
+                                      if (index != 0) return;
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => LearningPage(
+                                            lesson: con
+                                                .courseDetail!.lessons![index],
+                                            course: con.courseDetail!,
+                                          ),
+                                        ),
+                                      );
                                     },
                                     child: Container(
                                       width: Sizer(context).w,

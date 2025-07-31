@@ -5,7 +5,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.9+11
 
 environment:
-  sdk: '>=2.19.6 <3.0.0'
+  sdk: '>=3.1.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -13,67 +13,67 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   cupertino_icons: ^1.0.2
-  intl: ^0.18.0
+  intl: ^0.20.2
   google_fonts: ^4.0.0
-  firebase_auth: ^4.6.1
-  firebase_core: ^2.13.0
-  firebase_messaging: ^14.6.3
-  firebase_analytics: ^10.4.3
-  cloud_firestore: ^4.7.1
-  image_picker: ^0.8.3+2
-  firebase_storage: ^11.2.1
-  uuid: ^3.0.4
-  google_sign_in: ^6.1.2
-  sign_in_with_apple: ^5.0.0
-  flutter_keyboard_visibility: ^5.4.1
+  firebase_auth: ^5.7.0
+  firebase_core: ^3.15.2
+  firebase_messaging: ^15.2.10
+  firebase_analytics: ^11.6.0
+  cloud_firestore: ^5.6.12
+  image_picker: ^1.1.2
+  firebase_storage: ^12.4.10
+  uuid: ^4.5.1
+  google_sign_in: ^7.1.1
+  sign_in_with_apple: ^7.0.1
+  flutter_keyboard_visibility: ^6.0.0
   shared_preferences: ^2.1.1
   provider: ^6.0.5
   fluttertoast: ^8.2.2
 
-  photo_view: 0.14.0
-  cached_network_image: ^3.2.3
+  photo_view: ^0.15.0
+  cached_network_image: ^3.3.1
   gallery_saver: ^2.3.2
-  emoji_picker_flutter: ^1.6.0
+  emoji_picker_flutter: ^4.3.0
   table_calendar: ^3.0.9
-  flutter_local_notifications: ^13.0.0
-  number_paginator: ^0.2.3
+  flutter_local_notifications: ^18.0.1
+  number_paginator: ^1.1.1
 
   logging: ^1.2.0
-  file_picker: ^5.3.0
+  file_picker: ^10.2.0
   flutter_rating_bar: ^4.0.1
   percent_indicator: ^4.2.3
-  dotted_border: ^2.0.0+3
+  dotted_border: ^3.1.0
   flutter_reorderable_list: ^1.3.1
   video_thumbnail: ^0.5.3
-  flutter_reorderable_grid_view: ^4.0.0
+  flutter_reorderable_grid_view: ^5.5.0
   responsive_framework: ^1.0.0
-  carousel_slider: ^4.2.1
-  dots_indicator: ^3.0.0
+  carousel_slider: ^5.1.1
+  dots_indicator: ^4.0.1
   flutter_linkify: ^6.0.0
   url_launcher: ^6.1.0
 
-  videosdk: ^1.1.3
-  web_socket_channel: ^2.4.0
+#  videosdk: ^1.1.3
+  web_socket_channel: ^3.0.3
   flutter_dotenv: ^5.1.0
   http: ^0.13.5
-  sizer: ^2.0.15
-  lottie: ^2.4.0
-  flutter_webrtc: ^0.9.34
-  camera: ^0.10.5+2
+  sizer: ^3.0.5
+  lottie: ^3.0.0
+#  flutter_webrtc: ^1.0.0
+  camera: ^0.11.2
   speech_balloon: ^0.0.4
   webview_flutter: ^4.2.2
 
   path_provider: ^2.0.13
   flutter_sound: ^9.2.13
-  permission_handler: ^10.2.0
-  audio_session: ^0.1.6
+  permission_handler: ^12.0.1
+  audio_session: ^0.2.2
   flutter_xlider: ^3.5.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
-  flutter_launcher_icons: "^0.13.1"
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter_launcher_icons:
   android: "launcher_icon"

@@ -131,23 +131,23 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
       if (validMeeting) {
         if (mounted) {
           print('JOIN ROOM');
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  StudentLiveClassroom(
-                    token: _token,
-                    userId: authProvider.uid!,
-                    courseId: widget.course.courseId!,
-                    startTime: widget.course.start!.millisecondsSinceEpoch,
-                    meetingId: meetingId,
-                    displayName: displayName,
-                    isHost: false,
-                    micEnabled: isMicOn,
-                    camEnabled: false,
-                  ),
-            ),
-          );
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(
+          //     builder: (context) =>
+          //         StudentLiveClassroom(
+          //           token: _token,
+          //           userId: authProvider.uid!,
+          //           courseId: widget.course.courseId!,
+          //           startTime: widget.course.start!.millisecondsSinceEpoch,
+          //           meetingId: meetingId,
+          //           displayName: displayName,
+          //           isHost: false,
+          //           micEnabled: isMicOn,
+          //           camEnabled: false,
+          //         ),
+          //   ),
+          // );
         }
       } else {
         if (mounted) {
@@ -155,23 +155,23 @@ class _WaitingJoinRoomState extends State<WaitingJoinRoom>
         }
       }
     }else{
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              StudentLiveClassroom(
-                token: _token,
-                userId: authProvider.uid!,
-                courseId: widget.course.courseId!,
-                startTime: widget.course.start!.millisecondsSinceEpoch,
-                meetingId: meetingId,
-                displayName: displayName,
-                isHost: false,
-                micEnabled: isMicOn,
-                camEnabled: false,
-              ),
-        ),
-      );
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(
+      //     builder: (context) =>
+      //         StudentLiveClassroom(
+      //           token: _token,
+      //           userId: authProvider.uid!,
+      //           courseId: widget.course.courseId!,
+      //           startTime: widget.course.start!.millisecondsSinceEpoch,
+      //           meetingId: meetingId,
+      //           displayName: displayName,
+      //           isHost: false,
+      //           micEnabled: isMicOn,
+      //           camEnabled: false,
+      //         ),
+      //   ),
+      // );
     }
   }
 
