@@ -390,6 +390,13 @@ class _AskTutorState extends State<AskTutor>
       ]),
       child: Row(
         children: [
+          S.w(8),
+          IconButton(
+              icon:
+              const Icon(Icons.arrow_back, color: CustomColors.gray878787),
+              onPressed: () {
+                Navigator.of(context).pop();
+              }),
           S.w(Responsive.isTablet(context) ? 5 : 24),
           Expanded(
             flex: 2,
@@ -505,7 +512,7 @@ class _AskTutorState extends State<AskTutor>
                 ],
               )),
           SizedBox(
-            width: 140,
+            width: 150,
             height: 40,
             child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -538,7 +545,8 @@ class _AskTutorState extends State<AskTutor>
                       size: 20.0,
                     ),
                   ],
-                )),
+                ),
+            ),
           ),
           S.w(Responsive.isTablet(context) ? 5 : 24),
         ],
@@ -1043,6 +1051,13 @@ class _AskTutorState extends State<AskTutor>
                         ]),
                     child: Row(
                       children: [
+                        S.w(8),
+                        IconButton(
+                            icon:
+                            const Icon(Icons.arrow_back, color: CustomColors.gray878787),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            }),
                         S.w(Responsive.isTablet(context) ? 5 : 24),
                         Expanded(
                           flex: 2,
@@ -1163,7 +1178,7 @@ class _AskTutorState extends State<AskTutor>
                               ],
                             )),
                         SizedBox(
-                          width: 140,
+                          width: 150,
                           height: 40,
                           child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
@@ -1304,7 +1319,8 @@ class _AskTutorState extends State<AskTutor>
                                             Text('เริ่มบันทึกเสียงและหน้าจอ',
                                                 style: CustomStyles.bold14White)
                                           ],
-                                        )),
+                                        ),
+                                    ),
                                   ),
                                 ],
                               )

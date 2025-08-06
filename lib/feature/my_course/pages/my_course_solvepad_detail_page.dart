@@ -333,13 +333,15 @@ class _MyCourseDetailPageState extends State<MyCourseSolveDetailPage> {
                                   return GestureDetector(
                                     onTap: () {
                                       if (index != 0) return;
+                                      log('tutor ID');
+                                      log(con.tutor!.id!);
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => LearningPage(
-                                            lesson: con
-                                                .courseDetail!.lessons![index],
+                                            lesson: con.courseDetail!.lessons![index],
                                             course: con.courseDetail!,
+                                            tutorId: con.tutor!.id!,
                                           ),
                                         ),
                                       );
