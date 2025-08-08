@@ -12,6 +12,8 @@ import 'package:solve_student/feature/market_place/service/market_home_provider.
 import 'package:solve_student/feature/order/service/order_mock_provider.dart';
 import 'package:solve_student/feature/standby_study/service/state_study_provider.dart';
 
+import '../feature/notification/notification_provider.dart';
+
 final List<SingleChildWidget> stateIndex = [
   ChangeNotifierProvider<AuthProvider>(
     create: (_) => AuthProvider(),
@@ -29,4 +31,5 @@ final List<SingleChildWidget> stateIndex = [
   ChangeNotifierProvider(create: (context) => CourseLiveController()),
   ChangeNotifierProvider(create: (context) => DocumentController()),
   ChangeNotifierProvider(create: (context) => StudentController()),
+  ChangeNotifierProvider(create: (context) => NotificationProvider()),
 ];

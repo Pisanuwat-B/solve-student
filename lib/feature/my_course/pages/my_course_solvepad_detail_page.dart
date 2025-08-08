@@ -34,8 +34,7 @@ class _MyCourseDetailPageState extends State<MyCourseSolveDetailPage> {
 
   @override
   void initState() {
-    controller =
-        MyCourseSolvepadDetailController(context, courseId: widget.courseId);
+    controller = MyCourseSolvepadDetailController(context, courseId: widget.courseId);
     controller!.init();
     super.initState();
   }
@@ -332,7 +331,6 @@ class _MyCourseDetailPageState extends State<MyCourseSolveDetailPage> {
                                       con.courseDetail!.lessons![index];
                                   return GestureDetector(
                                     onTap: () {
-                                      if (index != 0) return;
                                       log('tutor ID');
                                       log(con.tutor!.id!);
                                       Navigator.push(

@@ -63,6 +63,33 @@ class FirebaseService {
     return [solvepadData, voiceUrl];
   }
 
+  Future<dynamic> getAnswerSolvepadData(String answerId) async {
+    log('get answer data: $answerId');
+    final docSnapshot = await FirebaseFirestore.instance
+        .collection('answer_market')
+        .doc(answerId)
+        .get();
+    final data = docSnapshot.data();
+    final solvepadId = data?['solvepad'].toString();
+    final collectionRef = db.collection('solvepad');
+    String voiceUrl = '';
+    Map<String, dynamic> solvepadData;
+
+    final directory = await getTemporaryDirectory();
+    final file = File('${directory.path}/downloadedSolvepad.txt');
+
+    final event = await collectionRef.doc(solvepadId).get();
+    voiceUrl = (event.data() as Map)['voice'];
+    var solvepadUrl = (event.data() as Map)['solvepad'];
+    final url = Uri.parse(solvepadUrl);
+    final response = await http.get(url);
+    await file.writeAsBytes(response.bodyBytes);
+    var fileContent = await file.readAsString();
+    solvepadData = json.decode(fileContent);
+
+    return [solvepadData, voiceUrl];
+  }
+
   Future<String> getMarketCourseAudioFile(fileURL) async {
     final directory = await getTemporaryDirectory();
     final file = File('${directory.path}/solve_voice.mp4');

@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:solve_student/feature/calendar/app_client/app_client.dart';
@@ -42,7 +43,6 @@ class CourseService {
         }
       }
       Map<String, dynamic> json = {'data': courses};
-      print(json['data']);
       var data = json['data'];
       return CourseModel.fromJson(data);
     } catch (error) {

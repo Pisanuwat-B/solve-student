@@ -17,7 +17,7 @@ class AuthProvider extends ChangeNotifier {
   String? uid;
   bool isLoading = true;
   getSelfInfo() async {
-    log("getSelfInfo");
+    // log("getSelfInfo");
     if (firebaseAuth.currentUser?.uid == null) return;
     uid = firebaseAuth.currentUser?.uid;
     await firebaseFirestore
@@ -31,7 +31,7 @@ class AuthProvider extends ChangeNotifier {
         //for setting user status to active
         // updateActiveStatus(true);
         if (user?.role == null || user?.role == "") {
-          log('in Update');
+          // log('in Update');
           await updateRoleFirestore('student');
         }
         await getWallet();
@@ -145,13 +145,13 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> updateRoleFirestore(String role) async {
-    log("updateRoleFirestore ${user?.id}");
+    // log("updateRoleFirestore ${user?.id}");
     final CollectionReference users = firebaseFirestore.collection("users");
     final String uid = firebaseAuth.currentUser?.uid ?? '';
     await users.doc(uid).update({'role': role});
     final result = await users.doc(uid).get();
     await getSelfInfo();
-    log("result $result");
+    // log("result $result");
     notifyListeners();
     // return await firebaseFirestore
     //     .collection('users')
@@ -228,7 +228,7 @@ class AuthProvider extends ChangeNotifier {
       });
       signOut();
     } catch (e) {
-      log("e : $e");
+      log("delete account error : $e");
     }
   }
 }

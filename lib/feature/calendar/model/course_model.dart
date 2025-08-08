@@ -136,11 +136,13 @@ class Lessons {
   int? lessonId;
   String? lessonName;
   String? videoFiles;
+  String? media;
   bool? isExpanded = false;
   Lessons({
     this.lessonId,
     this.lessonName,
     this.videoFiles,
+    this.media,
     this.isExpanded,
   });
 

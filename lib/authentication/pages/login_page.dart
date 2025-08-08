@@ -27,8 +27,8 @@ class LoginPageState extends State<LoginPage> {
       // Dialogs.showProgressBar(context);
       var user = await _signInWithGoogle();
       if (user != null) {
-        log('\nUser: ${user.user}');
-        log('\nUserAdditionalInfo: ${user.additionalUserInfo}');
+        // log('\nUser: ${user.user}');
+        // log('\nUserAdditionalInfo: ${user.additionalUserInfo}');
         if (await authProvider!.userExists(user.user!)) {
         } else {
           await authProvider!.createUser(
@@ -76,11 +76,11 @@ class LoginPageState extends State<LoginPage> {
       return FirebaseAuth.instance.signInWithCredential(credential);
     } on GoogleSignInException catch (e) {
       // User cancelled or another G-Sign-In error.
-      log('Google sign-in error: ${e.code.name} – ${e.description}');
+      // log('Google sign-in error: ${e.code.name} – ${e.description}');
       return null;
     } catch (e) {
       // Anything else (network, Firebase).
-      log('Unexpected sign-in error: $e');
+      // log('Unexpected sign-in error: $e');
       return null;
     }
   }
@@ -101,7 +101,7 @@ class LoginPageState extends State<LoginPage> {
         authProvider!.getSelfInfo();
       }
     } catch (e) {
-      log("_handleAppleBtnClick : $e");
+      // log("_handleAppleBtnClick : $e");
       Dialogs.showSnackbar(context, 'Login failed');
     }
   }

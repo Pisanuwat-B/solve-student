@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:solve_student/feature/calendar/pages/student_screen.dart';
 import 'package:solve_student/feature/chat/pages/chat_list_page.dart';
 import 'package:solve_student/feature/class/pages/class_list_page.dart';
@@ -16,6 +17,7 @@ import 'package:solve_student/feature/profile/pages/profile_page.dart';
 
 import 'authentication/service/auth_provider.dart';
 import 'feature/class/pages/find_class_page.dart';
+import 'feature/notification/notification_provider.dart';
 
 class Nav extends StatefulWidget {
   Nav({super.key, this.index = 0});
@@ -54,6 +56,8 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
     setState(() {});
   }
 
+  late AuthProvider authProvider;
+
   // FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   // final notifications = FlutterLocalNotificationsPlugin();
   // FlutterLocalNotificationsPlugin? flutterLocalNotificationsPlugin;
@@ -69,6 +73,8 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    authProvider = Provider.of<AuthProvider>(context, listen: false);
+    Provider.of<NotificationProvider>(context, listen: false).listenForNewQuestions(authProvider.uid!);
     tabController =
         TabController(length: pages.length, vsync: this); // initialise it here
     currentIndex = widget.index;
@@ -84,6 +90,7 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final hasNotification = context.watch<NotificationProvider>().hasNewNotification;
     return Scaffold(
       body: TabBarView(
         controller: tabController,
@@ -110,7 +117,7 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
           showUnselectedLabels: true,
           currentIndex: currentIndex,
           type: BottomNavigationBarType.fixed,
-          items: const [
+          items: [
             // BottomNavigationBarItem(
             //     activeIcon: Icon(Icons.calendar_month),
             //     icon: Icon(Icons.calendar_month_outlined),
@@ -123,7 +130,7 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
             //     activeIcon: Icon(Icons.find_in_page),
             //     icon: Icon(Icons.find_in_page_outlined),
             //     label: "คอร์สแนะนำ"),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
                 activeIcon: Icon(Icons.copy),
                 icon: Icon(Icons.copy_outlined),
                 label: "คอร์ส"),
@@ -131,11 +138,50 @@ class _NavState extends State<Nav> with TickerProviderStateMixin {
             //     activeIcon: Icon(CupertinoIcons.chat_bubble_2),
             //     icon: Icon(CupertinoIcons.chat_bubble_2),
             //     label: "แชท"),
+            // BottomNavigationBarItem(
+            //     activeIcon: Icon(Icons.notifications),
+            //     icon: Icon(Icons.notifications_outlined),
+            //     label: "แจ้งเตือน"),
             BottomNavigationBarItem(
-                activeIcon: Icon(Icons.notifications),
-                icon: Icon(Icons.notifications_outlined),
-                label: "แจ้งเตือน"),
-            BottomNavigationBarItem(
+              icon: Stack(
+                children: [
+                  const Icon(Icons.notifications_outlined),
+                  if (hasNotification)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              activeIcon: Stack(
+                children: [
+                  const Icon(Icons.notifications),
+                  if (hasNotification)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              label: 'แจ้งเตือน',
+            ),
+            const BottomNavigationBarItem(
                 activeIcon: Icon(Icons.account_circle),
                 icon: Icon(Icons.account_circle_outlined),
                 label: "ตั้งค่า"),
