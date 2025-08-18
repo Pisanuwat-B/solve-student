@@ -1,7 +1,11 @@
-import 'dart:developer';
+import 'dart:convert';
+import 'dart:developer' as dev;
 import 'dart:io';
+import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -88,37 +92,77 @@ class LoginPageState extends State<LoginPage> {
   _handleAppleBtnClick() async {
     try {
       var auth = await _signInWithApple();
-      if (auth?.user != null) {
-        log('\nUser: ${auth!.user}');
+      if (auth!.user != null) {
+        dev.log('\nUser: ${auth.user}');
         if (await authProvider!.userExists(auth.user!)) {
         } else {
           await authProvider!.createUser(
             id: auth.user!.uid,
-            name: auth.user!.displayName ?? "",
+            name: auth.user!.displayName ?? "Apple User",
             email: auth.user!.email ?? "",
           );
         }
         authProvider!.getSelfInfo();
       }
-    } catch (e) {
-      // log("_handleAppleBtnClick : $e");
+    } on FirebaseAuthException catch (e) {
+      dev.log('FirebaseAuthException: ${e.code} – ${e.message}');
+      Dialogs.showSnackbar(context, 'Login failed');
+    } on SignInWithAppleAuthorizationException catch (e) {
+      dev.log('Apple auth error: ${e.code} – ${e.message}');
       Dialogs.showSnackbar(context, 'Login failed');
     }
   }
 
+  String _generateNonce([int length = 32]) {
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final rand = Random.secure();
+    return List.generate(length, (_) => charset[rand.nextInt(charset.length)])
+        .join();
+  }
+
+  String _sha256ofString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  Map<String, dynamic> _decodeJwt(String jwt) {
+    final parts = jwt.split('.');
+    String _decode(String str) {
+      str = str.replaceAll('-', '+').replaceAll('_', '/');
+      switch (str.length % 4) {
+        case 2: str += '=='; break;
+        case 3: str += '='; break;
+      }
+      return utf8.decode(base64.decode(str));
+    }
+    return json.decode(_decode(parts[1])) as Map<String, dynamic>;
+  }
+
   Future<UserCredential?> _signInWithApple() async {
+    final app = Firebase.app();
+    final o = app.options;
+    dev.log('FB projectId=${o.projectId} appId=${o.appId} iosBundleId=${o.iosBundleId}');
+
+    final rawNonce = _generateNonce();
+    final hashedNonce = _sha256ofString(rawNonce);
     final appleCredential = await SignInWithApple.getAppleIDCredential(
-      scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName
-      ],
+      scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+      nonce: hashedNonce,
     );
-    // Create an `OAuthCredential` from the credential returned by Apple.
-    final oauthCredential = OAuthProvider("apple.com").credential(
+    dev.log('Apple idToken present? ${appleCredential.identityToken != null}');
+    final payload = _decodeJwt(appleCredential.identityToken!);
+    dev.log('Apple JWT aud=${payload["aud"]} iss=${payload["iss"]}');
+    dev.log('Apple JWT nonce claim=${payload["nonce"]}');
+    dev.log('Hashed we sent     =$hashedNonce');
+    final oauthCredential = OAuthProvider('apple.com').credential(
       idToken: appleCredential.identityToken,
+      rawNonce: rawNonce,
+      accessToken: appleCredential.authorizationCode,
     );
     final UserCredential userCredential =
-        await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+    await FirebaseAuth.instance.signInWithCredential(oauthCredential);
     return userCredential;
   }
 
