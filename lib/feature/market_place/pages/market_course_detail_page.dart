@@ -19,6 +19,10 @@ import 'package:solve_student/feature/order/model/order_class_model.dart';
 import 'package:solve_student/feature/order/pages/payment_page.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import '../../../widgets/dialogs.dart';
+import '../../live_classroom/utils/toast.dart';
+import '../../payment/page/subscription_page.dart';
+import '../../payment/page/subscription_provider.dart';
 import 'learning_page.dart';
 
 class MarketCourseDetailPage extends StatefulWidget {
@@ -41,6 +45,8 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final hasSub = context.select<SubscriptionProvider, bool>((p) => p.hasSub);
+    final loading = context.select<SubscriptionProvider, bool>((p) => p.loading);
     return ChangeNotifierProvider.value(
       value: courseDetailProvider,
       child: Consumer<MarketCourseDetailController>(builder: (context, con, _) {
@@ -216,10 +222,12 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            '${(con.courseDetail?.price ?? 0).toInt().toString()} บาท',
-                                            style: const TextStyle(
+                                            // '${(con.courseDetail?.price ?? 0).toInt().toString()} บาท',
+                                            hasSub ? 'Subscription: Active' : 'Subscription: Inactive',
+                                            style: TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold,
+                                              color: hasSub ? primaryColor : Colors.red,
                                             ),
                                             maxLines: 1,
                                           ),
@@ -299,7 +307,19 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                     GestureDetector(
                                       onTap: () async {
                                         if (!con.isLoading && con.courseDetail != null) {
-                                          con.addCourse(con.courseDetail!);
+                                          final subs = context.read<SubscriptionProvider>();
+                                          if (!subs.hasSub) {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    SubscriptionPage(),
+                                              ),
+                                            );
+                                          } else {
+                                            con.addCourse(con.courseDetail!);
+                                            Dialogs.showSnackbar(context, 'Course added', bg: primaryColor);
+                                          }
                                           // OrderClassModel orderNew =
                                           //     await con.createMarketOrder(
                                           //   widget.courseId,
@@ -330,7 +350,7 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                               BorderRadius.circular(10),
                                         ),
                                         alignment: Alignment.center,
-                                        child: const Row(
+                                        child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
@@ -340,8 +360,8 @@ class _MarketCourseDetailPageState extends State<MarketCourseDetailPage> {
                                             // ),
                                             // SizedBox(width: 5),
                                             Text(
-                                              "ซื้อ",
-                                              style: TextStyle(
+                                              hasSub ? 'เพิ่มคอร์ส' : 'ซื้อ',
+                                              style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 15,
                                               ),

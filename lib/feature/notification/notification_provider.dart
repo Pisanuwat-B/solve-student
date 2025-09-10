@@ -26,8 +26,8 @@ class NotificationProvider extends ChangeNotifier {
               ...data,
             };
 
-            log('listening to question');
-            log(enrichedData.toString());
+            // log('listening to question');
+            // log(enrichedData.toString());
 
             _notifications.insert(0, enrichedData);
             _hasNewNotification = true;

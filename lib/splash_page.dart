@@ -3,6 +3,7 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:solve_student/auth.dart';
 import 'package:solve_student/authentication/service/auth_provider.dart';
+import 'package:solve_student/feature/payment/page/subscription_provider.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -20,6 +21,10 @@ class SplashPageState extends State<SplashPage> {
       if (auth.firebaseAuth.currentUser != null) {
         auth.getSelfInfo();
       }
+      // Tell subs to sync with current user (if any)
+      final subs = Provider.of<SubscriptionProvider>(context, listen: false);
+      await subs.start(appUserId: auth.firebaseAuth.currentUser?.uid);
+
       await Future.delayed(const Duration(seconds: 2));
       goToMiddleware();
     });

@@ -9,6 +9,7 @@ import 'package:solve_student/widgets/sizer.dart';
 
 import '../../live_classroom/utils/responsive.dart';
 import '../../maintenance/maintenance.dart';
+import '../../payment/page/subscription_page.dart';
 
 class ManageLiveCoursePage extends StatefulWidget {
   const ManageLiveCoursePage({super.key});
@@ -46,7 +47,7 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
                         'การใช้งาน',
                         'ดูรายการค่าใช้จ่ายคอร์สสอนสด',
                         'right',
-                        const MaintenancePage(),
+                        const SubscriptionPage(),
                       ),
                     ],
                   ),
