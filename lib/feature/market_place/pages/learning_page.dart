@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -11,15 +12,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:solve_student/feature/question/pages/question_page.dart';
 import 'package:speech_balloon/speech_balloon.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../../authentication/service/auth_provider.dart';
 import '../../../firebase/database.dart';
 import '../../calendar/constants/custom_styles.dart';
 import '../../calendar/controller/create_course_controller.dart';
+import '../../calendar/helper/utility_helper.dart';
+import '../../calendar/widgets/alert_overlay.dart';
 import '../../calendar/widgets/sizebox.dart';
 
 import '../../calendar/constants/assets_manager.dart';
@@ -127,6 +132,16 @@ class _LearningPageState extends State<LearningPage> {
     {"image": 'assets/images/rubber-tran.png'},
     // {"image": 'assets/images/laserPen-tran.png'},
   ];
+  final List _listAskTools = [
+    {
+      "image_active": ImageAssets.handActive,
+      "image_dis": ImageAssets.handDis,
+    },
+    {
+      "image_active": ImageAssets.highlightActive,
+      "image_dis": ImageAssets.highlightDis,
+    },
+  ];
 
   FirebaseService firebaseService = FirebaseService();
 
@@ -140,8 +155,10 @@ class _LearningPageState extends State<LearningPage> {
   final List<List<SolvepadStroke?>> _replayLaserPoints = [[]];
   final List<List<SolvepadStroke?>> _replayHighlighterPoints = [[]];
   final List<Offset> _replayEraserPoints = [const Offset(-100, -100)];
+  final List<List<SolvepadStroke?>> _askHighlighterPoints = [[]];
   DrawingMode _mode = DrawingMode.drag;
   final SolveStopwatch solveStopwatch = SolveStopwatch();
+  final SolveStopwatch recordStopwatch = SolveStopwatch();
 
   // ---------- VARIABLE: Solve Size
   Size mySolvepadSize = const Size(1059.0, 547.0);
@@ -161,6 +178,7 @@ class _LearningPageState extends State<LearningPage> {
   double noteScaleY = 0;
 
   // ---------- VARIABLE: Solve Pad features
+  String _formattedElapsedTime = 'Recording 00:00:00';
   bool _isPrevBtnActive = false;
   bool _isNextBtnActive = true;
   int? activePointerId;
@@ -170,6 +188,7 @@ class _LearningPageState extends State<LearningPage> {
   bool _isScalingReady = false;
 
   // ---------- VARIABLE: page control
+  Timer? _recordTimer;
   Timer? _laserTimer;
   int _currentPage = 0;
   int _tutorCurrentPage = 0;
@@ -185,14 +204,20 @@ class _LearningPageState extends State<LearningPage> {
   bool tabFreestyle = false;
 
   // ---------- VARIABLE: recorder
+  Codec _codec = Codec.aacMP4;
   String _mPath = 'tau_file.mp4';
+  String _askPath = 'ask_file.mp4';
   FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
+  late final FlutterSoundRecorder _mRecorder = FlutterSoundRecorder();
   bool _mPlayerIsInited = false;
+  bool _mRecorderIsInited = false;
   bool _mPlaybackReady = false;
 
   // ---------- VARIABLE: tutor solvepad data
   late Map<String, dynamic> _data;
   late Map<String, dynamic> reviewNote;
+  late Map<String, dynamic> _askData;
+  late List<Map<String, dynamic>> _actions;
   String jsonData = '';
   List<StrokeStamp> currentStroke = [];
   List<ScrollZoomStamp> currentScrollZoom = [];
@@ -205,6 +230,7 @@ class _LearningPageState extends State<LearningPage> {
   Timer? _sliderTimer;
   double replayProgress = 0;
   int replayDuration = 100;
+  int askDuration = 100;
   late AuthProvider authProvider;
 
   /// TODO: Get rid of all Mockup reference
@@ -224,18 +250,31 @@ class _LearningPageState extends State<LearningPage> {
     });
     authProvider = Provider.of<AuthProvider>(context, listen: false);
     fetchReviewNote();
+    initRecorderPath();
     initAudio();
     initSolvepadData();
     initPagesData();
     initPagingBtn();
   }
 
-  void initAudio() {
+  Future<void> initRecorderPath() async {
+    final tempDir = await getTemporaryDirectory();
+    _askPath = '${tempDir.path}/ask_file.mp4';
+  }
+
+  void initAudio() async {
     _mPlayer!.openPlayer().then((value) {
       setState(() {
         _mPlayerIsInited = true;
       });
     });
+    try {
+      await openTheRecorder();
+      setState(() => _mRecorderIsInited = true);
+      log('recorder inited');
+    } catch (e, st) {
+      log('openTheRecorder failed: $e\n$st'); // <-- you'll see the real cause here
+    }
   }
 
   Future<void> initPagesData() async {
@@ -355,6 +394,7 @@ class _LearningPageState extends State<LearningPage> {
       _replayLaserPoints.add([]);
       _replayHighlighterPoints.add([]);
       _replayEraserPoints.add(const Offset(-100, -100));
+      _askHighlighterPoints.add([]);
     });
   }
 
@@ -366,6 +406,25 @@ class _LearningPageState extends State<LearningPage> {
       _currentPage = page;
       _penPoints[_currentPage].add(null);
     });
+    if (asking) {
+      if (currentScrollZoom.isNotEmpty) {
+        addScrollZoom(currentScrollZoom, currentScrollZoom[0].timestamp);
+        currentScrollZoom.clear();
+      }
+      _actions.add({
+        "time": recordStopwatch.elapsed.inMilliseconds,
+        "type": "change-page",
+        "data": page,
+      });
+    }
+  }
+
+  String _formatElapsedTime(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String hours = twoDigits(duration.inHours);
+    String minutes = twoDigits(duration.inMinutes.remainder(60));
+    String seconds = twoDigits(duration.inSeconds.remainder(60));
+    return 'Recording $hours:$minutes:$seconds';
   }
 
   String _formatReplayElapsedTime(Duration duration) {
@@ -617,6 +676,119 @@ class _LearningPageState extends State<LearningPage> {
     });
   }
 
+  // ---------- FUNCTION: ask solvepad data
+
+  void initAskSolvepadData() {
+    _askData = {
+      "version": "2.0.0",
+      "solvepadWidth": mySolvepadSize.width,
+      "solvepadHeight": mySolvepadSize.height,
+      "metadata": {
+        "courseId": widget.course.id,
+        "tutorId": widget.course.tutorId,
+        "duration": 0,
+      },
+      "actions": []
+    };
+    _actions = (_askData['actions'] as List).cast<Map<String, dynamic>>();
+    _actions.add({
+      "time": recordStopwatch.elapsed.inMilliseconds,
+      "type": "start-recording",
+      "page": _currentPage,
+      "scrollX": currentScrollX,
+      "scrollY": currentScrollY,
+      "scale": currentScale,
+    });
+  }
+
+  void _initAsk() async {
+    recordStopwatch.reset();
+    initAskSolvepadData();
+    if (_askPath.isEmpty) {
+      await initRecorderPath();
+    }
+    setState(() {
+      asking = true;
+      tabFollowing = false;
+      tabFreestyle = true;
+      _mode = DrawingMode.highlighter;
+      _selectedIndexTools = 1;
+      _startRecordTimer();
+    });
+  }
+
+  void _startRecordTimer() {
+    log('record timer start');
+    recordStopwatch.start();
+    _formattedElapsedTime = 'Recording 00:00:00';
+    _recordTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _formattedElapsedTime = _formatElapsedTime(recordStopwatch.elapsed);
+      });
+    });
+  }
+
+  void _stopRecordTimer() {
+    _recordTimer?.cancel();
+    _recordTimer = null;
+    if (currentScrollZoom.isNotEmpty) {
+      addScrollZoom(currentScrollZoom, currentScrollZoom[0].timestamp);
+      currentScrollZoom.clear();
+    }
+    _formattedElapsedTime = 'Record end';
+    _mode = DrawingMode.drag;
+    _actions.add({
+      "time": recordStopwatch.elapsed.inMilliseconds,
+      "type": "stop-recording",
+      "data": null
+    });
+    askDuration = recordStopwatch.elapsed.inMilliseconds;
+    _askData['metadata']['duration'] = askDuration;
+    recordStopwatch.reset();
+    setState(() {
+      asking = false;
+    });
+    // log(_askData.toString());
+  }
+
+  void addDrawing(List<StrokeStamp> strokeStamp, int initTime) {
+    if (asking) {
+      _actions.add({
+        "time": initTime,
+        "type": "drawing",
+        "data": {
+          "tool": _mode.toString(),
+          "color": _strokeColors[_selectedIndexColors].value.toRadixString(16),
+          "strokeWidth": _strokeWidths[_selectedIndexLines],
+          "points": strokeStamp
+              .map((timedOffset) => {
+            'x': double.parse(timedOffset.offset.dx.toStringAsFixed(2)),
+            'y': double.parse(timedOffset.offset.dy.toStringAsFixed(2)),
+            'time': timedOffset.timestamp,
+          })
+              .toList()
+        }
+      });
+    }
+  }
+
+  void addScrollZoom(List<ScrollZoomStamp> scrollZoomStamp, int initTime) {
+    if (asking) {
+      _actions.add({
+        "time": initTime,
+        "type": "scroll-zoom",
+        "data": scrollZoomStamp
+            .map((timedScroll) => {
+          'x': double.parse(timedScroll.x.toStringAsFixed(2)),
+          'y': double.parse(timedScroll.y.toStringAsFixed(2)),
+          'scale': double.parse(timedScroll.scale.toStringAsFixed(2)),
+          'time': timedScroll.timestamp,
+        })
+            .toList(),
+      });
+    }
+  }
+
   // ---------- FUNCTION: solve pad core
   void clearReplayPoint() {
     for (var point in _replayPenPoints) {
@@ -712,7 +884,7 @@ class _LearningPageState extends State<LearningPage> {
         );
         _tutorCurrentPage = page;
         _transformationController[page].value = Matrix4.identity()
-          ..translate(scaleScrollX(action['scrollX']) / 2,
+          ..translate(scaleScrollX(action['scrollX']),
               scaleScrollY(action['scrollY']))
           ..scale(action['scale']);
         _tutorCurrentScrollZoom =
@@ -842,7 +1014,67 @@ class _LearningPageState extends State<LearningPage> {
     }
   }
 
+  Future<void> writeToFile(String fileName, dynamic data) async {
+    Directory tempDir = await getTemporaryDirectory();
+    String tempPath = tempDir.path;
+    final file = File('$tempPath/$fileName');
+    final json = jsonEncode(data);
+    file.writeAsString(json);
+  }
+
   // ---------- FUNCTION: recording and playback
+
+  Future<void> openTheRecorder() async {
+    log('openTheRecorder is called');
+    if (!kIsWeb) {
+      var status = await Permission.microphone.request();
+      if (status != PermissionStatus.granted) {
+        throw RecordingPermissionException('Microphone permission not granted');
+      }
+    }
+    await _mRecorder.openRecorder();
+    if (!await _mRecorder.isEncoderSupported(_codec) && kIsWeb) {
+      _codec = Codec.opusWebM;
+      _askPath = 'ask_file.webm';
+      if (!await _mRecorder.isEncoderSupported(_codec) && kIsWeb) {
+        return;
+      }
+    }
+    final session = await AudioSession.instance;
+    await session.configure(AudioSessionConfiguration(
+      avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
+      avAudioSessionCategoryOptions:
+      AVAudioSessionCategoryOptions.allowBluetooth |
+      AVAudioSessionCategoryOptions.defaultToSpeaker,
+      avAudioSessionMode: AVAudioSessionMode.spokenAudio,
+      avAudioSessionRouteSharingPolicy:
+      AVAudioSessionRouteSharingPolicy.defaultPolicy,
+      avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
+      androidAudioAttributes: const AndroidAudioAttributes(
+        contentType: AndroidAudioContentType.speech,
+        flags: AndroidAudioFlags.none,
+        usage: AndroidAudioUsage.voiceCommunication,
+      ),
+      androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+      androidWillPauseWhenDucked: true,
+    ));
+  }
+
+  void record() {
+    _mRecorder.startRecorder(
+      toFile: _askPath,
+      codec: _codec,
+      audioSource: AudioSource.microphone,
+    ).then((value) {
+      setState(() {});
+    });
+    log('record status: ${_mRecorder.isRecording.toString()}');
+  }
+
+  void stopRecorder() async {
+    await _mRecorder.stopRecorder().then((value) {
+    });
+  }
 
   void playAudioPlayer() {
     assert(_mPlayerIsInited && _mPlaybackReady && _mPlayer!.isStopped);
@@ -891,7 +1123,11 @@ class _LearningPageState extends State<LearningPage> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      tabFreestyle ? tools() : toolsDisable(),
+                      if (asking)
+                        askTools()
+                      else
+                        (tabFreestyle ? tools() : toolsDisable()),
+                      const SizedBox(width: 8), // optional spacing
                       solvePad(),
                     ],
                   ),
@@ -1034,30 +1270,11 @@ class _LearningPageState extends State<LearningPage> {
                   ),
                 ),
               S.w(13),
-              InkWell(
+              if (!asking) InkWell(
                 onTap: () {
                   setState(() {
                     showSpeechBalloon = false;
                   });
-                  log('tap');
-
-                  showDialog(
-                    context: context,
-                    barrierDismissible: true,
-                    builder: (BuildContext context) {
-                      return Center(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: QuestionMarketplaceModal(
-                            courseId: widget.course.id!,
-                            lessonId: widget.lesson.lessonId!,
-                            tutorId: widget.tutorId!,
-                            studentId: authProvider.user!.id!,
-                          ),
-                        ),
-                      );
-                    },
-                  );
 
                   // showDialog(
                   //   context: context,
@@ -1066,11 +1283,30 @@ class _LearningPageState extends State<LearningPage> {
                   //     return Center(
                   //       child: Material(
                   //         color: Colors.transparent,
-                  //         child: askModal(),
+                  //         child: QuestionMarketplaceModal(
+                  //           courseId: widget.course.id!,
+                  //           lessonId: widget.lesson.lessonId!,
+                  //           pageNo: _currentPage,
+                  //           tutorId: widget.tutorId!,
+                  //           studentId: authProvider.user!.id!,
+                  //         ),
                   //       ),
                   //     );
                   //   },
                   // );
+
+                  showDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    builder: (BuildContext context) {
+                      return Center(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: askModal(),
+                        ),
+                      );
+                    },
+                  );
                 },
                 child: Image.asset(
                   'assets/images/ic_mic_off_float.png',
@@ -1116,19 +1352,19 @@ class _LearningPageState extends State<LearningPage> {
                 Text('เพื่อไม่ให้คำถามของคุณคลุมเครือ',
                     style: CustomStyles.med14Black363636),
                 S.h(defaultPadding * 2),
-                RichText(
-                  text: TextSpan(
-                    text: 'ระบบจะหยุดการบันทึกโดยอัตโนมัติ ',
-                    style: CustomStyles.bold14Gray878787,
-                    children: <TextSpan>[
-                      TextSpan(
-                        text:
-                        'หากคุณไม่มีการบันทึกเสียงภายใน 10 วินาทีแรก',
-                        style: CustomStyles.med14Gray878787,
-                      ),
-                    ],
-                  ),
-                ),
+                // RichText(
+                //   text: TextSpan(
+                //     text: 'ระบบจะหยุดการบันทึกโดยอัตโนมัติ ',
+                //     style: CustomStyles.bold14Gray878787,
+                //     children: <TextSpan>[
+                //       TextSpan(
+                //         text:
+                //         'หากคุณไม่มีการบันทึกเสียงภายใน 10 วินาทีแรก',
+                //         style: CustomStyles.med14Gray878787,
+                //       ),
+                //     ],
+                //   ),
+                // ),
                 S.h(24),
                 Row(
                   mainAxisAlignment:
@@ -1170,11 +1406,10 @@ class _LearningPageState extends State<LearningPage> {
                             ), // NEW
                           ),
                           onPressed: () {
-                            log('record ask');
-                            setState(() {
-                              asking = true;
-                            });
-                            // Navigator.of(context).pop();
+                            if (isReplaying) pauseReplay();
+                            _initAsk();
+                            record();
+                            Navigator.of(context).pop();
                           },
                           child: Row(
                             children: [
@@ -1358,7 +1593,7 @@ class _LearningPageState extends State<LearningPage> {
                             onPanDown: (_) {},
                             child: Listener(
                               onPointerDown: (details) {
-                                _isHasReviewNote = true;
+                                if (!asking) _isHasReviewNote = true;
                                 if (activePointerId != null) return;
                                 activePointerId = details.pointer;
                                 switch (_mode) {
@@ -1380,12 +1615,25 @@ class _LearningPageState extends State<LearningPage> {
                                     _laserDrawing();
                                     break;
                                   case DrawingMode.highlighter:
-                                    _highlighterPoints[_currentPage].add(
-                                      SolvepadStroke(
+                                    if (asking) {
+                                      currentStroke.add(StrokeStamp(
                                           details.localPosition,
-                                          _strokeColors[_selectedIndexColors],
-                                          _strokeWidths[_selectedIndexLines]),
-                                    );
+                                          recordStopwatch.elapsed.inMilliseconds,
+                                      ));
+                                      _askHighlighterPoints[_currentPage].add(
+                                        SolvepadStroke(
+                                            details.localPosition,
+                                            _strokeColors[_selectedIndexColors],
+                                            _strokeWidths[_selectedIndexLines]),
+                                      );
+                                    } else {
+                                      _highlighterPoints[_currentPage].add(
+                                        SolvepadStroke(
+                                            details.localPosition,
+                                            _strokeColors[_selectedIndexColors],
+                                            _strokeWidths[_selectedIndexLines]),
+                                      );
+                                    }
                                     break;
                                   case DrawingMode.eraser:
                                     _eraserPoints[_currentPage] =
@@ -1445,12 +1693,25 @@ class _LearningPageState extends State<LearningPage> {
                                     break;
                                   case DrawingMode.highlighter:
                                     setState(() {
-                                      _highlighterPoints[_currentPage].add(
-                                        SolvepadStroke(
-                                            details.localPosition,
-                                            _strokeColors[_selectedIndexColors],
-                                            _strokeWidths[_selectedIndexLines]),
-                                      );
+                                      if (asking) {
+                                        currentStroke.add(StrokeStamp(
+                                          details.localPosition,
+                                          recordStopwatch.elapsed.inMilliseconds,
+                                        ));
+                                        _askHighlighterPoints[_currentPage].add(
+                                          SolvepadStroke(
+                                              details.localPosition,
+                                              _strokeColors[_selectedIndexColors],
+                                              _strokeWidths[_selectedIndexLines]),
+                                        );
+                                      } else {
+                                        _highlighterPoints[_currentPage].add(
+                                          SolvepadStroke(
+                                              details.localPosition,
+                                              _strokeColors[_selectedIndexColors],
+                                              _strokeWidths[_selectedIndexLines]),
+                                        );
+                                      }
                                     });
                                     break;
                                   case DrawingMode.eraser:
@@ -1499,7 +1760,10 @@ class _LearningPageState extends State<LearningPage> {
                                         _stopLaserDrawing);
                                     break;
                                   case DrawingMode.highlighter:
-                                    _highlighterPoints[_currentPage].add(null);
+                                    asking ? _askHighlighterPoints[_currentPage].add(null) : _highlighterPoints[_currentPage].add(null);
+                                    addDrawing(currentStroke,
+                                        currentStroke[0].timestamp);
+                                    currentStroke.clear();
                                     break;
                                   case DrawingMode.eraser:
                                     setState(() {
@@ -1525,7 +1789,10 @@ class _LearningPageState extends State<LearningPage> {
                                         _stopLaserDrawing);
                                     break;
                                   case DrawingMode.highlighter:
-                                    _highlighterPoints[_currentPage].add(null);
+                                    asking ? _askHighlighterPoints[_currentPage].add(null) : _highlighterPoints[_currentPage].add(null);
+                                    addDrawing(currentStroke,
+                                        currentStroke[0].timestamp);
+                                    currentStroke.clear();
                                     break;
                                   case DrawingMode.eraser:
                                     setState(() {
@@ -1547,6 +1814,7 @@ class _LearningPageState extends State<LearningPage> {
                                   _replayLaserPoints[index],
                                   _replayHighlighterPoints[index],
                                   _replayEraserPoints[index],
+                                  _askHighlighterPoints[index],
                                 ),
                               ),
                             ),
@@ -1718,92 +1986,94 @@ class _LearningPageState extends State<LearningPage> {
                       ),
                     ),
                     S.w(8),
-                    Container(
-                      width: 1,
-                      height: 24,
-                      color: CustomColors.grayCFCFCF,
-                    ),
-                    S.w(6),
-                    Material(
-                      child: InkWell(
-                        onTap: () {
-                          if (_pageController.hasClients &&
-                              _pageController.page!.toInt() != 0) {
-                            _pageController.animateToPage(
-                              _pageController.page!.toInt() - 1,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image.asset(
-                            ImageAssets.backDis,
-                            height: 16,
-                            width: 17,
-                            color: _isPrevBtnActive
-                                ? CustomColors.activePagingBtn
-                                : CustomColors.inactivePagingBtn,
-                          ),
-                        ),
+                    if (!asking) ...[
+                      Container(
+                        width: 1,
+                        height: 24,
+                        color: CustomColors.grayCFCFCF,
                       ),
-                    ),
-                    S.w(6),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: CustomColors.grayCFCFCF,
-                          style: BorderStyle.solid,
-                          width: 1.0,
-                        ),
-                        borderRadius: BorderRadius.circular(4),
-                        color: CustomColors.whitePrimary,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Text("Page ${_currentPage + 1}",
-                              style: CustomStyles.bold14greenPrimary),
-                        ],
-                      ),
-                    ),
-                    S.w(8),
-                    Text("/ ${_pages.length}",
-                        style: CustomStyles.med14Gray878787),
-                    S.w(6),
-                    Material(
-                      child: InkWell(
-                        // splashColor: Colors.lightGreen,
-                        onTap: () {
-                          if (_pages.length > 1) {
+                      S.w(6),
+                      Material(
+                        child: InkWell(
+                          onTap: () {
                             if (_pageController.hasClients &&
-                                _pageController.page!.toInt() !=
-                                    _pages.length - 1) {
+                                _pageController.page!.toInt() != 0) {
                               _pageController.animateToPage(
-                                _pageController.page!.toInt() + 1,
+                                _pageController.page!.toInt() - 1,
                                 duration: const Duration(milliseconds: 300),
                                 curve: Curves.easeInOut,
                               );
                             }
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image.asset(
-                            ImageAssets.forward,
-                            height: 16,
-                            width: 17,
-                            color: _isNextBtnActive
-                                ? CustomColors.activePagingBtn
-                                : CustomColors.inactivePagingBtn,
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Image.asset(
+                              ImageAssets.backDis,
+                              height: 16,
+                              width: 17,
+                              color: _isPrevBtnActive
+                                  ? CustomColors.activePagingBtn
+                                  : CustomColors.inactivePagingBtn,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    S.w(6),
+                      S.w(6),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: CustomColors.grayCFCFCF,
+                            style: BorderStyle.solid,
+                            width: 1.0,
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                          color: CustomColors.whitePrimary,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text("Page ${_currentPage + 1}",
+                                style: CustomStyles.bold14greenPrimary),
+                          ],
+                        ),
+                      ),
+                      S.w(8),
+                      Text("/ ${_pages.length}",
+                          style: CustomStyles.med14Gray878787),
+                      S.w(6),
+                      Material(
+                        child: InkWell(
+                          // splashColor: Colors.lightGreen,
+                          onTap: () {
+                            if (_pages.length > 1) {
+                              if (_pageController.hasClients &&
+                                  _pageController.page!.toInt() !=
+                                      _pages.length - 1) {
+                                _pageController.animateToPage(
+                                  _pageController.page!.toInt() + 1,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Image.asset(
+                              ImageAssets.forward,
+                              height: 16,
+                              width: 17,
+                              color: _isNextBtnActive
+                                  ? CustomColors.activePagingBtn
+                                  : CustomColors.inactivePagingBtn,
+                            ),
+                          ),
+                        ),
+                      ),
+                      S.w(6),
+                    ]
                   ],
                 ),
               ),
@@ -1813,113 +2083,121 @@ class _LearningPageState extends State<LearningPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      if (tabFreestyle == true) {
-                        tabFollowing = !tabFollowing;
-                        tabFreestyle = false;
-                        if (_tutorCurrentScrollZoom != '') {
-                          var parts = _tutorCurrentScrollZoom.split('|');
-                          var scrollX = double.parse(parts[0]);
-                          var scrollY = double.parse(parts[1]);
-                          var zoom = double.parse(parts.last);
-                          if (_currentPage != _tutorCurrentPage) {
-                            _pageController.animateToPage(
-                              _tutorCurrentPage,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          } // re-correct page
-                          _transformationController[_tutorCurrentPage]
-                              .value = Matrix4.identity()
-                            ..translate(
-                                scaleScrollX(scrollX), scaleScrollX(scrollY))
-                            ..scale(zoom);
+                if (asking) RichText(
+                  text: TextSpan(
+                    text: _formattedElapsedTime,
+                    style: CustomStyles.bold14RedF44336,
+                  ),
+                ),
+                if (!asking) ...[
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (tabFreestyle == true) {
+                          tabFollowing = !tabFollowing;
+                          tabFreestyle = false;
+                          if (_tutorCurrentScrollZoom != '') {
+                            var parts = _tutorCurrentScrollZoom.split('|');
+                            var scrollX = double.parse(parts[0]);
+                            var scrollY = double.parse(parts[1]);
+                            var zoom = double.parse(parts.last);
+                            if (_currentPage != _tutorCurrentPage) {
+                              _pageController.animateToPage(
+                                _tutorCurrentPage,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            } // re-correct page
+                            _transformationController[_tutorCurrentPage]
+                                .value = Matrix4.identity()
+                              ..translate(
+                                  scaleScrollX(scrollX), scaleScrollX(scrollY))
+                              ..scale(zoom);
+                          }
                         }
-                      }
-                    });
-                  },
-                  child: Container(
-                    height: 50,
-                    width: 120,
-                    decoration: BoxDecoration(
-                      color: tabFollowing
-                          ? CustomColors.greenE5F6EB
-                          : CustomColors.whitePrimary,
-                      shape: BoxShape.rectangle,
-                      border: Border.all(
-                        color: CustomColors.grayCFCFCF,
-                        style: BorderStyle.solid,
-                        width: 1.0,
-                      ),
-                      borderRadius: const BorderRadius.horizontal(
-                        left: Radius.circular(50.0),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Image.asset(
-                          tabFollowing
-                              ? ImageAssets.avatarMe
-                              : ImageAssets.avatarDisMen,
-                          width: 32,
+                      });
+                    },
+                    child: Container(
+                      height: 50,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: tabFollowing
+                            ? CustomColors.greenE5F6EB
+                            : CustomColors.whitePrimary,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(
+                          color: CustomColors.grayCFCFCF,
+                          style: BorderStyle.solid,
+                          width: 1.0,
                         ),
-                        S.w(8),
-                        Text("เรียนรู้",
-                            style: tabFollowing
-                                ? CustomStyles.bold14greenPrimary
-                                : CustomStyles.bold14grayCFCFCF),
-                      ],
+                        borderRadius: const BorderRadius.horizontal(
+                          left: Radius.circular(50.0),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Image.asset(
+                            tabFollowing
+                                ? ImageAssets.avatarMe
+                                : ImageAssets.avatarDisMen,
+                            width: 32,
+                          ),
+                          S.w(8),
+                          Text("เรียนรู้",
+                              style: tabFollowing
+                                  ? CustomStyles.bold14greenPrimary
+                                  : CustomStyles.bold14grayCFCFCF),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      if (tabFollowing == true) {
-                        tabFreestyle = !tabFreestyle;
-                        tabFollowing = false;
-                      }
-                    });
-                  },
-                  child: Container(
-                    height: 50,
-                    width: 120,
-                    decoration: BoxDecoration(
-                      color: tabFreestyle
-                          ? CustomColors.greenE5F6EB
-                          : CustomColors.whitePrimary,
-                      shape: BoxShape.rectangle,
-                      border: Border.all(
-                        color: CustomColors.grayCFCFCF,
-                        style: BorderStyle.solid,
-                        width: 1.0,
-                      ),
-                      borderRadius: const BorderRadius.horizontal(
-                        right: Radius.circular(50.0),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Image.asset(
-                          tabFreestyle
-                              ? ImageAssets.pencilActive
-                              : ImageAssets.penDisTab,
-                          width: 32,
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (tabFollowing == true) {
+                          tabFreestyle = !tabFreestyle;
+                          tabFollowing = false;
+                        }
+                      });
+                    },
+                    child: Container(
+                      height: 50,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: tabFreestyle
+                            ? CustomColors.greenE5F6EB
+                            : CustomColors.whitePrimary,
+                        shape: BoxShape.rectangle,
+                        border: Border.all(
+                          color: CustomColors.grayCFCFCF,
+                          style: BorderStyle.solid,
+                          width: 1.0,
                         ),
-                        S.w(8),
-                        Text("เขียนอิสระ",
-                            style: tabFreestyle
-                                ? CustomStyles.bold14greenPrimary
-                                : CustomStyles.bold14grayCFCFCF),
-                      ],
+                        borderRadius: const BorderRadius.horizontal(
+                          right: Radius.circular(50.0),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Image.asset(
+                            tabFreestyle
+                                ? ImageAssets.pencilActive
+                                : ImageAssets.penDisTab,
+                            width: 32,
+                          ),
+                          S.w(8),
+                          Text("เขียนอิสระ",
+                              style: tabFreestyle
+                                  ? CustomStyles.bold14greenPrimary
+                                  : CustomStyles.bold14grayCFCFCF),
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -1927,29 +2205,71 @@ class _LearningPageState extends State<LearningPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                // InkWell(
-                //   onTap: () {
-                //     setState(() {
-                //       micEnable = !micEnable;
-                //     });
-                //     log(_data['metadata']['duration'].toString());
-                //     log(_data['metadata']['duration'].runtimeType.toString());
-                //   },
-                //   child: Image.asset(
-                //     micEnable ? ImageAssets.micEnable : ImageAssets.micDis,
-                //     height: 44,
-                //     width: 44,
-                //   ),
-                // ),
-                // S.w(defaultPadding),
-                // const DividerVer(),
-                replayButton(),
-                RichText(
-                  text: TextSpan(
-                    text: 'เริ่มเรียน',
-                    style: CustomStyles.bold14RedF44336,
+                if (asking)
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: CustomColors.redF44336,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    ),
+                    onPressed: () async { // sendQuestion
+                      log('send question');
+                      stopRecorder();
+                      await Alert.showOverlay(
+                        asyncFunction: () async {
+                          await writeToFile('solvepad.txt', _data);
+                          List uploadUrl = await firebaseService
+                              .uploadAskSolvepad(
+                              '${authProvider.user?.id}_${DateTime.now().millisecondsSinceEpoch}');
+                          String solvepadId =
+                          await firebaseService.writeSolvepadData(
+                              uploadUrl[0], uploadUrl[1]);
+                          log(solvepadId.toString());
+                          await FirebaseFirestore.instance.collection('question_market').add({
+                            'solvepadId': solvepadId,
+                            'courseId': widget.course.id,
+                            'lessonId': widget.lesson.lessonId,
+                            'pageNo': _currentPage,
+                            'tutorId': widget.tutorId,
+                            'studentId': authProvider.user?.id,
+                            'timestamp': FieldValue.serverTimestamp(),
+                          });
+                        },
+                        context: context,
+                        loadingWidget: Alert.getOverlayScreen(),
+                      );
+                      if (!mounted) return;
+                      showSnackBar(context, 'ส่งคำถามสำเร็จ');
+
+                      setState(() {
+                        asking = false;
+                        for (var point in _askHighlighterPoints) {
+                          point.clear();
+                        }
+                      });
+                      _stopRecordTimer();
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Send question', style: CustomStyles.bold14White),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.send_rounded, size: 20, color: Colors.white),
+                      ],
+                    ),
                   ),
-                ),
+                if (!asking) ...[
+                  replayButton(),
+                  const SizedBox(width: 8),
+                  RichText(
+                    text: TextSpan(
+                      text: 'เริ่มเรียน',
+                      style: CustomStyles.bold14RedF44336,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -2428,7 +2748,9 @@ class _LearningPageState extends State<LearningPage> {
                   ),
                 ),
               ],
-            )));
+            ),
+        ),
+    );
   }
 
   Widget toolsMobile() {
@@ -2474,8 +2796,6 @@ class _LearningPageState extends State<LearningPage> {
                                     // Close popup
                                     openColors = !openColors;
                                   });
-                                  log('Tap : index $index');
-                                  log('Tap : _selectIndex $_selectedIndexColors');
                                 },
                                 child: Image.asset(_listColors[index]['color'],
                                     width: 48),
@@ -2635,8 +2955,6 @@ class _LearningPageState extends State<LearningPage> {
                               S.w(defaultPadding),
                               InkWell(
                                 onTap: () {
-                                  log("Pick Line");
-
                                   setState(() {
                                     if (openColors || openMore == true) {
                                       openColors = false;
@@ -3054,5 +3372,190 @@ class _LearningPageState extends State<LearningPage> {
         ),
       ],
     );
+  }
+
+  Widget askTools() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        if (Responsive.isDesktop(context)) S.w(10),
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: AnimatedContainer(
+              duration: const Duration(seconds: 1),
+              curve: Curves.fastOutSlowIn,
+              height: 340,
+              width: 120,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: CustomColors.grayCFCFCF,
+                  style: BorderStyle.solid,
+                  width: 1.0,
+                ),
+                borderRadius: BorderRadius.circular(64),
+                color: CustomColors.whitePrimary,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  S.h(12),
+                  Expanded(
+                    flex: 7, // flex 4 if have all
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          shrinkWrap: true,
+                          itemCount: _listAskTools.length,
+                          itemBuilder: (context, index) {
+                            return Column(
+                              children: [
+                                S.h(8),
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedIndexTools = index;
+                                    });
+                                    if (index == 0) {
+                                      _mode = DrawingMode.drag;
+                                    } // drag
+                                    else if (index == 1) {
+                                      _mode = DrawingMode.highlighter;
+                                    } // highlighter
+                                  },
+                                  child: Image.asset(
+                                    _selectedIndexTools == index
+                                        ? _listAskTools[index]['image_active']
+                                        : _listAskTools[index]['image_dis'],
+                                    width: 10.w,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
+                    ),
+                  ),
+                  Container(
+                      height: 2, width: 80, color: CustomColors.grayF3F3F3),
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      children: [
+                        S.h(defaultPadding),
+                        if (!selectedTools)
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 1),
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+                                            setState(() {
+                                              if (openLines ||
+                                                  openMore == true) {
+                                                openLines = false;
+                                                openMore = false;
+                                              }
+                                              openColors = !openColors;
+                                            });
+                                          },
+                                          child: Image.asset(
+                                            _listColors[_selectedIndexColors]
+                                            ['color'],
+                                            width: 38,
+                                          ),
+                                        ),
+                                        InkWell(
+                                          onTap: () {
+                                            setState(() {
+                                              if (openColors ||
+                                                  openMore == true) {
+                                                openColors = false;
+                                                openMore = false;
+                                              }
+                                              openLines = !openLines;
+                                            });
+                                          },
+                                          child: Image.asset(
+                                            ImageAssets.pickLine,
+                                            width: 38,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        if (selectedTools)
+                          Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  selectedTools = !selectedTools;
+                                });
+                              },
+                              child: Image.asset(
+                                selectedTools
+                                    ? ImageAssets.arrowDownDouble
+                                    : ImageAssets.arrowTopDouble,
+                                width: 20,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  S.h(16),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void showSnackBar(BuildContext context, String msg,
+      [String color = 'green']) async {
+    Color snackColor = CustomColors.greenPrimary;
+    final util = UtilityHelper();
+    if (color == 'green') {
+      snackColor = CustomColors.greenPrimary;
+    } else if (color == 'red') {
+      snackColor = CustomColors.redB71C1C;
+    }
+    final snackBar = SnackBar(
+      content: Row(
+        children: [
+          Icon(
+            Icons.check_circle,
+            color: CustomColors.white,
+            size: util.isTablet() ? 20.0 : 16,
+          ),
+          S.w(10.0),
+          Flexible(
+            child: Text(
+              msg,
+              style: CustomStyles.med14White,
+            ),
+          )
+        ],
+      ),
+      duration: const Duration(seconds: 1),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: snackColor,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      margin: const EdgeInsets.fromLTRB(16.0, 32.0, 16.0, 32),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

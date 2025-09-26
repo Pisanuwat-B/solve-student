@@ -1,8 +1,6 @@
 source 'https://cdn.cocoapods.org/'
-use_frameworks! :linkage => :static
 platform :ios, '14.0'
 
-# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 project 'Runner', {
@@ -13,15 +11,11 @@ project 'Runner', {
 
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
-  unless File.exist?(generated_xcode_build_settings_path)
-    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
-  end
-
+  raise "#{generated_xcode_build_settings_path} must exist. Run `flutter pub get` first." unless File.exist?(generated_xcode_build_settings_path)
   File.foreach(generated_xcode_build_settings_path) do |line|
-    matches = line.match(/FLUTTER_ROOT\=(.*)/)
-    return matches[1].strip if matches
+    return line.split('=').last.strip if line.start_with?('FLUTTER_ROOT=')
   end
-  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+  raise "FLUTTER_ROOT not found"
 end
 
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
@@ -29,14 +23,24 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks!
-  use_modular_headers!
+  # EITHER enable static frameworks (recommended)...
+  use_frameworks! :linkage => :static
+  # ...OR remove `use_frameworks!` entirely. But DO NOT declare it twice.
+  # DO NOT use `use_modular_headers!`
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
-    flutter_additional_ios_build_settings(target)
+    flutter_additional_ios_build_settings(target)  # <-- required
+
+    # permission_handler macros
+    target.build_configurations.each do |config|
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+        'PERMISSION_MICROPHONE=1',
+      ]
+    end
   end
 end

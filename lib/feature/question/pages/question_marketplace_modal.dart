@@ -10,6 +10,7 @@ import '../widgets/send_question_marketplace.dart';
 class QuestionMarketplaceModal extends StatefulWidget {
   final String courseId;
   final int lessonId;
+  final int pageNo;
   final String tutorId;
   final String studentId;
 
@@ -17,6 +18,7 @@ class QuestionMarketplaceModal extends StatefulWidget {
     super.key,
     required this.courseId,
     required this.lessonId,
+    required this.pageNo,
     required this.tutorId,
     required this.studentId,
   });
@@ -135,6 +137,7 @@ class _QuestionMarketplaceModalState extends State<QuestionMarketplaceModal> {
               if (questionText.isEmpty) return;
 
               log('Question text: $questionText');
+              log('Page number: ${widget.pageNo}');
               log('Course ID: ${widget.courseId}');
               log('Lesson ID: ${widget.lessonId}');
               log('Tutor ID: ${widget.tutorId}');
@@ -145,6 +148,7 @@ class _QuestionMarketplaceModalState extends State<QuestionMarketplaceModal> {
                   'questionText': questionText,
                   'courseId': widget.courseId,
                   'lessonId': widget.lessonId,
+                  'pageNo': widget.pageNo,
                   'tutorId': widget.tutorId,
                   'studentId': widget.studentId,
                   'timestamp': FieldValue.serverTimestamp(),

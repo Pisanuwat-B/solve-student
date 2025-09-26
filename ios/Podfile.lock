@@ -1579,9 +1579,9 @@ PODS:
     - RevenueCat (= 5.34.0)
   - RecaptchaInterop (101.0.0)
   - RevenueCat (5.34.0)
-  - SDWebImage (5.21.1):
-    - SDWebImage/Core (= 5.21.1)
-  - SDWebImage/Core (5.21.1)
+  - SDWebImage (5.21.2):
+    - SDWebImage/Core (= 5.21.2)
+  - SDWebImage/Core (5.21.2)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -1790,7 +1790,7 @@ SPEC CHECKSUMS:
   PurchasesHybridCommon: 62f852419aae7041792217593998f7ac3f8b567d
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   RevenueCat: eb2aa042789d9c99ad5172bd96e28b96286d6ada
-  SDWebImage: f29024626962457f3470184232766516dee8dfea
+  SDWebImage: 9f177d83116802728e122410fb25ad88f5c7608a
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
   sign_in_with_apple: f3bf75217ea4c2c8b91823f225d70230119b8440
   sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
@@ -1799,6 +1799,6 @@ SPEC CHECKSUMS:
   video_thumbnail: c4e2a3c539e247d4de13cd545344fd2d26ffafd1
   webview_flutter_wkwebview: a4af96a051138e28e29f60101d094683b9f82188
 
-PODFILE CHECKSUM: 2012a8a4f355daa4271e05b1c5602d4389cbaecd
+PODFILE CHECKSUM: 8f52e72b4a6b1ff6eaef75da8df6cf6584eec247
 
 COCOAPODS: 1.16.2

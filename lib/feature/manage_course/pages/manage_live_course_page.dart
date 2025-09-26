@@ -33,177 +33,231 @@ class _ManageLiveCoursePageState extends State<ManageLiveCoursePage> {
             child: Column(
               children: [
                 if (!Responsive.isMobileLandscape(context)) ...[
+                  // Row(
+                  //   children: [
+                  //     mobileCard(
+                  //       'assets/images/calendar.png',
+                  //       'Hybrid Solution',
+                  //       'คอร์สเรียน Hybrid ของคุณ',
+                  //       'left',
+                  //       const MyCourseLivePage(courseType: 'hybrid'),
+                  //     ),
+                  //     mobileCard(
+                  //       'assets/images/graph.png',
+                  //       'การใช้งาน',
+                  //       'ดูรายการค่าใช้จ่ายคอร์สสอนสด',
+                  //       'right',
+                  //       const SubscriptionPage(),
+                  //     ),
+                  //   ],
+                  // ),
                   Row(
                     children: [
                       mobileCard(
-                        'assets/images/calendar.png',
-                        'Hybrid Solution',
-                        'คอร์สเรียน Hybrid ของคุณ',
+                        'assets/images/menu_my_course.png',
+                        'คอร์สของฉัน',
+                        'คอร์สที่คุณซื้อจาก Marketplace',
                         'left',
-                        const MyCourseLivePage(courseType: 'hybrid'),
+                        const MyCourseSolvepadPage(),
                       ),
                       mobileCard(
-                        'assets/images/graph.png',
-                        'การใช้งาน',
-                        'ดูรายการค่าใช้จ่ายคอร์สสอนสด',
+                        'assets/images/menu_qa.png',
+                        'Marketplace',
+                        'ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี SOLVEPad',
                         'right',
-                        const SubscriptionPage(),
+                        const MarketHomePage(),
                       ),
                     ],
                   ),
                 ],
                 if (Responsive.isMobileLandscape(context)) ...[
+                  // Row(
+                  //   children: [
+                  //     mobileCard(
+                  //       'assets/images/calendar.png',
+                  //       'Hybrid Solution',
+                  //       'คอร์สเรียน Hybrid ของคุณ',
+                  //       'tightLeft',
+                  //       const MyCourseLivePage(courseType: 'hybrid'),
+                  //     ),
+                  //     mobileCard(
+                  //       'assets/images/graph.png',
+                  //       'การใช้งาน',
+                  //       'ดูรายการค่าใช้จ่ายคอร์สสอนสด',
+                  //       'tight',
+                  //       const MaintenancePage(),
+                  //     ),
+                  //     mobileCard(
+                  //       'assets/images/menu_my_course.png',
+                  //       'My SOLVE course',
+                  //       'คอร์สที่คุณซื้อจาก Marketplace',
+                  //       'tight',
+                  //       const MyCourseSolvepadPage(),
+                  //     ),
+                  //     mobileCard(
+                  //       'assets/images/menu_create_sheet.png',
+                  //       'My SOLVE live',
+                  //       'คอร์สเรียนสดของคุณ',
+                  //       'tight',
+                  //       const MyCourseLivePage(courseType: 'live'),
+                  //     ),
+                  //     mobileCard(
+                  //       'assets/images/menu_qa.png',
+                  //       'Marketplace',
+                  //       'ค้นหาคอร์สเรียน แบบ Solvepad',
+                  //       'tightRight',
+                  //       const MarketHomePage(),
+                  //     ),
+                  //   ],
+                  // ),
                   Row(
                     children: [
                       mobileCard(
-                        'assets/images/calendar.png',
-                        'Hybrid Solution',
-                        'คอร์สเรียน Hybrid ของคุณ',
-                        'tightLeft',
-                        const MyCourseLivePage(courseType: 'hybrid'),
-                      ),
-                      mobileCard(
-                        'assets/images/graph.png',
-                        'การใช้งาน',
-                        'ดูรายการค่าใช้จ่ายคอร์สสอนสด',
-                        'tight',
-                        const MaintenancePage(),
-                      ),
-                      mobileCard(
                         'assets/images/menu_my_course.png',
-                        'My SOLVE course',
+                        'คอร์สของฉัน',
                         'คอร์สที่คุณซื้อจาก Marketplace',
-                        'tight',
+                        'left',
                         const MyCourseSolvepadPage(),
-                      ),
-                      mobileCard(
-                        'assets/images/menu_create_sheet.png',
-                        'My SOLVE live',
-                        'คอร์สเรียนสดของคุณ',
-                        'tight',
-                        const MyCourseLivePage(courseType: 'live'),
                       ),
                       mobileCard(
                         'assets/images/menu_qa.png',
                         'Marketplace',
-                        'ค้นหาคอร์สเรียน แบบ Solvepad',
-                        'tightRight',
+                        'ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี SOLVEPad',
+                        'right',
                         const MarketHomePage(),
                       ),
                     ],
                   ),
                 ],
                 if (Responsive.isMobile(context)) ...[
+                  // Row(
+                  //   children: [
+                  //     mobileCard(
+                  //       'assets/images/menu_my_course.png',
+                  //       'My SOLVE course',
+                  //       'คอร์สที่คุณซื้อจาก Marketplace',
+                  //       'left',
+                  //       const MyCourseSolvepadPage(),
+                  //     ),
+                  //     mobileCard(
+                  //       'assets/images/menu_create_sheet.png',
+                  //       'My SOLVE live',
+                  //       'คอร์สเรียนสดของคุณ',
+                  //       'right',
+                  //       const MyCourseLivePage(courseType: 'live'),
+                  //     ),
+                  //   ],
+                  // ),
+                  // Row(
+                  //   children: [
+                  //     mobileCard(
+                  //       'assets/images/menu_qa.png',
+                  //       'Marketplace',
+                  //       'ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี Solvepad',
+                  //       'left',
+                  //       const MarketHomePage(),
+                  //     ),
+                  //   ],
+                  // ),
                   Row(
                     children: [
                       mobileCard(
                         'assets/images/menu_my_course.png',
-                        'My SOLVE course',
+                        'คอร์สของฉัน',
                         'คอร์สที่คุณซื้อจาก Marketplace',
                         'left',
                         const MyCourseSolvepadPage(),
                       ),
                       mobileCard(
-                        'assets/images/menu_create_sheet.png',
-                        'My SOLVE live',
-                        'คอร์สเรียนสดของคุณ',
-                        'right',
-                        const MyCourseLivePage(courseType: 'live'),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      mobileCard(
                         'assets/images/menu_qa.png',
                         'Marketplace',
-                        'ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี Solvepad',
-                        'left',
-                        const MarketHomePage(),
-                      ),
-                    ],
-                  ),
-                ],
-                if (Responsive.isTablet(context)) ...[
-                  GridView.count(
-                    shrinkWrap: true,
-                    primary: false,
-                    padding: const EdgeInsets.all(30),
-                    crossAxisSpacing: 30,
-                    mainAxisSpacing: 30,
-                    crossAxisCount: 3,
-                    children: <Widget>[
-                      gridCard(
-                        context,
-                        onTap: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const MyCourseSolvepadPage(),
-                            ),
-                          );
-                        },
-                        image: 'assets/images/menu_my_course.png',
-                        title: "คอร์ส SOLVE course ของฉัน",
-                        content: "คอร์สที่คุณซื้อจาก Marketplace",
-                      ),
-                      gridCard(
-                        context,
-                        onTap: () async {
-                          var route = MaterialPageRoute(
-                              builder: (context) => const MyCourseLivePage(courseType: 'live'));
-                          Navigator.push(context, route);
-                        },
-                        image: 'assets/images/menu_create_sheet.png',
-                        title: "คอร์ส SOLVE live ของฉัน",
-                        content: "คอร์สเรียนสดของคุณ",
-                      ),
-                      gridCard(
-                        context,
-                        onTap: () {
-                          var route = MaterialPageRoute(
-                              builder: (context) => const MarketHomePage());
-                          Navigator.push(context, route);
-                        },
-                        image: 'assets/images/menu_qa.png',
-                        title: "Marketplace",
-                        content:
-                            "ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี SOLVEPad",
-                      ),
-                    ],
-                  ),
-                ],
-                if (Responsive.isDesktop(context) || Responsive.isTabletLandscape(context)) ...[
-                  Row(
-                    children: [
-                      mobileCard(
-                        'assets/images/menu_my_course.png',
-                        'My SOLVE course',
-                        'คอร์สที่คุณซื้อจาก Marketplace',
-                        'left',
-                        const MyCourseSolvepadPage(),
-                      ),
-                      mobileCard(
-                        'assets/images/menu_create_sheet.png',
-                        'My SOLVE live',
-                        'คอร์สเรียนสดของคุณ',
-                        'mid',
-                        const MyCourseLivePage(courseType: 'live'),
-                      ),
-                      mobileCard(
-                        'assets/images/menu_qa.png',
-                        'Marketplace',
-                        'ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี Solvepad',
+                        'ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี SOLVEPad',
                         'right',
                         const MarketHomePage(),
                       ),
                     ],
                   ),
                 ],
-                if (!Responsive.isMobileLandscape(context) &&
-                    !Responsive.isDesktop(context))
-                  const SizedBox(height: 70),
+                // if (Responsive.isTablet(context)) ...[
+                //   GridView.count(
+                //     shrinkWrap: true,
+                //     primary: false,
+                //     padding: const EdgeInsets.all(30),
+                //     crossAxisSpacing: 30,
+                //     mainAxisSpacing: 30,
+                //     crossAxisCount: 3,
+                //     children: <Widget>[
+                //       gridCard(
+                //         context,
+                //         onTap: () async {
+                //           await Navigator.push(
+                //             context,
+                //             MaterialPageRoute(
+                //               builder: (context) =>
+                //                   const MyCourseSolvepadPage(),
+                //             ),
+                //           );
+                //         },
+                //         image: 'assets/images/menu_my_course.png',
+                //         title: "คอร์ส SOLVE course ของฉัน",
+                //         content: "คอร์สที่คุณซื้อจาก Marketplace",
+                //       ),
+                //       gridCard(
+                //         context,
+                //         onTap: () async {
+                //           var route = MaterialPageRoute(
+                //               builder: (context) => const MyCourseLivePage(courseType: 'live'));
+                //           Navigator.push(context, route);
+                //         },
+                //         image: 'assets/images/menu_create_sheet.png',
+                //         title: "คอร์ส SOLVE live ของฉัน",
+                //         content: "คอร์สเรียนสดของคุณ",
+                //       ),
+                //       gridCard(
+                //         context,
+                //         onTap: () {
+                //           var route = MaterialPageRoute(
+                //               builder: (context) => const MarketHomePage());
+                //           Navigator.push(context, route);
+                //         },
+                //         image: 'assets/images/menu_qa.png',
+                //         title: "Marketplace",
+                //         content:
+                //             "ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี SOLVEPad",
+                //       ),
+                //     ],
+                //   ),
+                // ],
+                // if (Responsive.isDesktop(context) || Responsive.isTabletLandscape(context)) ...[
+                //   Row(
+                //     children: [
+                //       mobileCard(
+                //         'assets/images/menu_my_course.png',
+                //         'My SOLVE course',
+                //         'คอร์สที่คุณซื้อจาก Marketplace',
+                //         'left',
+                //         const MyCourseSolvepadPage(),
+                //       ),
+                //       mobileCard(
+                //         'assets/images/menu_create_sheet.png',
+                //         'My SOLVE live',
+                //         'คอร์สเรียนสดของคุณ',
+                //         'mid',
+                //         const MyCourseLivePage(courseType: 'live'),
+                //       ),
+                //       mobileCard(
+                //         'assets/images/menu_qa.png',
+                //         'Marketplace',
+                //         'ค้นหาคอร์สเรียนที่ถูกสร้างด้วยเทคโนโลยี Solvepad',
+                //         'right',
+                //         const MarketHomePage(),
+                //       ),
+                //     ],
+                //   ),
+                // ],
+                // if (!Responsive.isMobileLandscape(context) &&
+                //     !Responsive.isDesktop(context))
+                //   const SizedBox(height: 70),
               ],
             ),
           ),

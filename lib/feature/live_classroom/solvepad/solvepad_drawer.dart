@@ -12,7 +12,9 @@ class SolvepadDrawer extends CustomPainter {
       this.hostPenPoints,
       this.hostLaserPoints,
       this.hostHighlighterPoints,
-      this.hostEraserPoint);
+      this.hostEraserPoint, [
+        List<SolvepadStroke?>? askHighlighterPoints,
+      ]) : askHighlighterPoints = askHighlighterPoints ?? <SolvepadStroke?>[];
 
   List<SolvepadStroke?> penPoints;
   List<SolvepadStroke?> laserPoints;
@@ -22,6 +24,7 @@ class SolvepadDrawer extends CustomPainter {
   List<SolvepadStroke?> hostLaserPoints;
   List<SolvepadStroke?> hostHighlighterPoints;
   Offset hostEraserPoint;
+  List<SolvepadStroke?> askHighlighterPoints;
 
   Paint penPaint = Paint()..strokeCap = StrokeCap.round;
   Paint eraserPaint = Paint()
@@ -64,6 +67,9 @@ class SolvepadDrawer extends CustomPainter {
     ..strokeWidth = 25
     ..strokeCap = StrokeCap.round;
   Paint hostHighlightPaint = Paint()
+    ..strokeCap = StrokeCap.round
+    ..style = PaintingStyle.stroke;
+  Paint askHighlightPaint = Paint()
     ..strokeCap = StrokeCap.round
     ..style = PaintingStyle.stroke;
 
@@ -154,6 +160,32 @@ class SolvepadDrawer extends CustomPainter {
           (hostHighlighterPoints[hostNewStrokeIndex]!.width * 10) + 5;
     }
     canvas.drawPath(hostPath, hostHighlightPaint);
+
+    Path askPath = Path();
+    bool askNewPath = true;
+    int askNewStrokeIndex = 0;
+    for (int i = 0; i < askHighlighterPoints.length - 1; i++) {
+      if (askHighlighterPoints[i]?.offset == null) {
+        canvas.drawPath(askPath, askHighlightPaint);
+        askPath = Path();
+        askNewPath = true;
+        askNewStrokeIndex = i + 1;
+        continue;
+      }
+      if (askNewPath) {
+        askPath.moveTo(askHighlighterPoints[askNewStrokeIndex]!.offset.dx,
+            askHighlighterPoints[askNewStrokeIndex]!.offset.dy);
+        askNewPath = false;
+      } else {
+        askPath.lineTo(askHighlighterPoints[i]!.offset.dx,
+            askHighlighterPoints[i]!.offset.dy);
+      }
+      askHighlightPaint.color =
+          askHighlighterPoints[askNewStrokeIndex]!.color.withOpacity(0.4);
+      askHighlightPaint.strokeWidth =
+          (askHighlighterPoints[askNewStrokeIndex]!.width * 10) + 5;
+    }
+    canvas.drawPath(askPath, askHighlightPaint);
 
     for (int i = 0; i < hostLaserPoints.length - 1; i++) {
       if (hostLaserPoints[i] != null && hostLaserPoints[i + 1] != null) {
