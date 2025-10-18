@@ -102,7 +102,7 @@ class MyCourseLiveDetailController extends ChangeNotifier {
   }
 
   Future<String> getLevelInfo(String id) async {
-    log("getLevelInfo");
+    // log("getLevelInfo");
     return await firebaseFirestore
         .collection('courseLevels')
         .doc(id)

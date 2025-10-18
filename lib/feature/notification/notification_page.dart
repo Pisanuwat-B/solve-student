@@ -74,6 +74,7 @@ class _NotificationPageState extends State<NotificationPage> {
                 log(data.toString());
                 final courseId = data['courseId'];
                 final answerId = data['id'];
+                final questionId = data['questionId'];
                 final lessonId = int.tryParse(data['lessonId'].toString()) ?? 0;
                 // Get CourseModel from provider
                 final courseController = MyCourseSolvepadDetailController(context, courseId: courseId);
@@ -90,12 +91,13 @@ class _NotificationPageState extends State<NotificationPage> {
                       course: course,
                       lesson: lesson,
                       answer: answerId,
+                      questionId: questionId,
                     ),
                   ),
                 );
               },
               child: AnswerNotificationCard(
-                questionText: data['questionText'],
+                questionText: data['questionName'],
                 courseId: data['courseId'],
                 lesson: data['lesson'],
               ),

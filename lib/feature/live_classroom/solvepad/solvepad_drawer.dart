@@ -130,13 +130,17 @@ class SolvepadDrawer extends CustomPainter {
     canvas.drawCircle(eraserPoint, 10, eraserPaint);
     canvas.drawCircle(eraserPoint, 10, borderPaint);
 
-    for (int i = 0; i < hostPenPoints.length - 1; i++) {
-      if (hostPenPoints[i]?.offset != null &&
-          hostPenPoints[i + 1]?.offset != null) {
-        hostPenPaint.color = hostPenPoints[i]!.color;
-        hostPenPaint.strokeWidth = hostPenPoints[i]!.width;
-        canvas.drawLine(hostPenPoints[i]!.offset, hostPenPoints[i + 1]!.offset,
-            hostPenPaint);
+    final smoothedHostPen = chaikinSmoothSolvepad(hostPenPoints, iterations: 2);
+    for (int i = 0; i < smoothedHostPen.length - 1; i++) {
+      final a = smoothedHostPen[i];
+      final b = smoothedHostPen[i + 1];
+      if (a?.offset != null && b?.offset != null) {
+        hostPenPaint
+          ..color = a!.color
+          ..strokeWidth = a.width
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round;
+        canvas.drawLine(a.offset, b!.offset, hostPenPaint);
       }
     }
 

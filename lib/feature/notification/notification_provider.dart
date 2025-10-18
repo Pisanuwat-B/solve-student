@@ -12,6 +12,7 @@ class NotificationProvider extends ChangeNotifier {
   List<Map<String, dynamic>> get notifications => _notifications;
 
   void listenForNewQuestions(String studentId) {
+    log('[listenForNewQuestions] $studentId');
     FirebaseFirestore.instance
         .collection('answer_market')
         .where('studentId', isEqualTo: studentId)
@@ -25,10 +26,6 @@ class NotificationProvider extends ChangeNotifier {
               'id': docChange.doc.id,
               ...data,
             };
-
-            // log('listening to question');
-            // log(enrichedData.toString());
-
             _notifications.insert(0, enrichedData);
             _hasNewNotification = true;
             notifyListeners();

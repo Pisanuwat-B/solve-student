@@ -65,7 +65,6 @@ class FirebaseService {
   }
 
   Future<dynamic> getAnswerSolvepadData(String answerId) async {
-    log('get answer data: $answerId');
     final docSnapshot = await FirebaseFirestore.instance
         .collection('answer_market')
         .doc(answerId)

@@ -38,11 +38,13 @@ class ViewAnswerPage extends StatefulWidget {
   final CourseMarketModel course;
   final Lesson lesson;
   final String answer;
+  final String questionId;
   const ViewAnswerPage({
     super.key,
     required this.lesson,
     required this.course,
     required this.answer,
+    required this.questionId,
   });
 
   @override
@@ -164,6 +166,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
   bool _isNoteScalingReady = false;
   bool _isRatioReady = false;
   bool _isScalingReady = false;
+  bool _isReadyToShow = false;
 
   // ---------- VARIABLE: page control
   Timer? _laserTimer;
@@ -188,7 +191,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
 
   // ---------- VARIABLE: tutor solvepad data
   late Map<String, dynamic> _data;
-  late Map<String, dynamic> reviewNote;
+  late Map<String, dynamic> questionNote;
   String jsonData = '';
   List<StrokeStamp> currentStroke = [];
   List<ScrollZoomStamp> currentScrollZoom = [];
@@ -219,7 +222,6 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
       ]);
     });
     authProvider = Provider.of<AuthProvider>(context, listen: false);
-    fetchReviewNote();
     initAudio();
     initSolvepadData();
     initPagesData();
@@ -248,6 +250,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
         for (int i = 1; i < 5; i++) {
           _addPage();
         }
+        _isRatioReady = true;
       } else {
         _pages = courseController.courseData!.document!.data!.docFiles!;
         updateRatio(_pages[0]);
@@ -258,6 +261,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
       courseName = courseController.courseData!.courseName!;
       isCourseLoaded = true;
     });
+    fetchQuestionNote();
   }
 
   void initPagingBtn() {
@@ -274,15 +278,12 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
   }
 
   void initSolvepadData() async {
-    log('init Solvepad data');
     var downloadData =
     await firebaseService.getAnswerSolvepadData(widget.answer);
-    log('download data');
-    log(downloadData.toString());
     String voiceUrl =
     await firebaseService.getMarketCourseAudioFile(downloadData[1]);
-    log('download success');
     _data = downloadData[0];
+    log('initSolvepadData: $_data');
     setState(() {
       _mPath = voiceUrl;
       _mPlaybackReady = true;
@@ -290,7 +291,6 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
       replayDuration = _data['metadata']['duration'];
     });
     initSolvepadScaling();
-    log(tutorSolvepadSize.toString());
   }
 
   void initSolvepadScaling() {
@@ -380,42 +380,57 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
     }
   }
 
-  void fetchReviewNote() async {
-    // Reference to Firestore
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
+  Future<void> fetchQuestionNote() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
 
-    // Query the 'review_note' collection
-    QuerySnapshot querySnapshot = await firestore
-        .collection('review_note')
-        .where('student_id', isEqualTo: authProvider.user?.id)
-        .where('course_id', isEqualTo: widget.course.id)
-        .where('session_start', isEqualTo: widget.lesson.lessonId)
-        .get();
+      // 1) Get the question doc
+      final questionSnapshot = await firestore
+          .collection('question_market')
+          .doc(widget.questionId)
+          .get();
 
-    if (querySnapshot.docs.isNotEmpty) {
-      DocumentSnapshot document = querySnapshot.docs.first;
-      String? noteFileUrl = document.get('note_file');
-      if (noteFileUrl != null && noteFileUrl.isNotEmpty) {
-        final response = await http.get(Uri.parse(noteFileUrl));
-        log('load review note complete');
-        if (response.statusCode == 200) {
-          reviewNote = jsonDecode(response.body);
-          if (reviewNote['solvepadWidth'] != null) {
-            studentNoteSolvepadScaling();
-          } else {
-            populateReviewNoteNoScaling(reviewNote);
-          }
-        } else {
-          throw Exception('Failed to load review note');
-        }
-      } // note_file exists
-      else {
-        log('No review note');
-      } // Note note exist
-    } // Check if a document exists
-    else {
-      log('No review note');
-    } // Note not exist
+      if (!questionSnapshot.exists) {
+        log('No question found for id: ${widget.questionId}');
+        return;
+      }
+
+      final questionSnapData = questionSnapshot.data() ?? {};
+      final String? solvepadId = questionSnapData['solvepadId'] as String?;
+
+      if (solvepadId == null || solvepadId.isEmpty) {
+        log('No solvepadId on question: ${widget.questionId}');
+        return;
+      }
+
+      // 2) Get the solvepad doc → url
+      final solvepadSnapshot = await firestore.collection('solvepad').doc(solvepadId).get();
+
+      if (!solvepadSnapshot.exists) {
+        log('No solvepad doc found for id: $solvepadId');
+        return;
+      }
+
+      final solvepadSnapData = solvepadSnapshot.data() ?? {};
+      final String? noteFileUrl = solvepadSnapData['solvepad'] as String?;
+      if (noteFileUrl == null || noteFileUrl.isEmpty) {
+        log('solvepad url empty for id: $solvepadId');
+        return;
+      }
+
+      // 3) Download JSON and apply like your fetchReviewNote()
+      final response = await http.get(Uri.parse(noteFileUrl));
+      if (response.statusCode == 200) {
+        questionNote = jsonDecode(response.body);
+        questionNoteSolvepadScaling();
+      } else {
+        throw Exception('Failed to load question note (${response.statusCode})');
+      }
+    } catch (e, st) {
+      log('fetchQuestionNoteById error: $e');
+      log('$st');
+      rethrow;
+    }
   }
 
   Future<void> saveReviewNote() async {
@@ -460,10 +475,8 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
     });
   }
 
-  void studentNoteSolvepadScaling() {
-    log('scaling note solvepad');
-    noteSolvepadSize =
-        Size(reviewNote['solvepadWidth'], reviewNote['solvepadHeight']);
+  void questionNoteSolvepadScaling() {
+    noteSolvepadSize = Size(questionNote['solvepadWidth'], questionNote['solvepadHeight']);
     noteImageWidth = noteSolvepadSize.height * sheetImageRatio;
     noteExtraSpaceX = (noteSolvepadSize.width - noteImageWidth) / 2;
     myImageWidth = mySolvepadSize.height * sheetImageRatio;
@@ -475,9 +488,8 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
   }
 
   void setScalingStatus() {
-    log('setScalingStatus');
     if (!_isRatioReady || !_isScalingReady || !_isNoteScalingReady) return;
-    populateReviewNote(reviewNote);
+    populateQuestionNote(questionNote);
   }
 
   void populateReviewNote(Map<String, dynamic> jsonData) {
@@ -524,6 +536,75 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
       _highlighterPoints.add(convertToStrokeList(list));
     }
     setState(() {});
+  }
+
+  void populateQuestionNote(Map<String, dynamic> jsonData) {
+    log('populate Question note');
+    int questionIndex = 0;
+    while (questionIndex < jsonData['actions'].length) {
+      executeQuestionAction(jsonData['actions'][questionIndex]);
+      questionIndex++;
+    }
+    setState(() { _isReadyToShow = true; });
+  }
+
+  Future<void> executeQuestionAction(Map<String, dynamic> action) async {
+    int currentQuestionPointIndex = 0;
+    switch (action['type']) {
+      case 'start-recording':
+        break;
+      case 'change-page':
+        break;
+      case 'stop-recording':
+        break;
+      case 'scroll-zoom':
+        break;
+      case 'drawing':
+        List<dynamic> points = action['data']['points'];
+        while (currentQuestionPointIndex < points.length) {
+          drawQuestionPoint(
+              points[currentQuestionPointIndex],
+              action['data']['tool'],
+              action['data']['color'],
+              action['data']['strokeWidth']);
+          currentQuestionPointIndex++;
+        }
+        currentQuestionPointIndex = 0;
+        drawQuestionNull(action['data']['tool']);
+        break;
+      case 'erasing':
+        for (var eraseAction in action['data']) {
+          if (eraseAction['action'] == 'moves') {
+            int movingIndex = 0;
+            while (movingIndex < eraseAction['points'].length) {
+              setState(() {
+                _eraserPoints[_currentPage] = scaleOffset(Offset(
+                    eraseAction['points'][movingIndex]['x'],
+                    eraseAction['points'][movingIndex]['y']));
+              });
+              movingIndex++;
+            }
+          } // move
+          else if (eraseAction['action'] == 'erase') {
+            List<SolvepadStroke?> pointStack =
+            _penPoints[_tutorCurrentPage];
+            if (eraseAction['mode'] == "pen") {
+              pointStack = _penPoints[_tutorCurrentPage];
+            } else if (eraseAction['mode'] == "high") {
+              pointStack = _highlighterPoints[_tutorCurrentPage];
+            }
+            setState(() {
+              var start = eraseAction['prev'].clamp(0, pointStack.length);
+              var end = eraseAction['next'].clamp(start, pointStack.length);
+              pointStack.removeRange(start, end);
+            });
+          } // erase
+        }
+        setState(() {
+          _eraserPoints[_tutorCurrentPage] = const Offset(-100, -100);
+        });
+        break;
+    }
   }
 
   void populateReviewNoteNoScaling(Map<String, dynamic> jsonData) {
@@ -833,6 +914,34 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
     } // high
   }
 
+  void drawQuestionPoint(
+      Map<String, dynamic> point, String tool, String color, double stroke) {
+    if (tool == "DrawingMode.pen") {
+      _penPoints[_tutorCurrentPage].add(SolvepadStroke(
+        scaleNoteOffset(Offset(point['x'], point['y'])),
+        Color(int.parse(color, radix: 16)),
+        stroke,
+      ));
+      setState(() {});
+    } // pen
+    else if (tool == "DrawingMode.highlighter") {
+      _highlighterPoints[_tutorCurrentPage].add(SolvepadStroke(
+        scaleNoteOffset(Offset(point['x'], point['y'])),
+        Color(int.parse(color, radix: 16)),
+        stroke,
+      ));
+      setState(() {});
+    } // high
+  }
+
+  void drawQuestionNull(String tool) {
+    if (tool == "DrawingMode.pen") {
+      _penPoints[_tutorCurrentPage].add(null);
+    } else if (tool == "DrawingMode.highlighter") {
+      _highlighterPoints[_tutorCurrentPage].add(null);
+    }
+  }
+
   void drawReplayNull(String tool) {
     if (tool == "DrawingMode.pen") {
       _replayPenPoints[_tutorCurrentPage].add(null);
@@ -1131,7 +1240,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
                 });
               });
             }
-            return Stack(children: [
+            return _isReadyToShow ? Stack(children: [
               PageView.builder(
                 onPageChanged: _onPageViewChange,
                 controller: _pageController,
@@ -1167,7 +1276,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
                                 onPanDown: (_) {},
                                 child: Listener(
                                   onPointerDown: (details) {
-                                    _isHasReviewNote = true;
+                                    // _isHasReviewNote = true;
                                     if (activePointerId != null) return;
                                     activePointerId = details.pointer;
                                     switch (_mode) {
@@ -1368,7 +1477,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
                   );
                 },
               ),
-            ]);
+            ]) : const LoadingScreen();
           }),
     );
   }
@@ -1755,7 +1864,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
                 replayButton(),
                 RichText(
                   text: TextSpan(
-                    text: 'เริ่มเรียน',
+                    text: 'ดูคำตอบ',
                     style: CustomStyles.bold14RedF44336,
                   ),
                 ),

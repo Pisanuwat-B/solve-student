@@ -46,7 +46,7 @@ class MyCourseSolvepadDetailController extends ChangeNotifier {
   }
 
   getCourseInfo() async {
-    log("getCourseInfo : $courseId");
+    // log("getCourseInfo : $courseId");
     await firebaseFirestore
         .collection('course')
         .doc(courseId)
@@ -128,7 +128,7 @@ class MyCourseSolvepadDetailController extends ChangeNotifier {
   }
 
   Future<String> getLevelInfo(String id) async {
-    log("getLevelInfo");
+    // log("getLevelInfo");
     return await firebaseFirestore
         .collection('courseLevels')
         .doc(id)

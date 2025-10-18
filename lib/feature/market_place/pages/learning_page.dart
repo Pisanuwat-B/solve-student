@@ -15,6 +15,7 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
+import 'package:solve_student/feature/market_place/pages/question_name_modal.dart';
 import 'package:solve_student/feature/question/pages/question_page.dart';
 import 'package:speech_balloon/speech_balloon.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -210,7 +211,6 @@ class _LearningPageState extends State<LearningPage> {
   FlutterSoundPlayer? _mPlayer = FlutterSoundPlayer();
   late final FlutterSoundRecorder _mRecorder = FlutterSoundRecorder();
   bool _mPlayerIsInited = false;
-  bool _mRecorderIsInited = false;
   bool _mPlaybackReady = false;
 
   // ---------- VARIABLE: tutor solvepad data
@@ -270,7 +270,6 @@ class _LearningPageState extends State<LearningPage> {
     });
     try {
       await openTheRecorder();
-      setState(() => _mRecorderIsInited = true);
       log('recorder inited');
     } catch (e, st) {
       log('openTheRecorder failed: $e\n$st'); // <-- you'll see the real cause here
@@ -363,12 +362,12 @@ class _LearningPageState extends State<LearningPage> {
     super.dispose();
   }
 
-  Future<bool> _onWillPopScope() async {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-    return true;
+  Future<void> _setPortraitOnPop(bool didPop, Object? result) async {
+    if (!didPop) return; // pop didn’t happen, nothing to do
+    // await SystemChrome.setPreferredOrientations([
+    //   DeviceOrientation.portraitUp,
+    //   DeviceOrientation.portraitDown,
+    // ]);
   }
 
   void updateRatio(String url) {
@@ -460,6 +459,8 @@ class _LearningPageState extends State<LearningPage> {
         log('load review note complete');
         if (response.statusCode == 200) {
           reviewNote = jsonDecode(response.body);
+          log('review note');
+          log(reviewNote.toString());
           if (reviewNote['solvepadWidth'] != null) {
             studentNoteSolvepadScaling();
           } else {
@@ -637,7 +638,8 @@ class _LearningPageState extends State<LearningPage> {
     if (mode == DrawingMode.pen) {
       pointStack = _penPoints[_currentPage];
       removePointStack(pointStack, index);
-    } else if (mode == DrawingMode.highlighter) {
+    }
+    else if (mode == DrawingMode.highlighter) {
       pointStack = _highlighterPoints[_currentPage];
       removePointStack(pointStack, index);
     }
@@ -748,7 +750,7 @@ class _LearningPageState extends State<LearningPage> {
     setState(() {
       asking = false;
     });
-    // log(_askData.toString());
+    log(_askData.toString());
   }
 
   void addDrawing(List<StrokeStamp> strokeStamp, int initTime) {
@@ -1071,9 +1073,8 @@ class _LearningPageState extends State<LearningPage> {
     log('record status: ${_mRecorder.isRecording.toString()}');
   }
 
-  void stopRecorder() async {
-    await _mRecorder.stopRecorder().then((value) {
-    });
+  Future<void> stopRecorder() async {
+    await _mRecorder.stopRecorder();
   }
 
   void playAudioPlayer() {
@@ -1093,10 +1094,75 @@ class _LearningPageState extends State<LearningPage> {
     _mPlayer!.resumePlayer();
   }
 
+  void sendQuestion(String questionName) async {
+    log('send question');
+    await Alert.showOverlay(
+      asyncFunction: () async {
+        await writeToFile('solvepad.txt', _askData);
+        List uploadUrl = await firebaseService
+            .uploadAskSolvepad(
+            '${authProvider.user?.id}_${DateTime.now().millisecondsSinceEpoch}');
+        String solvepadId =
+        await firebaseService.writeSolvepadData(
+            uploadUrl[0], uploadUrl[1]);
+        log(solvepadId.toString());
+        await FirebaseFirestore.instance.collection('question_market').add({
+          'questionName': questionName,
+          'solvepadId': solvepadId,
+          'courseId': widget.course.id,
+          'courseAskTime': solveStopwatch.elapsed.inMilliseconds,
+          'lessonId': widget.lesson.lessonId,
+          'pageNo': _currentPage,
+          'tutorId': widget.tutorId,
+          'studentId': authProvider.user?.id,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      },
+      context: context,
+      loadingWidget: Alert.getOverlayScreen(),
+    );
+    if (!mounted) return;
+    showSnackBar(context, 'ส่งคำถามสำเร็จ');
+
+    setState(() {
+      asking = false;
+      for (var point in _askHighlighterPoints) {
+        point.clear();
+      }
+    });
+  }
+
+  Future<void> showQuestionNameModal() async {
+    _stopRecordTimer();
+    await stopRecorder();
+    final String? result = await showDialog<String>(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => const QuestionNameModal(),
+    );
+
+    if (!mounted) return;
+    // If user cancelled or dismissed → do nothing
+    if (result == null) {
+      setState(() {
+        asking = false;
+        for (var point in _askHighlighterPoints) {
+          point.clear();
+        }
+      });
+      return;
+    }
+
+    final String questionName = result.trim().isNotEmpty ? result.trim() : 'Unnamed question';
+
+    sendQuestion(questionName);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPopScope,
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: _setPortraitOnPop,
       child: isCourseLoaded
           ? Scaffold(
               backgroundColor: CustomColors.grayCFCFCF,
@@ -1578,6 +1644,26 @@ class _LearningPageState extends State<LearningPage> {
                   alignment: const Alignment(-1, -1),
                   minScale: 1.0,
                   maxScale: 4.0,
+                  onInteractionUpdate: (ScaleUpdateDetails details) {
+                    var translation =
+                    _transformationController[index].value.getTranslation();
+                    double scale = _transformationController[index]
+                        .value
+                        .getMaxScaleOnAxis();
+                    double originalTranslationX = translation.x;
+                    double originalTranslationY = translation.y;
+                    if (asking && _mode == DrawingMode.drag) {
+                      currentScrollZoom.add(ScrollZoomStamp(
+                          originalTranslationX,
+                          originalTranslationY,
+                          scale,
+                          solveStopwatch.elapsed.inMilliseconds));
+                    } else {
+                      currentScale = scale;
+                      currentScrollX = originalTranslationX;
+                      currentScrollY = originalTranslationY;
+                    }
+                  },
                   child: Stack(
                     children: [
                       Center(
@@ -2214,42 +2300,8 @@ class _LearningPageState extends State<LearningPage> {
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     ),
-                    onPressed: () async { // sendQuestion
-                      log('send question');
-                      stopRecorder();
-                      await Alert.showOverlay(
-                        asyncFunction: () async {
-                          await writeToFile('solvepad.txt', _data);
-                          List uploadUrl = await firebaseService
-                              .uploadAskSolvepad(
-                              '${authProvider.user?.id}_${DateTime.now().millisecondsSinceEpoch}');
-                          String solvepadId =
-                          await firebaseService.writeSolvepadData(
-                              uploadUrl[0], uploadUrl[1]);
-                          log(solvepadId.toString());
-                          await FirebaseFirestore.instance.collection('question_market').add({
-                            'solvepadId': solvepadId,
-                            'courseId': widget.course.id,
-                            'lessonId': widget.lesson.lessonId,
-                            'pageNo': _currentPage,
-                            'tutorId': widget.tutorId,
-                            'studentId': authProvider.user?.id,
-                            'timestamp': FieldValue.serverTimestamp(),
-                          });
-                        },
-                        context: context,
-                        loadingWidget: Alert.getOverlayScreen(),
-                      );
-                      if (!mounted) return;
-                      showSnackBar(context, 'ส่งคำถามสำเร็จ');
-
-                      setState(() {
-                        asking = false;
-                        for (var point in _askHighlighterPoints) {
-                          point.clear();
-                        }
-                      });
-                      _stopRecordTimer();
+                    onPressed: () {
+                      showQuestionNameModal();
                     },
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -3414,6 +3466,11 @@ class _LearningPageState extends State<LearningPage> {
                                 S.h(8),
                                 InkWell(
                                   onTap: () {
+                                    if (currentScrollZoom.isNotEmpty) {
+                                      addScrollZoom(currentScrollZoom,
+                                          currentScrollZoom[0].timestamp);
+                                      currentScrollZoom.clear();
+                                    }
                                     setState(() {
                                       _selectedIndexTools = index;
                                     });

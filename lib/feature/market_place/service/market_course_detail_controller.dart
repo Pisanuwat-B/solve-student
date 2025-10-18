@@ -51,7 +51,7 @@ class MarketCourseDetailController extends ChangeNotifier {
   }
 
   getCourseInfo() async {
-    log("getCourseInfo : $courseId");
+    // log("getCourseInfo : $courseId");
     await firebaseFirestore
         .collection('course')
         .doc(courseId)
@@ -118,7 +118,6 @@ class MarketCourseDetailController extends ChangeNotifier {
   }
 
   Future<String> getSubjectInfo(String id) async {
-    // log("getSubjectInfo");
     return await firebaseFirestore
         .collection('courseSubjects')
         .doc(id)
@@ -133,7 +132,6 @@ class MarketCourseDetailController extends ChangeNotifier {
   }
 
   Future<String> getLevelInfo(String id) async {
-    log("getLevelInfo");
     return await firebaseFirestore
         .collection('courseLevels')
         .doc(id)
