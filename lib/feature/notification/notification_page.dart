@@ -7,8 +7,6 @@ import 'package:solve_student/feature/notification/view_answer.dart';
 
 import '../../constants/theme.dart';
 import '../../widgets/sizer.dart';
-import '../calendar/controller/create_course_controller.dart';
-import '../calendar/model/course_model.dart';
 import '../my_course/controller/my_course_solvepad_detail_controller.dart';
 import 'answer_notification_card.dart';
 import 'notification_provider.dart';
@@ -75,7 +73,7 @@ class _NotificationPageState extends State<NotificationPage> {
                 final courseId = data['courseId'];
                 final answerId = data['id'];
                 final questionId = data['questionId'];
-                final lessonId = int.tryParse(data['lessonId'].toString()) ?? 0;
+                final lessonId = data['lesson'] - 1;
                 // Get CourseModel from provider
                 final courseController = MyCourseSolvepadDetailController(context, courseId: courseId);
                 await courseController.init();

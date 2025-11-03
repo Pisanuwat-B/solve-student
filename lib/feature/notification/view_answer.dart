@@ -134,6 +134,9 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
   final List<List<SolvepadStroke?>> _laserPoints = [[]];
   final List<List<SolvepadStroke?>> _highlighterPoints = [[]];
   final List<Offset> _eraserPoints = [const Offset(-100, -100)];
+  final List<List<SolvepadStroke?>> _coursePenPoints = [[]];
+  final List<List<SolvepadStroke?>> _courseHighlighterPoints = [[]];
+  final List<Offset> _courseEraserPoints = [const Offset(-100, -100)];
   final List<List<SolvepadStroke?>> _replayPenPoints = [[]];
   final List<List<SolvepadStroke?>> _replayLaserPoints = [[]];
   final List<List<SolvepadStroke?>> _replayHighlighterPoints = [[]];
@@ -145,6 +148,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
   Size mySolvepadSize = const Size(1059.0, 547.0);
   Size tutorSolvepadSize = const Size(1059.0, 547.0);
   Size noteSolvepadSize = const Size(1059.0, 547.0);
+  Size courseSolvepadSize = const Size(1059.0, 547.0);
   double sheetImageRatio = 0.708;
   double tutorImageWidth = 0;
   double tutorExtraSpaceX = 0;
@@ -157,6 +161,11 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
   double noteExtraSpaceX = 0;
   double noteScaleImageX = 0;
   double noteScaleY = 0;
+  double courseImageWidth = 0;
+  double courseExtraSpaceX = 0;
+  double courseScaleImageX = 0;
+  double courseScaleX = 0;
+  double courseScaleY = 0;
 
   // ---------- VARIABLE: Solve Pad features
   bool _isPrevBtnActive = false;
@@ -171,7 +180,9 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
   // ---------- VARIABLE: page control
   Timer? _laserTimer;
   int _currentPage = 0;
+  int _coursePage = 0;
   int _tutorCurrentPage = 0;
+  int _questionPage = 0;
   String _tutorCurrentScrollZoom = '';
   final PageController _pageController = PageController();
   final List<TransformationController> _transformationController = [];
@@ -190,6 +201,8 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
   bool _mPlaybackReady = false;
 
   // ---------- VARIABLE: tutor solvepad data
+  int courseAskTime = 0;
+  late Map<String, dynamic> _courseData;
   late Map<String, dynamic> _data;
   late Map<String, dynamic> questionNote;
   String jsonData = '';
@@ -262,6 +275,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
       isCourseLoaded = true;
     });
     fetchQuestionNote();
+    initCourseData(widget.lesson.media!);
   }
 
   void initPagingBtn() {
@@ -277,13 +291,23 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
     }
   }
 
+  void initCourseData(String solvepadId) async {
+    var downloadData = await firebaseService.getMarketCourseSolvepadData(solvepadId);
+    _courseData = downloadData[0];
+    setState(() {
+      courseSolvepadSize = Size(_courseData['solvepadWidth'], _courseData['solvepadHeight']);
+    });
+    initCourseSolvepadScaling();
+    isCourseLoaded = true;
+  }
+
   void initSolvepadData() async {
     var downloadData =
     await firebaseService.getAnswerSolvepadData(widget.answer);
     String voiceUrl =
     await firebaseService.getMarketCourseAudioFile(downloadData[1]);
     _data = downloadData[0];
-    log('initSolvepadData: $_data');
+    // log('[answer] ${_data.toString()}');
     setState(() {
       _mPath = voiceUrl;
       _mPlaybackReady = true;
@@ -304,6 +328,25 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
     _isScalingReady = true;
     setScalingStatus();
   }
+
+  void initCourseSolvepadScaling() {
+    courseImageWidth = courseSolvepadSize.height * sheetImageRatio;
+    courseExtraSpaceX = (courseSolvepadSize.width - courseImageWidth) / 2;
+    myImageWidth = mySolvepadSize.height * sheetImageRatio;
+    myExtraSpaceX = (mySolvepadSize.width - myImageWidth) / 2;
+    courseScaleImageX = myImageWidth / courseImageWidth;
+    courseScaleX = mySolvepadSize.width / courseSolvepadSize.width;
+    courseScaleY = mySolvepadSize.height / courseSolvepadSize.height;
+    populateCourseNote(_courseData);
+  }
+
+  Offset courseScaleOffset(Offset offset) {
+    return Offset(
+        (offset.dx - courseExtraSpaceX) * courseScaleImageX + myExtraSpaceX,
+        offset.dy * courseScaleY);
+  }
+  double courseScaleScrollX(double scrollX) => scrollX * courseScaleX;
+  double courseScaleScrollY(double scrollY) => scrollY * courseScaleY;
 
   Offset scaleOffset(Offset offset) {
     return Offset((offset.dx - tutorExtraSpaceX) * scaleImageX + myExtraSpaceX,
@@ -354,6 +397,9 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
       _replayLaserPoints.add([]);
       _replayHighlighterPoints.add([]);
       _replayEraserPoints.add(const Offset(-100, -100));
+      _coursePenPoints.add([]);
+      _courseHighlighterPoints.add([]);
+      _courseEraserPoints.add(const Offset(-100, -100));
     });
   }
 
@@ -397,6 +443,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
 
       final questionSnapData = questionSnapshot.data() ?? {};
       final String? solvepadId = questionSnapData['solvepadId'] as String?;
+      courseAskTime = questionSnapData['courseAskTime'];
 
       if (solvepadId == null || solvepadId.isEmpty) {
         log('No solvepadId on question: ${widget.questionId}');
@@ -538,8 +585,108 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
     setState(() {});
   }
 
+  void populateCourseNote(Map<String, dynamic> jsonData) {
+    int courseIndex = 0;
+    while (courseIndex < jsonData['actions'].length) {
+      if (_courseData['actions'][courseIndex]['time'] <= courseAskTime) {
+        executeCourseAction(jsonData['actions'][courseIndex]);
+        courseIndex++;
+      } else {
+        break;
+      }
+    }
+  }
+
+  Future<void> executeCourseAction(Map<String, dynamic> action) async {
+    int currentCoursePointIndex = 0;
+    switch (action['type']) {
+      case 'start-recording':
+        _coursePage = action['page'];
+        break;
+      case 'change-page':
+        _coursePage = action['data'];
+        break;
+      case 'stop-recording':
+        break;
+      case 'scroll-zoom':
+        break;
+      case 'drawing':
+        List<dynamic> points = action['data']['points'];
+        while (currentCoursePointIndex < points.length) {
+          drawCoursePoint(
+              points[currentCoursePointIndex],
+              action['data']['tool'],
+              action['data']['color'],
+              action['data']['strokeWidth']);
+          currentCoursePointIndex++;
+        }
+        currentCoursePointIndex = 0;
+        drawCourseNull(action['data']['tool']);
+        break;
+      case 'erasing':
+        for (var eraseAction in action['data']) {
+          if (eraseAction['action'] == 'moves') {
+            int movingIndex = 0;
+            while (movingIndex < eraseAction['points'].length) {
+              setState(() {
+                _courseEraserPoints[_currentPage] = courseScaleOffset(Offset(
+                    eraseAction['points'][movingIndex]['x'],
+                    eraseAction['points'][movingIndex]['y']));
+              });
+              movingIndex++;
+            }
+          } // move
+          else if (eraseAction['action'] == 'erase') {
+            List<SolvepadStroke?> pointStack =
+            _coursePenPoints[_coursePage];
+            if (eraseAction['mode'] == "pen") {
+              pointStack = _coursePenPoints[_coursePage];
+            } else if (eraseAction['mode'] == "high") {
+              pointStack = _courseHighlighterPoints[_coursePage];
+            }
+            setState(() {
+              var start = eraseAction['prev'].clamp(0, pointStack.length);
+              var end = eraseAction['next'].clamp(start, pointStack.length);
+              pointStack.removeRange(start, end);
+            });
+          } // erase
+        }
+        setState(() {
+          _courseEraserPoints[_coursePage] = const Offset(-100, -100);
+        });
+        break;
+    }
+  }
+
+  void drawCoursePoint(
+      Map<String, dynamic> point, String tool, String color, double stroke) {
+    if (tool == "DrawingMode.pen") {
+      _coursePenPoints[_coursePage].add(SolvepadStroke(
+        courseScaleOffset(Offset(point['x'], point['y'])),
+        Color(int.parse(color, radix: 16)),
+        stroke,
+      ));
+      setState(() {});
+    } // pen
+    else if (tool == "DrawingMode.highlighter") {
+      _courseHighlighterPoints[_coursePage].add(SolvepadStroke(
+        courseScaleOffset(Offset(point['x'], point['y'])),
+        Color(int.parse(color, radix: 16)),
+        stroke,
+      ));
+      setState(() {});
+    } // high
+  }
+
+  void drawCourseNull(String tool) {
+    if (tool == "DrawingMode.pen") {
+      _coursePenPoints[_coursePage].add(null);
+    } else if (tool == "DrawingMode.highlighter") {
+      _courseHighlighterPoints[_coursePage].add(null);
+    }
+  }
+
   void populateQuestionNote(Map<String, dynamic> jsonData) {
-    log('populate Question note');
     int questionIndex = 0;
     while (questionIndex < jsonData['actions'].length) {
       executeQuestionAction(jsonData['actions'][questionIndex]);
@@ -552,8 +699,10 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
     int currentQuestionPointIndex = 0;
     switch (action['type']) {
       case 'start-recording':
+        _questionPage = action['page'];
         break;
       case 'change-page':
+        _questionPage = action['data'];
         break;
       case 'stop-recording':
         break;
@@ -733,7 +882,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
     solveStopwatch.start();
   }
 
-  void _initReplay() {
+  void _initAnswer() {
     log('init replay');
     setState(() {
       isReplaying = true;
@@ -741,11 +890,11 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
       clearReplayPoint();
       clearZoomPosition();
     });
-    _replay();
+    playAnswer();
     playAudioPlayer();
   }
 
-  Future<void> _replay() async {
+  Future<void> playAnswer() async {
     solveStopwatch.start();
     _sliderTimer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
       setState(() {
@@ -761,7 +910,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
       await Future.delayed(const Duration(milliseconds: 0), () async {
         if (solveStopwatch.elapsed.inMilliseconds >=
             _data['actions'][currentReplayIndex]['time']) {
-          await executeReplayAction(_data['actions'][currentReplayIndex]);
+          await executeAnswerAction(_data['actions'][currentReplayIndex]);
           currentReplayIndex++;
         }
       });
@@ -781,7 +930,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
     currentReplayIndex = 0;
   }
 
-  Future<void> executeReplayAction(Map<String, dynamic> action) async {
+  Future<void> executeAnswerAction(Map<String, dynamic> action) async {
     switch (action['type']) {
       case 'start-recording':
         var page = action['page'];
@@ -790,9 +939,13 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
+        await WidgetsBinding.instance.endOfFrame;
         _tutorCurrentPage = page;
+        if (page >= _transformationController.length) {
+          _transformationController.add(TransformationController());
+        }
         _transformationController[page].value = Matrix4.identity()
-          ..translate(scaleScrollX(action['scrollX']) / 2,
+          ..translate(scaleScrollX(action['scrollX']),
               scaleScrollY(action['scrollY']))
           ..scale(action['scale']);
         _tutorCurrentScrollZoom =
@@ -917,7 +1070,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
   void drawQuestionPoint(
       Map<String, dynamic> point, String tool, String color, double stroke) {
     if (tool == "DrawingMode.pen") {
-      _penPoints[_tutorCurrentPage].add(SolvepadStroke(
+      _penPoints[_questionPage].add(SolvepadStroke(
         scaleNoteOffset(Offset(point['x'], point['y'])),
         Color(int.parse(color, radix: 16)),
         stroke,
@@ -925,7 +1078,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
       setState(() {});
     } // pen
     else if (tool == "DrawingMode.highlighter") {
-      _highlighterPoints[_tutorCurrentPage].add(SolvepadStroke(
+      _highlighterPoints[_questionPage].add(SolvepadStroke(
         scaleNoteOffset(Offset(point['x'], point['y'])),
         Color(int.parse(color, radix: 16)),
         stroke,
@@ -936,9 +1089,9 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
 
   void drawQuestionNull(String tool) {
     if (tool == "DrawingMode.pen") {
-      _penPoints[_tutorCurrentPage].add(null);
+      _penPoints[_questionPage].add(null);
     } else if (tool == "DrawingMode.highlighter") {
-      _highlighterPoints[_tutorCurrentPage].add(null);
+      _highlighterPoints[_questionPage].add(null);
     }
   }
 
@@ -1456,7 +1609,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
                                     }
                                   },
                                   child: CustomPaint(
-                                    painter: SolvepadDrawer(
+                                    painter: SolvepadDrawerViewQuestion(
                                       _penPoints[index],
                                       _eraserPoints[index],
                                       _laserPoints[index],
@@ -1465,6 +1618,9 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
                                       _replayLaserPoints[index],
                                       _replayHighlighterPoints[index],
                                       _replayEraserPoints[index],
+                                      _coursePenPoints[index],
+                                      _courseHighlighterPoints[index],
+                                      _courseEraserPoints[index],
                                     ),
                                   ),
                                 ),
@@ -1496,7 +1652,7 @@ class _ViewAnswerPageState extends State<ViewAnswerPage> {
             }
             if (!isReplaying) {
               if (isReplayEnd) {
-                _initReplay();
+                _initAnswer();
               } else {
                 resumeReplay();
               }

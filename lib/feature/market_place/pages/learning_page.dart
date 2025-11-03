@@ -270,7 +270,6 @@ class _LearningPageState extends State<LearningPage> {
     });
     try {
       await openTheRecorder();
-      log('recorder inited');
     } catch (e, st) {
       log('openTheRecorder failed: $e\n$st'); // <-- you'll see the real cause here
     }
@@ -320,7 +319,6 @@ class _LearningPageState extends State<LearningPage> {
         await firebaseService.getMarketCourseSolvepadData(widget.lesson.media!);
     String voiceUrl =
         await firebaseService.getMarketCourseAudioFile(downloadData[1]);
-    log('download success');
     _data = downloadData[0];
     setState(() {
       _mPath = voiceUrl;
@@ -329,7 +327,6 @@ class _LearningPageState extends State<LearningPage> {
       replayDuration = _data['metadata']['duration'];
     });
     initSolvepadScaling();
-    log(tutorSolvepadSize.toString());
   }
 
   void initSolvepadScaling() {
@@ -456,11 +453,8 @@ class _LearningPageState extends State<LearningPage> {
       String? noteFileUrl = document.get('note_file');
       if (noteFileUrl != null && noteFileUrl.isNotEmpty) {
         final response = await http.get(Uri.parse(noteFileUrl));
-        log('load review note complete');
         if (response.statusCode == 200) {
           reviewNote = jsonDecode(response.body);
-          log('review note');
-          log(reviewNote.toString());
           if (reviewNote['solvepadWidth'] != null) {
             studentNoteSolvepadScaling();
           } else {
@@ -522,7 +516,6 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   void studentNoteSolvepadScaling() {
-    log('scaling note solvepad');
     noteSolvepadSize =
         Size(reviewNote['solvepadWidth'], reviewNote['solvepadHeight']);
     noteImageWidth = noteSolvepadSize.height * sheetImageRatio;
@@ -536,7 +529,6 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   void setScalingStatus() {
-    log('setScalingStatus');
     if (!_isRatioReady || !_isScalingReady || !_isNoteScalingReady) return;
     populateReviewNote(reviewNote);
   }
@@ -588,8 +580,6 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   void populateReviewNoteNoScaling(Map<String, dynamic> jsonData) {
-    log('No scaling');
-
     List<SolvepadStroke?> convertToStrokeList(List<dynamic> list) {
       return list.map((item) {
         if (item == null) {
@@ -720,7 +710,6 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   void _startRecordTimer() {
-    log('record timer start');
     recordStopwatch.start();
     _formattedElapsedTime = 'Recording 00:00:00';
     _recordTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -750,7 +739,6 @@ class _LearningPageState extends State<LearningPage> {
     setState(() {
       asking = false;
     });
-    log(_askData.toString());
   }
 
   void addDrawing(List<StrokeStamp> strokeStamp, int initTime) {
@@ -810,7 +798,6 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   void pauseReplay() {
-    log('pause replay');
     setState(() {
       isReplaying = false;
     });
@@ -819,7 +806,6 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   void resumeReplay() {
-    log('resume replay');
     setState(() {
       isReplaying = true;
     });
@@ -828,7 +814,6 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   void _initReplay() {
-    log('init replay');
     setState(() {
       isReplaying = true;
       isReplayEnd = false;
@@ -886,7 +871,7 @@ class _LearningPageState extends State<LearningPage> {
         );
         _tutorCurrentPage = page;
         _transformationController[page].value = Matrix4.identity()
-          ..translate(scaleScrollX(action['scrollX']),
+          ..translate(scaleScrollX(action['scrollX'] / 2),
               scaleScrollY(action['scrollY']))
           ..scale(action['scale']);
         _tutorCurrentScrollZoom =
@@ -1027,7 +1012,6 @@ class _LearningPageState extends State<LearningPage> {
   // ---------- FUNCTION: recording and playback
 
   Future<void> openTheRecorder() async {
-    log('openTheRecorder is called');
     if (!kIsWeb) {
       var status = await Permission.microphone.request();
       if (status != PermissionStatus.granted) {
@@ -1070,7 +1054,6 @@ class _LearningPageState extends State<LearningPage> {
     ).then((value) {
       setState(() {});
     });
-    log('record status: ${_mRecorder.isRecording.toString()}');
   }
 
   Future<void> stopRecorder() async {
@@ -1095,7 +1078,6 @@ class _LearningPageState extends State<LearningPage> {
   }
 
   void sendQuestion(String questionName) async {
-    log('send question');
     await Alert.showOverlay(
       asyncFunction: () async {
         await writeToFile('solvepad.txt', _askData);
@@ -1105,7 +1087,6 @@ class _LearningPageState extends State<LearningPage> {
         String solvepadId =
         await firebaseService.writeSolvepadData(
             uploadUrl[0], uploadUrl[1]);
-        log(solvepadId.toString());
         await FirebaseFirestore.instance.collection('question_market').add({
           'questionName': questionName,
           'solvepadId': solvepadId,
@@ -1615,10 +1596,10 @@ class _LearningPageState extends State<LearningPage> {
           builder: (BuildContext context, BoxConstraints constraints) {
         double solvepadWidth = constraints.maxWidth;
         double solvepadHeight = constraints.maxHeight;
-        currentScrollX = (-1 * solvepadWidth);
         if (mySolvepadSize.width != solvepadWidth) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             setState(() {
+              currentScrollX = (-1 * solvepadWidth / 2);
               mySolvepadSize = Size(solvepadWidth, solvepadHeight);
             });
           });
@@ -1657,7 +1638,7 @@ class _LearningPageState extends State<LearningPage> {
                           originalTranslationX,
                           originalTranslationY,
                           scale,
-                          solveStopwatch.elapsed.inMilliseconds));
+                          recordStopwatch.elapsed.inMilliseconds));
                     } else {
                       currentScale = scale;
                       currentScrollX = originalTranslationX;

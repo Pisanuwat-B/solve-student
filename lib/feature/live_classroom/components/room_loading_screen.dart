@@ -4,7 +4,7 @@ import 'package:solve_student/feature/calendar/constants/constants.dart';
 import '../utils/spacer.dart';
 
 class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({Key? key}) : super(key: key);
+  const LoadingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class LoadingScreen extends StatelessWidget {
             Lottie.asset("assets/images/logo.json", width: 100),
             const VerticalSpacer(20),
             const Text(
-              "Loading SOLVE Live room",
+              "Loading SOLVE Data",
               style: TextStyle(
                   fontSize: 20,
                   color: CustomColors.greenPrimary,
