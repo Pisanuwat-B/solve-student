@@ -5,6 +5,8 @@ import 'package:solve_student/authentication/service/auth_provider.dart';
 import 'package:solve_student/constants/theme.dart';
 import 'package:solve_student/widgets/sizer.dart';
 
+import '../../feature/calendar/constants/custom_styles.dart';
+
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -23,6 +25,9 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     authprovider = Provider.of<AuthProvider>(context);
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+      ),
       body: isLoading
           ? Center(
               child: Container(
@@ -32,90 +37,69 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             )
           : SingleChildScrollView(
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: Sizer(context).h / 20,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 60,
+                ),
+                Text('สร้างบัญชี', style: CustomStyles.bold22Black363636),
+                SizedBox(height: 24.00),
+                Image.asset(
+                  'assets/images/register_image.png',
+                  width: 165,
+                  height: 165,
+                ),
+                SizedBox(height: 60),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Container(
+                    width: Sizer(context).w,
+                    alignment: Alignment.center,
+                    child: field("Name", Icons.account_box, _name),
                   ),
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    width: Sizer(context).w / 0.5,
-                    child: IconButton(
-                      icon: Icon(Icons.arrow_back_ios),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
+                ),
+                Container(
+                  width: Sizer(context).w,
+                  alignment: Alignment.center,
+                  child: field("email", Icons.account_box, _email),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  child: Container(
+                    width: Sizer(context).w,
+                    alignment: Alignment.center,
+                    child: field("password", Icons.lock, _password),
                   ),
-                  SizedBox(
-                    height: Sizer(context).h / 50,
-                  ),
-                  Container(
-                    width: Sizer(context).w / 1.1,
+                ),
+                SizedBox(
+                  height: Sizer(context).h / 20,
+                ),
+                customButton(),
+                SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
                     child: Text(
-                      "Welcome",
+                      "Login",
                       style: TextStyle(
-                        fontSize: 34,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: Sizer(context).w / 1.1,
-                    child: Text(
-                      "Create Account to Contiue!",
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontSize: 20,
+                        color: primaryColor,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                  SizedBox(
-                    height: Sizer(context).h / 20,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 18.0),
-                    child: Container(
-                      width: Sizer(context).w,
-                      alignment: Alignment.center,
-                      child: field("Name", Icons.account_box, _name),
-                    ),
-                  ),
-                  Container(
-                    width: Sizer(context).w,
-                    alignment: Alignment.center,
-                    child: field("email", Icons.account_box, _email),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 18.0),
-                    child: Container(
-                      width: Sizer(context).w,
-                      alignment: Alignment.center,
-                      child: field("password", Icons.lock, _password),
-                    ),
-                  ),
-                  SizedBox(
-                    height: Sizer(context).h / 20,
-                  ),
-                  customButton(),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Text(
-                        "Login",
-                        style: TextStyle(
-                          color: primaryColor,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
+                )
+              ],
             ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -153,8 +137,8 @@ class _RegisterPageState extends State<RegisterPage> {
         }
       },
       child: Container(
-          height: Sizer(context).h / 14,
-          width: Sizer(context).w / 1.2,
+          height: 45,
+          width: 95,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
             color: primaryColor,
@@ -164,7 +148,7 @@ class _RegisterPageState extends State<RegisterPage> {
             "Create Account",
             style: TextStyle(
               color: Colors.white,
-              fontSize: 18,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           )),

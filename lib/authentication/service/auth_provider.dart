@@ -205,6 +205,22 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<User?> signInWithEmailAndPassword(String email, String password) async {
+    FirebaseAuth _auth = FirebaseAuth.instance;
+    FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
+      log("Login Sucessfull");
+      _firestore.collection('users').doc(_auth.currentUser!.uid).get().then(
+              (value) => userCredential.user!.updateDisplayName(value['name']));
+      return userCredential.user;
+    } catch (e) {
+      log(e.toString());
+      return null;
+    }
+  }
+
   Future<User?> logIn(String email, String password) async {
     FirebaseAuth _auth = FirebaseAuth.instance;
     FirebaseFirestore _firestore = FirebaseFirestore.instance;
