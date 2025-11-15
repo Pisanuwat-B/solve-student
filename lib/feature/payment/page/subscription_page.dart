@@ -5,6 +5,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:flutter/services.dart'; // for PlatformException
 
 import '../../../constants/theme.dart';
+import '../../profile/components/webview.dart';
 
 // RevenueCat wiring added:
 // • Fetch Offerings to display the REAL localized price
@@ -24,8 +25,7 @@ class SubscriptionPage extends StatefulWidget {
       'Access all courses',
       'Basic support',
     ],
-    this.legalText =
-    'Payment will be charged to your account. Auto‑renews monthly \nCancel anytime in account settings.',
+    this.legalText = 'Payment will be charged to your account. Auto‑renews monthly',
     this.trialText = 'Monthly subscription • Cancel anytime',
     this.onContinue,
     this.onRestore,
@@ -106,6 +106,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final displayPrice = _priceLabel ?? widget.displayPrice;
+    final linkStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: Colors.blue,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -253,6 +256,50 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodySmall),
                       const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('เงื่อนไขข้อตกลงการใช้บริการ : ',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodySmall),
+                          InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PrivacyPolicyScreen(url: 'https://solve-f1778.web.app/terms.html'),
+                                ),
+                              );
+                            },
+                            child: Text('https://solve-f1778.web.app/terms.html',
+                                textAlign: TextAlign.center,
+                                style: linkStyle),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('นโยบายความเป็นส่วนตัว : ',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodySmall),
+                          InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PrivacyPolicyScreen(url: 'https://solve-f1778.web.app/privacy.html'),
+                                ),
+                              );
+                            },
+                            child: Text('https://solve-f1778.web.app/terms.html',
+                                textAlign: TextAlign.center,
+                                style: linkStyle),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
                       TextButton(
                         onPressed:
                         widget.onRestore ?? (_purchasing ? null : _onRestore),
